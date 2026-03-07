@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lecture #1: Introduction to Python</title>
+<style>
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ===== THEME VARIABLES ===== */
+:root {
+  --bg: #f4f6f9;
+  --slide-bg: #ffffff;
+  --header-bg: #1a2742;
+  --header-fg: #ffffff;
+  --footer-bg: #1a2742;
+  --footer-fg: #ffffff;
+  --accent: #2563eb;
+  --accent2: #16a34a;
+  --accent3: #d97706;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --code-bg: #1e293b;
+  --code-fg: #e2e8f0;
+  --output-bg: #0f172a;
+  --output-fg: #86efac;
+  --card-bg: #f1f5f9;
+  --card-border: #cbd5e1;
+  --highlight: #eff6ff;
+  --highlight-border: #93c5fd;
+  --warn-bg: #fef3c7;
+  --warn-border: #fbbf24;
+  --error-bg: #fee2e2;
+  --error-border: #fca5a5;
+  --ok-bg: #dcfce7;
+  --ok-border: #86efac;
+  --shadow: 0 4px 24px rgba(0,0,0,0.10);
+  --header-h: 56px;
+  --footer-h: 52px;
+}
+
+body.dark {
+  --bg: #0f172a;
+  --slide-bg: #1e293b;
+  --header-bg: #0a1020;
+  --header-fg: #e2e8f0;
+  --footer-bg: #0a1020;
+  --footer-fg: #e2e8f0;
+  --accent: #60a5fa;
+  --accent2: #4ade80;
+  --accent3: #fbbf24;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --code-bg: #0f172a;
+  --code-fg: #e2e8f0;
+  --output-bg: #020617;
+  --output-fg: #86efac;
+  --card-bg: #263148;
+  --card-border: #334155;
+  --highlight: #1e3a5f;
+  --highlight-border: #3b82f6;
+  --warn-bg: #422006;
+  --warn-border: #d97706;
+  --error-bg: #3b0a0a;
+  --error-border: #ef4444;
+  --ok-bg: #052e16;
+  --ok-border: #22c55e;
+  --shadow: 0 4px 24px rgba(0,0,0,0.40);
+}
+
+/* ===== LAYOUT ===== */
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* ===== HEADER ===== */
+#main-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: var(--header-bg);
+  color: var(--header-fg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  gap: 12px;
+}
+#header-left {
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #93c5fd;
+}
+#header-center { flex: 1; }
+#header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+#header-author {
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  font-style: italic;
+}
+#theme-btn {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  padding: 5px 13px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: background 0.15s;
+}
+#theme-btn:hover { background: rgba(255,255,255,0.22); }
+
+/* ===== FOOTER ===== */
+#main-footer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--footer-h);
+  background: var(--footer-bg);
+  color: var(--footer-fg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 100;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+}
+#footer-left {}
+#footer-center {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+#footer-right {}
+.nav-btn {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+  user-select: none;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.25); }
+.nav-btn:disabled { opacity: 0.3; cursor: default; }
+#slide-counter {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #93c5fd;
+  min-width: 60px;
+  text-align: center;
+}
+#pdf-btn {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: background 0.15s;
+}
+#pdf-btn:hover { background: rgba(255,255,255,0.22); }
+
+/* ===== SLIDE CONTAINER ===== */
+#slides-viewport {
+  position: fixed;
+  top: var(--header-h);
+  bottom: var(--footer-h);
+  left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ===== SLIDE CANVAS ===== */
+.slide {
+  display: none;
+  width: min(960px, calc(100vw - 32px));
+  height: min(540px, calc(100vh - var(--header-h) - var(--footer-h) - 16px));
+  background: var(--slide-bg);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  position: relative;
+  flex-direction: column;
+}
+.slide.active { display: flex; }
+
+/* ===== SLIDE INNER ===== */
+.slide-inner {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 32px 40px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.slide-inner::-webkit-scrollbar { width: 5px; }
+.slide-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ===== SLIDE TYPES ===== */
+/* Title Slide */
+.slide-title {
+  background: linear-gradient(135deg, #1a2742 0%, #1e3a6e 60%, #2563eb 100%);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+body.dark .slide-title {
+  background: linear-gradient(135deg, #0a1020 0%, #0f2040 60%, #1d4ed8 100%);
+}
+.slide-title .slide-inner {
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+.title-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  background: rgba(255,255,255,0.08);
+  padding: 5px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(147,197,253,0.3);
+}
+.title-main {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+  max-width: 700px;
+}
+.title-sub {
+  font-size: 1.1rem;
+  color: #bfdbfe;
+  max-width: 560px;
+  line-height: 1.5;
+}
+.title-meta {
+  font-size: 0.82rem;
+  color: #93c5fd;
+  margin-top: 8px;
+}
+
+/* Section Divider Slide */
+.slide-section {
+  background: linear-gradient(120deg, #1e3a5f 0%, #1a2742 100%);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+body.dark .slide-section {
+  background: linear-gradient(120deg, #0f2040 0%, #0a1428 100%);
+}
+.slide-section .slide-inner {
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.section-num {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #60a5fa;
+}
+.section-title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+.section-desc {
+  font-size: 0.95rem;
+  color: #93c5fd;
+  max-width: 500px;
+}
+
+/* ===== SLIDE HEADING ===== */
+.slide-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: -6px;
+}
+.slide-heading {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.25;
+  border-bottom: 3px solid var(--accent);
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+}
+.slide-subheading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+
+/* ===== TEXT ===== */
+p { font-size: 0.95rem; line-height: 1.65; color: var(--text); }
+.lead { font-size: 1.05rem; font-weight: 500; line-height: 1.6; }
+
+/* ===== BULLET LIST ===== */
+.bullets { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.bullets li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.93rem; line-height: 1.55; color: var(--text);
+}
+.bullets li::before {
+  content: "▸";
+  color: var(--accent);
+  font-size: 0.85rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.bullets.check li::before { content: "✓"; color: var(--accent2); font-weight: 700; }
+.bullets.numbered { counter-reset: item; }
+.bullets.numbered li::before {
+  counter-increment: item;
+  content: counter(item);
+  background: var(--accent);
+  color: #fff;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ===== CARDS GRID ===== */
+.cards { display: grid; gap: 12px; }
+.cards.g2 { grid-template-columns: 1fr 1fr; }
+.cards.g3 { grid-template-columns: 1fr 1fr 1fr; }
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.card-icon { font-size: 1.4rem; }
+.card-title { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+.card-body { font-size: 0.82rem; line-height: 1.5; color: var(--text-muted); }
+
+/* ===== TABLE ===== */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.styled-table th {
+  background: var(--accent);
+  color: #fff;
+  padding: 9px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+}
+.styled-table td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+}
+.styled-table tr:nth-child(even) td { background: var(--card-bg); }
+.styled-table td:first-child { font-weight: 600; color: var(--accent); }
+.styled-table td code {
+  background: var(--code-bg);
+  color: var(--accent3);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.82rem;
+}
+
+/* ===== CODE BLOCKS ===== */
+.code-window {
+  background: var(--code-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+.code-bar {
+  background: #0f172a;
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.code-dots { display: flex; gap: 5px; }
+.code-dot { width: 10px; height: 10px; border-radius: 50%; }
+.code-dot.red { background: #ef4444; }
+.code-dot.yellow { background: #f59e0b; }
+.code-dot.green { background: #22c55e; }
+.code-lang {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-left: auto;
+}
+pre {
+  margin: 0;
+  padding: 14px 18px;
+  overflow-x: auto;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--code-fg);
+}
+pre .kw { color: #7dd3fc; font-weight: 600; }
+pre .fn { color: #86efac; }
+pre .str { color: #fde68a; }
+pre .num { color: #f9a8d4; }
+pre .cm { color: #64748b; font-style: italic; }
+pre .inc { color: #c4b5fd; }
+pre .err-line { background: rgba(239,68,68,0.15); display: block; }
+
+.output-window {
+  background: var(--output-bg);
+  border-radius: 8px;
+  border: 1px solid #22c55e44;
+  overflow: hidden;
+}
+.output-bar {
+  background: #022c16;
+  padding: 6px 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #22c55e;
+  text-transform: uppercase;
+}
+.output-body {
+  padding: 10px 18px;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.88rem;
+  color: var(--output-fg);
+  line-height: 1.6;
+}
+
+/* Error output window */
+.error-window {
+  background: #1a0000;
+  border-radius: 8px;
+  border: 1px solid #ef444444;
+  overflow: hidden;
+}
+.error-bar {
+  background: #3b0000;
+  padding: 6px 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #ef4444;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.error-body {
+  padding: 10px 18px;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.84rem;
+  color: #fca5a5;
+  line-height: 1.6;
+}
+
+/* ===== HIGHLIGHT BOX ===== */
+.info-box {
+  background: var(--highlight);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.55;
+}
+.warn-box {
+  background: var(--warn-bg);
+  border-left: 4px solid var(--accent3);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.55;
+}
+.ok-box {
+  background: var(--ok-bg);
+  border-left: 4px solid var(--accent2);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.55;
+}
+
+/* ===== SPLIT LAYOUT ===== */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.split.s60 { grid-template-columns: 60fr 40fr; }
+.split.s40 { grid-template-columns: 40fr 60fr; }
+
+/* ===== FLOWCHART (inline SVG-style via HTML/CSS) ===== */
+.flowchart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 4px 0;
+}
+.fc-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.fc-box {
+  background: var(--highlight);
+  border: 2px solid var(--accent);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  min-width: 120px;
+}
+.fc-box.start, .fc-box.end {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  border-radius: 24px;
+  padding: 7px 22px;
+}
+body.dark .fc-box.start, body.dark .fc-box.end {
+  background: var(--accent);
+  color: #0f172a;
+}
+.fc-box.diamond {
+  background: var(--warn-bg);
+  border-color: var(--accent3);
+  transform: rotate(45deg);
+  width: 90px; height: 90px;
+  display: flex; align-items: center; justify-content: center;
+  min-width: unset;
+  padding: 0;
+}
+.fc-box.diamond span {
+  transform: rotate(-45deg);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.3;
+}
+.fc-box.process { border-color: var(--accent2); background: var(--ok-bg); }
+.fc-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 2px 0;
+}
+.fc-arrow-h { color: var(--text-muted); font-size: 1.3rem; }
+.fc-label {
+  font-size: 0.7rem;
+  color: var(--accent3);
+  font-weight: 700;
+  margin-top: -2px;
+}
+
+/* ===== STEP LIST ===== */
+.steps { display: flex; flex-direction: column; gap: 10px; }
+.step {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.step-num {
+  background: var(--accent);
+  color: #fff;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  font-size: 0.82rem;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-text { font-size: 0.88rem; line-height: 1.55; color: var(--text); }
+.step-text strong { color: var(--accent); }
+
+/* ===== KEY TERM ===== */
+.term { 
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.85em;
+}
+code { 
+  font-family: 'Cascadia Code','Fira Code','Consolas',monospace;
+  background: var(--code-bg);
+  color: var(--accent3);
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 0.88em;
+}
+
+/* ===== COMPARISON ===== */
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.compare-col {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+}
+.compare-header {
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.compare-col.bad .compare-header { background: #dc2626; color: #fff; }
+.compare-col.good .compare-header { background: var(--accent2); color: #fff; }
+.compare-body { padding: 12px 14px; background: var(--card-bg); }
+
+/* ===== MISTAKE SLIDE ===== */
+.mistake-block { display: flex; flex-direction: column; gap: 8px; }
+
+/* ===== EXERCISES ===== */
+.exercise-list { display: flex; flex-direction: column; gap: 8px; }
+.exercise-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.ex-num {
+  background: var(--accent3);
+  color: #fff;
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ex-text { font-size: 0.86rem; line-height: 1.5; color: var(--text); }
+
+/* ===== PROGRESS BAR ===== */
+#progress-bar {
+  position: fixed;
+  bottom: var(--footer-h);
+  left: 0;
+  height: 3px;
+  background: var(--accent);
+  transition: width 0.2s ease;
+  z-index: 99;
+}
+
+/* ===== UTILITY ===== */
+.mt { margin-top: 6px; }
+.mt2 { margin-top: 12px; }
+.small { font-size: 0.8rem; color: var(--text-muted); }
+.center { text-align: center; }
+strong { color: var(--accent); }
+em { color: var(--accent3); font-style: normal; font-weight: 600; }
+
+/* ===== PRINT / PDF ===== */
+@media print {
+  body { overflow: visible !important; height: auto !important; }
+  #main-header, #main-footer, #progress-bar { display: none !important; }
+  #slides-viewport {
+    position: static !important;
+    top: 0 !important; bottom: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  .slide {
+    display: flex !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 148mm !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    margin-bottom: 0 !important;
+  }
+  .slide-inner {
+    overflow: visible !important;
+    padding: 24px 30px !important;
+  }
+  .slide-title {
+    background: linear-gradient(135deg, #1a2742 0%, #1e3a6e 60%, #2563eb 100%) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .slide-section {
+    background: linear-gradient(120deg, #1e3a5f 0%, #1a2742 100%) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .slide { padding: 0; }
+  .slide-inner { padding: 22px 24px 16px; }
+  .title-main { font-size: 1.8rem; }
+}
+@media (max-width: 768px) {
+  :root { --header-h: 50px; --footer-h: 48px; }
+  .split, .split.s60, .split.s40, .compare { grid-template-columns: 1fr; }
+  .cards.g2, .cards.g3 { grid-template-columns: 1fr; }
+  .title-main { font-size: 1.5rem; }
+  .slide-heading { font-size: 1.2rem; }
+  #header-author { display: none; }
+  .slide-inner { padding: 16px 16px 12px; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="main-header">
+  <div id="header-left">Lecture #1: Introduction to Python</div>
+  <div id="header-center"></div>
+  <div id="header-right">
+    <span id="header-author">Created by Fawaz Alazemi</span>
+    <button id="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+  </div>
+</header>
+
+<!-- PROGRESS BAR -->
+<div id="progress-bar"></div>
+
+<!-- SLIDES VIEWPORT -->
+<div id="slides-viewport">
+
+  <!-- ====== SLIDE 1: TITLE ====== -->
+  <section class="slide slide-title active" id="slide-1">
+    <div class="slide-inner">
+      <div class="title-label">CS101 · Lecture 1</div>
+      <div class="title-main">Introduction to Python &amp; Your First Program</div>
+      <div class="title-sub">Learn what programming is, what Python is, and how to write and run your very first Python program.</div>
+      <div class="title-meta">Beginner-friendly · No prior experience required</div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 2: LEARNING OBJECTIVES ====== -->
+  <section class="slide" id="slide-2">
+    <div class="slide-inner">
+      <div class="slide-tag">Overview</div>
+      <div class="slide-heading">🎯 Learning Objectives</div>
+      <p class="small">By the end of this lecture, you will be able to:</p>
+      <ul class="bullets numbered" style="margin-top:4px;">
+        <li>Explain what <strong>programming</strong> is and why it is useful.</li>
+        <li>Describe what <strong>Python</strong> is and why it is good for beginners.</li>
+        <li>Identify the key parts of a simple Python program.</li>
+        <li>Write and run a <strong>basic Python program</strong>.</li>
+        <li>Use the <code>print()</code> function to display text and numbers.</li>
+        <li>Recognise and correct <strong>common beginner mistakes</strong>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 3: WHY THIS MATTERS ====== -->
+  <section class="slide" id="slide-3">
+    <div class="slide-inner">
+      <div class="slide-tag">Motivation</div>
+      <div class="slide-heading">💡 Why Does This Topic Matter?</div>
+      <div class="cards g3" style="margin-top:4px;">
+        <div class="card">
+          <div class="card-icon">🌐</div>
+          <div class="card-title">Web &amp; Apps</div>
+          <div class="card-body">Every app and website you use was written by a programmer.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🤖</div>
+          <div class="card-title">AI &amp; Data Science</div>
+          <div class="card-body">Python powers machine learning, data analysis, and automation.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔬</div>
+          <div class="card-title">Research</div>
+          <div class="card-body">Python is widely used in academic and scientific research.</div>
+        </div>
+      </div>
+      <div class="info-box mt2">
+        <strong>Python</strong> is one of the most popular programming languages in the world. It is designed to be <em>readable and simple</em> — the ideal first language for any beginner.
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 4: SECTION DIVIDER — What is Programming ====== -->
+  <section class="slide slide-section" id="slide-4">
+    <div class="slide-inner">
+      <div class="section-num">Section 01</div>
+      <div class="section-title">What Is Programming?</div>
+      <div class="section-desc">Understanding instructions, programs, and how computers think.</div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 5: WHAT IS A PROGRAM ====== -->
+  <section class="slide" id="slide-5">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 01</div>
+      <div class="slide-heading">What Is a Program?</div>
+      <div class="split s60">
+        <div>
+          <ul class="bullets" style="margin-top:4px;">
+            <li>A <strong>program</strong> is a set of instructions that tells a computer what to do.</li>
+            <li>Writing those instructions is called <strong>programming</strong> (or <strong>coding</strong>).</li>
+            <li>A computer does <em>exactly</em> what you tell it — nothing more, nothing less.</li>
+            <li>If your instructions have an error, the computer will <strong>not</strong> guess what you meant.</li>
+          </ul>
+          <div class="info-box mt2">
+            A program must be <strong>precise</strong>, <strong>ordered</strong>, and <strong>unambiguous</strong>.
+          </div>
+        </div>
+        <div>
+          <div class="cards" style="gap:10px;">
+            <div class="card">
+              <div class="card-icon">⚡</div>
+              <div class="card-title">Extremely Fast</div>
+              <div class="card-body">Computers execute billions of instructions per second.</div>
+            </div>
+            <div class="card">
+              <div class="card-icon">🔒</div>
+              <div class="card-title">Completely Literal</div>
+              <div class="card-body">It follows your exact instructions — errors cause failures.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 6: RECIPE ANALOGY ====== -->
+  <section class="slide" id="slide-6">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 01 · Analogy</div>
+      <div class="slide-heading">🍵 A Program Is Like a Recipe</div>
+      <p class="small">A recipe gives clear, ordered steps. A program works the same way.</p>
+      <div class="split mt" style="gap:18px; align-items:start;">
+        <div>
+          <div class="slide-subheading">Recipe: Making Tea</div>
+          <div class="steps" style="margin-top:6px;">
+            <div class="step"><div class="step-num">1</div><div class="step-text">Boil water.</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-text">Place a tea bag in a cup.</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-text">Pour hot water into the cup.</div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-text">Wait three minutes.</div></div>
+            <div class="step"><div class="step-num">5</div><div class="step-text">Remove the tea bag.</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading">Key Idea</div>
+          <div class="info-box" style="margin-top:6px;">Each step is <strong>clear</strong>, <strong>ordered</strong>, and <strong>unambiguous</strong>. A recipe does not say "do something with water." It gives exact instructions.</div>
+          <div class="ok-box mt2"><strong>A program:</strong> Each instruction must be precise and written in the correct order — just like a recipe.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 7: KEY TERMS ====== -->
+  <section class="slide" id="slide-7">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 01 · Key Terms</div>
+      <div class="slide-heading">📖 Key Terms to Know</div>
+      <table class="styled-table" style="margin-top:8px;">
+        <thead>
+          <tr><th>Term</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Program</td><td>A list of instructions for a computer to follow</td></tr>
+          <tr><td>Programming</td><td>The act of writing a program</td></tr>
+          <tr><td>Programmer</td><td>A person who writes programs</td></tr>
+        </tbody>
+      </table>
+      <div class="info-box mt2">
+        These terms are used every day in software development. Make sure you understand each one clearly.
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 8: SECTION DIVIDER — What is Python ====== -->
+  <section class="slide slide-section" id="slide-8">
+    <div class="slide-inner">
+      <div class="section-num">Section 02</div>
+      <div class="section-title">What Is Python?</div>
+      <div class="section-desc">A programming language designed to be readable and beginner-friendly.</div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 9: WHAT IS PYTHON ====== -->
+  <section class="slide" id="slide-9">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 02</div>
+      <div class="slide-heading">🐍 What Is Python?</div>
+      <div class="split s60">
+        <div>
+          <ul class="bullets" style="margin-top:4px;">
+            <li><strong>Python</strong><div> is a <em>programming language</em> — a formal system of words and symbols to write instructions for a computer.</div></li>
+            <li>Created by <strong>Guido van Rossum</strong>, first released in <em>1991</em>.</li>
+            <li>Designed with one important goal: <strong>easy to read and write</strong>.</li>
+            <li>Free and available on <strong>all major operating systems</strong>.</li>
+          </ul>
+        </div>
+        <div class="cards" style="gap:10px;">
+          <div class="card">
+            <div class="card-icon">📖</div>
+            <div class="card-title">Readable</div>
+            <div class="card-body">Python code looks similar to plain English.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">🏭</div>
+            <div class="card-title">Professional</div>
+            <div class="card-body">Used in industry: web, AI, data science, automation.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 10: WHY PYTHON FOR BEGINNERS ====== -->
+  <section class="slide" id="slide-10">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 02</div>
+      <div class="slide-heading">✅ Why Python Is Good for Beginners</div>
+      <ul class="bullets check" style="margin-top:8px;">
+        <li>Python code looks similar to <strong>plain English</strong> — easier to understand.</li>
+        <li>Python has a <strong>simple and consistent</strong> structure.</li>
+        <li>Python is <strong>free</strong> and runs on Windows, Mac, and Linux.</li>
+        <li>Python is used <strong>professionally</strong> in many industries — real value after learning.</li>
+        <li>A large <strong>community</strong> means lots of tutorials, help, and libraries.</li>
+      </ul>
+      <div class="info-box mt2">
+        Many universities, companies, and researchers choose Python as their primary tool. Learning Python opens real career opportunities.
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 11: C++ vs PYTHON COMPARISON ====== -->
+  <section class="slide" id="slide-11">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 02 · Comparison</div>
+      <div class="slide-heading">⚖️ Python vs C++: Same Task, Different Effort</div>
+      <p class="small">Displaying "Hello, world!" — the classic first program.</p>
+      <div class="compare mt">
+        <div class="compare-col bad">
+          <div class="compare-header">❌ C++ (Complex)</div>
+          <div class="compare-body">
+            <div class="code-window">
+              <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">C++</span></div>
+              <pre><span class="inc">#include &lt;iostream&gt;</span>
+<span class="kw">int</span> <span class="fn">main</span>() {
+    std::cout &lt;&lt; <span class="str">"Hello, world!"</span>
+              &lt;&lt; std::endl;
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+            </div>
+            <p class="small mt" style="color:#ef4444;">6 lines · Many symbols · Hard to read</p>
+          </div>
+        </div>
+        <div class="compare-col good">
+          <div class="compare-header">✅ Python (Simple)</div>
+          <div class="compare-body">
+            <div class="code-window">
+              <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">Python</span></div>
+              <pre><span class="fn">print</span>(<span class="str">"Hello, world!"</span>)</pre>
+            </div>
+            <p class="small mt" style="color:#22c55e;">1 line · Clear · Easy for beginners</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 12: SECTION DIVIDER — Key Concepts ====== -->
+  <section class="slide slide-section" id="slide-12">
+    <div class="slide-inner">
+      <div class="section-num">Section 03</div>
+      <div class="section-title">Key Concepts</div>
+      <div class="section-desc">Source Code · Output · Syntax</div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 13: SOURCE CODE, OUTPUT, SYNTAX ====== -->
+  <section class="slide" id="slide-13">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 03</div>
+      <div class="slide-heading">📚 Three Core Concepts</div>
+      <div class="cards g3" style="margin-top:6px;">
+        <div class="card">
+          <div class="card-icon">✍️</div>
+          <div class="card-title">Source Code</div>
+          <div class="card-body">The text you write — your instructions in the programming language. <em>Like: the recipe written on paper.</em></div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🖥️</div>
+          <div class="card-title">Output</div>
+          <div class="card-body">What the computer shows you after running the program. <em>Like: the finished dish.</em></div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📐</div>
+          <div class="card-title">Syntax</div>
+          <div class="card-body">The rules of the language — how instructions must be written so the computer understands them.</div>
+        </div>
+      </div>
+      <div class="info-box mt2">
+        If you break a <strong>syntax rule</strong>, Python will display an error and will <em>not</em> run your program.
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 14: SYNTAX ANALOGY ====== -->
+  <section class="slide" id="slide-14">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 03 · Analogy</div>
+      <div class="slide-heading">📐 Understanding Syntax</div>
+      <div class="split">
+        <div>
+          <div class="slide-subheading">English Syntax</div>
+          <div class="ok-box" style="margin-top:6px;">
+            ✅ <strong>Correct:</strong> "The cat sat on the mat."<br>
+            <span class="small">Words in the right order — makes sense.</span>
+          </div>
+          <div class="warn-box mt">
+            ❌ <strong>Wrong:</strong> "sat cat the mat on the"<br>
+            <span class="small">Same words, wrong order — does not make sense.</span>
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading">Python Syntax</div>
+          <div class="ok-box" style="margin-top:6px;">
+            ✅ <strong>Correct:</strong><br>
+            <code>print("Hello")</code>
+          </div>
+          <div class="warn-box mt">
+            ❌ <strong>Wrong:</strong><br>
+            <code>Print "Hello"</code><br>
+            <span class="small">Missing parentheses — Python cannot understand this.</span>
+          </div>
+        </div>
+      </div>
+      <div class="info-box mt2">Python has its own rules. You must follow them exactly, or the program will <strong>not run</strong>.</div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 15: SECTION DIVIDER — First Program ====== -->
+  <section class="slide slide-section" id="slide-15">
+    <div class="slide-inner">
+      <div class="section-num">Section 04</div>
+      <div class="section-title">Writing Your First Program</div>
+      <div class="section-desc">Using the <code style="color:#93c5fd;background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:4px;">print()</code> function to display output</div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 16: THE PRINT FUNCTION ====== -->
+  <section class="slide" id="slide-16">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 04</div>
+      <div class="slide-heading">The <code>print()</code> Function</div>
+      <div class="split s60">
+        <div>
+          <ul class="bullets" style="margin-top:4px;">
+            <li>The most fundamental action in Python: <strong>displaying information on screen</strong>.</li>
+            <li>A <strong>function</strong> is a named instruction that performs a specific task.</li>
+            <li><div><code>print()</code> is a <em>built-in</em> Python function — it is already available for you to use.</div></li>
+          </ul>
+          <div class="slide-subheading mt2">Syntax</div>
+          <div class="code-window" style="margin-top:6px;">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">Python</span></div>
+            <pre><span class="fn">print</span>(something)</pre>
+          </div>
+        </div>
+        <div>
+          <div class="cards" style="gap:8px;margin-top:4px;">
+            <div class="card">
+              <div class="card-title"><code>print</code></div>
+              <div class="card-body">The name of the function. Always <strong>lowercase</strong>.</div>
+            </div>
+            <div class="card">
+              <div class="card-title"><code>( )</code></div>
+              <div class="card-body">Parentheses tell Python you are calling this function. <strong>Always required.</strong></div>
+            </div>
+            <div class="card">
+              <div class="card-title">something</div>
+              <div class="card-body">The value you want to display goes inside the parentheses.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 17: DISPLAYING TEXT ====== -->
+  <section class="slide" id="slide-17">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 04 · Example 1</div>
+      <div class="slide-heading">Displaying Text (Strings)</div>
+      <div class="split s60">
+        <div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">Python</span></div>
+            <pre><span class="fn">print</span>(<span class="str">"Hello, world!"</span>)</pre>
+          </div>
+          <div class="output-window mt">
+            <div class="output-bar">▶ Output</div>
+            <div class="output-body">Hello, world!</div>
+          </div>
+          <div class="ok-box mt">
+            🔑 <strong>Key rule:</strong> Text must be enclosed in quotation marks — these are called <strong>strings</strong>.
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading">How it works</div>
+          <div class="steps" style="margin-top:6px;">
+            <div class="step"><div class="step-num">1</div><div class="step-text"><code>print</code> — name of the function</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-text"><code>()</code> — tells Python to call the function</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-text"><code>"Hello, world!"</code> — the <strong>string</strong> to display</div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-text">Python displays the text on screen</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 18: DISPLAYING NUMBERS ====== -->
+  <section class="slide" id="slide-18">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 04 · Example 2</div>
+      <div class="slide-heading">Displaying Numbers</div>
+      <div class="split">
+        <div>
+          <div class="slide-subheading">Integers (whole numbers)</div>
+          <div class="code-window" style="margin-top:6px;">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">Python</span></div>
+            <pre><span class="fn">print</span>(<span class="num">42</span>)</pre>
+          </div>
+          <div class="output-window mt" style="margin-top:4px;">
+            <div class="output-bar">▶ Output</div>
+            <div class="output-body">42</div>
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading">Floats (decimal numbers)</div>
+          <div class="code-window" style="margin-top:6px;">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">Python</span></div>
+            <pre><span class="fn">print</span>(<span class="num">3.14</span>)</pre>
+          </div>
+          <div class="output-window mt" style="margin-top:4px;">
+            <div class="output-bar">▶ Output</div>
+            <div class="output-body">3.14</div>
+          </div>
+        </div>
+      </div>
+      <div class="warn-box mt2">
+        ⚠️ Numbers do <strong>NOT</strong> use quotation marks. <code>42</code> is a number. <code>"42"</code> is text — they behave differently!
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 19: HOW PYTHON RUNS YOUR PROGRAM (FLOWCHART) ====== -->
+  <section class="slide" id="slide-19">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 04 · How It Works</div>
+      <div class="slide-heading">🔄 How Python Runs Your Program</div>
+      <div style="display:flex;gap:20px;align-items:flex-start;margin-top:8px;">
+        <div style="flex:1;">
+          <div class="flowchart">
+            <div class="fc-row"><div class="fc-box start">▶ Start Program</div></div>
+            <div class="fc-arrow">↓</div>
+            <div class="fc-row"><div class="fc-box process">Read Line 1 (top)</div></div>
+            <div class="fc-arrow">↓</div>
+            <div class="fc-row"><div class="fc-box">Execute Instruction</div></div>
+            <div class="fc-arrow">↓</div>
+            <div class="fc-row"><div class="fc-box process">Display Output</div></div>
+            <div class="fc-arrow">↓</div>
+            <div class="fc-row">
+              <div class="fc-box diamond"><span>More<br>lines?</span></div>
+            </div>
+            <div class="fc-row" style="gap:40px;margin-top:4px;">
+              <div style="display:flex;flex-direction:column;align-items:center;">
+                <div class="fc-label">YES</div>
+                <div class="fc-arrow-h">↙</div>
+                <div class="fc-box process" style="font-size:0.75rem;">Next Line</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;">
+                <div class="fc-label">NO</div>
+                <div class="fc-arrow-h">↘</div>
+                <div class="fc-box end" style="font-size:0.75rem;">■ End</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;">
+          <div class="info-box" style="margin-top:4px;">
+            Python reads your program from <strong>top to bottom</strong>, one line at a time.
+          </div>
+          <div class="code-window mt2">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">Python</span></div>
+            <pre><span class="fn">print</span>(<span class="str">"Welcome to Python."</span>)
+<span class="fn">print</span>(<span class="str">"This is my first program."</span>)
+<span class="fn">print</span>(<span class="str">"Programming is useful."</span>)</pre>
+          </div>
+          <div class="output-window mt" style="margin-top:6px;">
+            <div class="output-bar">▶ Output</div>
+            <div class="output-body">Welcome to Python.<br>This is my first program.<br>Programming is useful.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 20: TEXT AND NUMBERS TOGETHER ====== -->
+  <section class="slide" id="slide-20">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 04 · Example 4</div>
+      <div class="slide-heading">Displaying Text and Numbers Together</div>
+      <div class="split s60">
+        <div>
+          <div class="code-window" style="margin-top:4px;">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">Python</span></div>
+            <pre><span class="fn">print</span>(<span class="str">"My age is"</span>, <span class="num">21</span>)</pre>
+          </div>
+          <div class="output-window" style="margin-top:6px;">
+            <div class="output-bar">▶ Output</div>
+            <div class="output-body">My age is 21</div>
+          </div>
+          <div class="info-box mt2">
+            The <strong>comma</strong> inside <code>print()</code> tells Python to display both items in sequence, separated by a <em>space</em>.
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading">Breaking it down</div>
+          <div class="steps" style="margin-top:6px;">
+            <div class="step"><div class="step-num">1</div><div class="step-text"><code>"My age is"</code> → a <strong>string</strong> (text in quotes)</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-text"><code>,</code> → separator — Python adds a space between items</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-text"><code>21</code> → an <strong>integer</strong> (number, no quotes)</div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-text">Result: both displayed on <strong>one line</strong></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 21: SECTION DIVIDER — Common Mistakes ====== -->
+  <section class="slide slide-section" id="slide-21">
+    <div class="slide-inner">
+      <div class="section-num">Section 05</div>
+      <div class="section-title">Common Mistakes</div>
+      <div class="section-desc">The most frequent beginner errors — and how to fix them.</div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 22: MISTAKE 1 & 2 ====== -->
+  <section class="slide" id="slide-22">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 05 · Mistakes 1 &amp; 2</div>
+      <div class="slide-heading">⚠️ Missing Quotes &amp; Missing Parentheses</div>
+      <div class="split">
+        <div class="mistake-block">
+          <div class="slide-subheading">Mistake 1: No quotes around text</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">Python</span></div>
+            <pre><span class="cm"># ❌ Wrong</span>
+<span class="fn">print</span>(Hello)</pre>
+          </div>
+          <div class="error-window" style="margin-top:4px;">
+            <div class="error-bar">✖ Error</div>
+            <div class="error-body">NameError: name 'Hello' is not defined</div>
+          </div>
+          <div class="ok-box" style="margin-top:4px;">
+            <div class="code-window"><div class="code-bar"><div class="code-dots"><span class="code-dot green"></span></div></div><pre><span class="fn">print</span>(<span class="str">"Hello"</span>)  <span class="cm"># ✅ Correct</span></pre></div>
+          </div>
+        </div>
+        <div class="mistake-block">
+          <div class="slide-subheading">Mistake 2: No parentheses</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">Python</span></div>
+            <pre><span class="cm"># ❌ Wrong</span>
+<span class="fn">print</span> <span class="str">"Hello"</span></pre>
+          </div>
+          <div class="error-window" style="margin-top:4px;">
+            <div class="error-bar">✖ Error</div>
+            <div class="error-body">SyntaxError: Missing parentheses in call to 'print'</div>
+          </div>
+          <div class="ok-box" style="margin-top:4px;">
+            <div class="code-window"><div class="code-bar"><div class="code-dots"><span class="code-dot green"></span></div></div><pre><span class="fn">print</span>(<span class="str">"Hello"</span>)  <span class="cm"># ✅ Correct</span></pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 23: MISTAKE 3 & 4 ====== -->
+  <section class="slide" id="slide-23">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 05 · Mistakes 3 &amp; 4</div>
+      <div class="slide-heading">⚠️ Mismatched Quotes &amp; Wrong Capitalisation</div>
+      <div class="split">
+        <div class="mistake-block">
+          <div class="slide-subheading">Mistake 3: Mismatched quotes</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">Python</span></div>
+            <pre><span class="cm"># ❌ Wrong</span>
+<span class="fn">print</span>(<span class="str">"Hello'</span>)</pre>
+          </div>
+          <div class="error-window" style="margin-top:4px;">
+            <div class="error-bar">✖ Error</div>
+            <div class="error-body">SyntaxError: EOL while scanning string literal</div>
+          </div>
+          <div class="ok-box" style="margin-top:4px;font-size:0.82rem;">Use matching quotes: <code>"Hello"</code> or <code>'Hello'</code></div>
+        </div>
+        <div class="mistake-block">
+          <div class="slide-subheading">Mistake 4: Capital P in Print</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">Python</span></div>
+            <pre><span class="cm"># ❌ Wrong</span>
+Print(<span class="str">"Hello"</span>)</pre>
+          </div>
+          <div class="error-window" style="margin-top:4px;">
+            <div class="error-bar">✖ Error</div>
+            <div class="error-body">NameError: name 'Print' is not defined</div>
+          </div>
+          <div class="ok-box" style="margin-top:4px;">Python is <strong>case-sensitive</strong>. Always use lowercase: <code>print</code></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 24: MISTAKE 5 — NUMBERS IN QUOTES ====== -->
+  <section class="slide" id="slide-24">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 05 · Mistake 5</div>
+      <div class="slide-heading">⚠️ Numbers in Quotes vs. Real Numbers</div>
+      <div class="split s40">
+        <div class="mistake-block">
+          <div class="compare">
+            <div class="compare-col bad">
+              <div class="compare-header">❌ Numbers as Text</div>
+              <div class="compare-body">
+                <div class="code-window">
+                  <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span></div></div>
+                  <pre><span class="fn">print</span>(<span class="str">"5"</span> + <span class="str">"3"</span>)</pre>
+                </div>
+                <div class="output-window" style="margin-top:4px;">
+                  <div class="output-bar">▶ Output</div>
+                  <div class="output-body">53</div>
+                </div>
+                <p class="small mt" style="color:#ef4444;">Joins the text — this is called <strong>concatenation</strong>!</p>
+              </div>
+            </div>
+            <div class="compare-col good">
+              <div class="compare-header">✅ Real Numbers</div>
+              <div class="compare-body">
+                <div class="code-window">
+                  <div class="code-bar"><div class="code-dots"><span class="code-dot green"></span></div></div>
+                  <pre><span class="fn">print</span>(<span class="num">5</span> + <span class="num">3</span>)</pre>
+                </div>
+                <div class="output-window" style="margin-top:4px;">
+                  <div class="output-bar">▶ Output</div>
+                  <div class="output-body">8</div>
+                </div>
+                <p class="small mt" style="color:#22c55e;">Adds the numbers — correct math!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="info-box" style="margin-top:0;">
+            <strong>Rule:</strong> Numbers in quotation marks are treated as <em>text</em>, not as numbers.<br><br>
+            If you want to do <strong>math</strong>, do <strong>NOT</strong> put numbers in quotes.
+          </div>
+          <div class="cards" style="gap:8px;margin-top:10px;">
+            <div class="card">
+              <div class="card-title">String</div>
+              <div class="card-body"><code>"5"</code> + <code>"3"</code> = <code>"53"</code> (joined text)</div>
+            </div>
+            <div class="card">
+              <div class="card-title">Integer</div>
+              <div class="card-body"><code>5</code> + <code>3</code> = <code>8</code> (real math)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 25: MISTAKES SUMMARY TABLE ====== -->
+  <section class="slide" id="slide-25">
+    <div class="slide-inner">
+      <div class="slide-tag">Section 05 · Summary</div>
+      <div class="slide-heading">🗒️ Common Mistakes — Quick Reference</div>
+      <table class="styled-table" style="margin-top:8px;">
+        <thead>
+          <tr><th>Mistake</th><th>Example (Wrong)</th><th>Fix</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>No quotes around text</td><td><code>print(Hello)</code></td><td>Add quotes: <code>print("Hello")</code></td></tr>
+          <tr><td>No parentheses</td><td><code>print "Hello"</code></td><td>Add parentheses: <code>print("Hello")</code></td></tr>
+          <tr><td>Mismatched quotes</td><td><code>print("Hello')</code></td><td>Match: <code>print("Hello")</code></td></tr>
+          <tr><td>Capital Print</td><td><code>Print("Hello")</code></td><td>Lowercase: <code>print("Hello")</code></td></tr>
+          <tr><td>Number in quotes</td><td><code>print("5" + "3")</code></td><td>No quotes: <code>print(5 + 3)</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 26: SECTION DIVIDER — Summary ====== -->
+  <section class="slide slide-section" id="slide-26">
+    <div class="slide-inner">
+      <div class="section-num">Section 06</div>
+      <div class="section-title">Summary &amp; Key Rules</div>
+      <div class="section-desc">What you have learned in this lecture.</div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 27: SUMMARY TABLE ====== -->
+  <section class="slide" id="slide-27">
+    <div class="slide-inner">
+      <div class="slide-tag">Summary</div>
+      <div class="slide-heading">📋 Concepts at a Glance</div>
+      <table class="styled-table" style="margin-top:8px;">
+        <thead>
+          <tr><th>Concept</th><th>Key Point</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Program</td><td>A set of instructions for a computer</td></tr>
+          <tr><td>Python</td><td>A beginner-friendly programming language</td></tr>
+          <tr><td>Source Code</td><td>The text of a program, written by the programmer</td></tr>
+          <tr><td>Output</td><td>The result displayed after a program runs</td></tr>
+          <tr><td>Syntax</td><td>The rules for writing correct code</td></tr>
+          <tr><td><code>print()</code></td><td>A function that displays output on the screen</td></tr>
+          <tr><td>String</td><td>Text enclosed in quotation marks: <code>"like this"</code></td></tr>
+          <tr><td>Integer</td><td>A whole number, written without quotation marks: <code>42</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 28: CORE RULES ====== -->
+  <section class="slide" id="slide-28">
+    <div class="slide-inner">
+      <div class="slide-tag">Summary</div>
+      <div class="slide-heading">✅ Core Rules to Remember</div>
+      <ul class="bullets check" style="margin-top:8px;">
+        <li>Text <strong>(strings)</strong> must be enclosed in quotation marks: <code>"like this"</code> or <code>'like this'</code>.</li>
+        <li>Numbers do <strong>NOT</strong> use quotation marks: <code>42</code> or <code>3.14</code>.</li>
+        <li><code>print</code> must always be written in <strong>lowercase</strong>.</li>
+        <li>Always include <strong>parentheses</strong> after <code>print</code>: <code>print()</code>.</li>
+        <li>Python runs your program <strong>from top to bottom</strong>, one line at a time.</li>
+      </ul>
+      <div class="info-box mt2">
+        These five rules will help you avoid the most common beginner mistakes. Return to them whenever you are unsure.
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 29: SECTION DIVIDER — Exercises ====== -->
+  <section class="slide slide-section" id="slide-29">
+    <div class="slide-inner">
+      <div class="section-num">Section 07</div>
+      <div class="section-title">Practice Exercises</div>
+      <div class="section-desc">Sections A through E — Understanding, Tracing, Writing, Fixing, and Challenging tasks.</div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 30: SECTION A — UNDERSTANDING ====== -->
+  <section class="slide" id="slide-30">
+    <div class="slide-inner">
+      <div class="slide-tag">Exercises · Section A</div>
+      <div class="slide-heading">💭 Section A — Understanding Questions</div>
+      <div class="exercise-list" style="margin-top:8px;">
+        <div class="exercise-item"><div class="ex-num">1</div><div class="ex-text">In your own words, explain what a <strong>program</strong> is. Use the recipe analogy or create your own.</div></div>
+        <div class="exercise-item"><div class="ex-num">2</div><div class="ex-text">What is the difference between <strong>source code</strong> and <strong>output</strong>? Give one example of each.</div></div>
+        <div class="exercise-item"><div class="ex-num">3</div><div class="ex-text">Why does Python require <strong>quotation marks</strong> around text? What happens if you forget them?</div></div>
+        <div class="exercise-item"><div class="ex-num">4</div><div class="ex-text">What does it mean to say Python is <strong>case-sensitive</strong>? Give one example.</div></div>
+        <div class="exercise-item"><div class="ex-num">5</div><div class="ex-text">What is <strong>syntax</strong>? Why is correct syntax important when writing a program?</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 31: SECTION B — CODE TRACING ====== -->
+  <section class="slide" id="slide-31">
+    <div class="slide-inner">
+      <div class="slide-tag">Exercises · Section B</div>
+      <div class="slide-heading">🔍 Section B — Code Tracing</div>
+      <p class="small">Predict the output before running the code. Then check your answer.</p>
+      <div class="cards g2" style="margin-top:8px;">
+        <div class="card">
+          <div class="card-title">Exercise 6</div>
+          <div class="code-window" style="margin-top:4px;">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div></div>
+            <pre style="font-size:0.78rem;"><span class="fn">print</span>(<span class="str">"Good morning."</span>)
+<span class="fn">print</span>(<span class="str">"Today is a great day."</span>)
+<span class="fn">print</span>(<span class="str">"Let us begin."</span>)</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Exercise 7</div>
+          <div class="code-window" style="margin-top:4px;">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div></div>
+            <pre style="font-size:0.78rem;"><span class="fn">print</span>(<span class="num">100</span>)
+<span class="fn">print</span>(<span class="num">3.5</span>)
+<span class="fn">print</span>(<span class="num">0</span>)</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Exercise 8</div>
+          <div class="code-window" style="margin-top:4px;">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div></div>
+            <pre style="font-size:0.78rem;"><span class="fn">print</span>(<span class="str">"The answer is"</span>, <span class="num">42</span>)
+<span class="fn">print</span>(<span class="str">"Pi is"</span>, <span class="num">3.14159</span>)</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Exercise 9 — Predict first!</div>
+          <div class="code-window" style="margin-top:4px;">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div></div>
+            <pre style="font-size:0.78rem;"><span class="fn">print</span>(<span class="str">"10"</span> + <span class="str">"20"</span>)</pre>
+          </div>
+          <div class="warn-box" style="margin-top:6px;font-size:0.78rem;">What do you think the output will be? Why?</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 32: SECTION C — CODE WRITING ====== -->
+  <section class="slide" id="slide-32">
+    <div class="slide-inner">
+      <div class="slide-tag">Exercises · Section C</div>
+      <div class="slide-heading">✍️ Section C — Code Writing</div>
+      <p class="small">Write Python programs for the following tasks.</p>
+      <div class="exercise-list" style="margin-top:8px;">
+        <div class="exercise-item"><div class="ex-num">10</div><div class="ex-text">Write a program that displays exactly: <code>Hello, world!</code> / <code>Welcome to Python.</code> / <code>I am ready to learn.</code> — each on a separate line.</div></div>
+        <div class="exercise-item"><div class="ex-num">11</div><div class="ex-text">Write a program that displays your <strong>full name</strong>, your <strong>age</strong>, and the name of your <strong>university</strong> — each on a separate line.</div></div>
+        <div class="exercise-item"><div class="ex-num">12</div><div class="ex-text">Use a <strong>string and a number</strong> in a single <code>print()</code> to display: <em>There are 7 days in a week.</em></div></div>
+        <div class="exercise-item"><div class="ex-num">13</div><div class="ex-text">Display the results of: <code>15 + 7</code>, <code>100 - 45</code>, and <code>6 * 8</code> — one <code>print()</code> for each.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 33: SECTION D — CODE FIXING ====== -->
+  <section class="slide" id="slide-33">
+    <div class="slide-inner">
+      <div class="slide-tag">Exercises · Section D</div>
+      <div class="slide-heading">🔧 Section D — Fix the Errors</div>
+      <p class="small">Each program below has an error. Find it, explain it, and write the corrected version.</p>
+      <div class="cards g2" style="margin-top:8px;">
+        <div class="card">
+          <div class="card-title">Exercise 14</div>
+          <div class="code-window" style="margin-top:4px;"><div class="code-bar"><div class="code-dots"><span class="code-dot red"></span></div></div><pre style="font-size:0.78rem;"><span class="fn">print</span>(Hello, world!)</pre></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Exercise 15</div>
+          <div class="code-window" style="margin-top:4px;"><div class="code-bar"><div class="code-dots"><span class="code-dot red"></span></div></div><pre style="font-size:0.78rem;">Print(<span class="str">"Welcome to Python."</span>)</pre></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Exercise 16</div>
+          <div class="code-window" style="margin-top:4px;"><div class="code-bar"><div class="code-dots"><span class="code-dot red"></span></div></div><pre style="font-size:0.78rem;"><span class="fn">print</span>(<span class="str">"My favourite number is"</span> <span class="num">7</span>)</pre></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Exercise 17</div>
+          <div class="code-window" style="margin-top:4px;"><div class="code-bar"><div class="code-dots"><span class="code-dot red"></span></div></div><pre style="font-size:0.78rem;"><span class="fn">print</span>(<span class="str">'Python is easy to learn."</span>)</pre></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 34: EXERCISE 18 & SECTION E ====== -->
+  <section class="slide" id="slide-34">
+    <div class="slide-inner">
+      <div class="slide-tag">Exercises · D &amp; E</div>
+      <div class="slide-heading">🧩 Exercise 18 &amp; Section E — Challenging</div>
+      <div class="split">
+        <div>
+          <div class="slide-subheading">Exercise 18 — Find the hidden error</div>
+          <p class="small" style="margin-top:4px;">This program produces an error. Find and fix it.</p>
+          <div class="code-window" style="margin-top:6px;">
+            <div class="code-bar"><div class="code-dots"><span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span></div><span class="code-lang">Python</span></div>
+            <pre><span class="fn">print</span>(<span class="str">"Line one."</span>)
+<span class="fn">print</span>(<span class="str">"Line two."</span>
+<span class="fn">print</span>(<span class="str">"Line three."</span>)</pre>
+          </div>
+          <div class="warn-box mt">Hint: Look very carefully at <strong>Line 2</strong>.</div>
+        </div>
+        <div>
+          <div class="slide-subheading">Exercises 19 &amp; 20</div>
+          <div class="exercise-list" style="margin-top:6px;">
+            <div class="exercise-item">
+              <div class="ex-num">19</div>
+              <div class="ex-text">
+                Predict the output of:<br>
+                <code>print("1" + "2" + "3")</code><br>
+                <code>print(1 + 2 + 3)</code><br>
+                <span class="small">Explain any difference.</span>
+              </div>
+            </div>
+            <div class="exercise-item">
+              <div class="ex-num">20</div>
+              <div class="ex-text">Write a program with <strong>at least 5</strong> <code>print()</code> statements that introduces yourself: name, age, country, field of study, and why you want to learn programming. Use a mix of text and text-with-number statements.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SLIDE 35: CLOSING ====== -->
+  <section class="slide slide-title" id="slide-35">
+    <div class="slide-inner">
+      <div class="title-label">End of Lecture 1</div>
+      <div class="title-main">Well Done! 🎉</div>
+      <div class="title-sub">You have taken your first step into programming. Practice the exercises and you will be ready for Lecture 2.</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:12px;">
+        <div style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:10px 20px;color:#bfdbfe;font-size:0.84rem;text-align:center;">
+          <div style="font-size:1.3rem;margin-bottom:4px;">📝</div>
+          <div style="font-weight:700;color:#fff;">Practice</div>
+          <div>Complete Exercises A–E</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:10px 20px;color:#bfdbfe;font-size:0.84rem;text-align:center;">
+          <div style="font-size:1.3rem;margin-bottom:4px;">🔁</div>
+          <div style="font-weight:700;color:#fff;">Review</div>
+          <div>Re-read Core Rules</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:10px 20px;color:#bfdbfe;font-size:0.84rem;text-align:center;">
+          <div style="font-size:1.3rem;margin-bottom:4px;">💻</div>
+          <div style="font-weight:700;color:#fff;">Experiment</div>
+          <div>Try your own print() ideas</div>
+        </div>
+      </div>
+      <div class="title-meta" style="margin-top:14px;">Lecture #1 · Introduction to Python · Created by Fawaz Alazemi</div>
+    </div>
+  </section>
+
+</div><!-- end slides-viewport -->
+
+<!-- FOOTER -->
+<footer id="main-footer">
+  <div id="footer-left">
+    <button id="pdf-btn" onclick="exportPDF()">⬇ Export PDF</button>
+  </div>
+  <div id="footer-center">
+    <button class="nav-btn" id="prev-btn" onclick="navigate(-1)" title="Previous slide">&#8592;</button>
+    <span id="slide-counter">1 / 35</span>
+    <button class="nav-btn" id="next-btn" onclick="navigate(1)" title="Next slide">&#8594;</button>
+  </div>
+  <div id="footer-right"></div>
+</footer>
+
+<script>
+  const TOTAL = 35;
+  let current = 1;
+  let isDark = false;
+
+  function showSlide(n) {
+    if (n < 1) n = 1;
+    if (n > TOTAL) n = TOTAL;
+    document.getElementById('slide-' + current).classList.remove('active');
+    current = n;
+    const s = document.getElementById('slide-' + current);
+    s.classList.add('active');
+    // Reset scroll
+    const inner = s.querySelector('.slide-inner');
+    if (inner) inner.scrollTop = 0;
+    // Update counter
+    document.getElementById('slide-counter').textContent = current + ' / ' + TOTAL;
+    // Update buttons
+    document.getElementById('prev-btn').disabled = current === 1;
+    document.getElementById('next-btn').disabled = current === TOTAL;
+    // Update progress bar
+    const pct = ((current - 1) / (TOTAL - 1)) * 100;
+    document.getElementById('progress-bar').style.width = pct + '%';
+  }
+
+  function navigate(dir) { showSlide(current + dir); }
+
+  function toggleTheme() {
+    isDark = !isDark;
+    document.body.classList.toggle('dark', isDark);
+    document.getElementById('theme-btn').textContent = isDark ? '☀ Light' : '🌙 Dark';
+  }
+
+  function exportPDF() {
+    window.print();
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown') navigate(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') navigate(-1);
+    if (e.key === 'Home') showSlide(1);
+    if (e.key === 'End') showSlide(TOTAL);
+  });
+
+  // Touch swipe support
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e) {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+      if (dx < 0) navigate(1); else navigate(-1);
+    }
+  }, { passive: true });
+
+  // Init
+  showSlide(1);
+</script>
+</body>
+</html>
