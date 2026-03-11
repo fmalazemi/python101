@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lecture 2: Variables, Basic Data Types, and User Input</title>
+<style>
+/* ============================================================
+   CSS VARIABLES & THEME
+   ============================================================ */
+:root {
+  --bg-page: #eef2f7;
+  --bg-slide: #ffffff;
+  --bg-header: #0f2a5e;
+  --bg-footer: #0f2a5e;
+  --accent-blue: #1a56cc;
+  --accent-blue-light: #3b7de8;
+  --accent-green: #16a34a;
+  --accent-orange: #d97706;
+  --accent-red: #dc2626;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-header: #ffffff;
+  --border: #d1dce8;
+  --bg-code: #1e2433;
+  --bg-output: #0d1a0d;
+  --bg-error: #1f0707;
+  --bg-info: #eff6ff;
+  --bg-warn: #fffbeb;
+  --bg-ok: #f0fdf4;
+  --border-info: #93c5fd;
+  --border-warn: #fcd34d;
+  --border-ok: #86efac;
+  --slide-w: 960px;
+  --slide-h: 540px;
+  --header-h: 52px;
+  --footer-h: 56px;
+  --progress-h: 4px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
+  --radius: 10px;
+  --shadow: 0 8px 32px rgba(15,42,94,0.13);
+}
+[data-theme="dark"] {
+  --bg-page: #111827;
+  --bg-slide: #1e2636;
+  --bg-header: #070f1e;
+  --bg-footer: #070f1e;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border: #2d3a52;
+  --bg-info: #1e2a42;
+  --bg-warn: #292010;
+  --bg-ok: #0f2216;
+  --border-info: #3b7de8;
+  --border-warn: #b45309;
+  --border-ok: #16a34a;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: var(--font); background: var(--bg-page); color: var(--text-primary); transition: background 0.2s, color 0.2s; overflow: hidden; }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+#app-header {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+  background: var(--bg-header); color: var(--text-header);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.header-title { font-size: 0.92rem; font-weight: 600; letter-spacing: 0.01em; opacity: 0.97; }
+.header-right { display: flex; align-items: center; gap: 14px; }
+.header-author { font-size: 0.8rem; opacity: 0.75; white-space: nowrap; }
+#theme-btn {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+  color: #fff; border-radius: 6px; padding: 5px 11px; cursor: pointer;
+  font-size: 0.8rem; font-family: var(--font); transition: background 0.15s;
+}
+#theme-btn:hover { background: rgba(255,255,255,0.22); }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+#app-footer {
+  position: fixed; bottom: 0; left: 0; right: 0; height: var(--footer-h);
+  background: var(--bg-footer); color: var(--text-header);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; z-index: 1000; box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+}
+#pdf-btn {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+  color: #fff; border-radius: 6px; padding: 6px 14px; cursor: pointer;
+  font-size: 0.8rem; font-family: var(--font); transition: background 0.15s;
+}
+#pdf-btn:hover { background: rgba(255,255,255,0.22); }
+.nav-controls { display: flex; align-items: center; gap: 10px; }
+.nav-btn {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+  color: #fff; border-radius: 6px; width: 34px; height: 34px; cursor: pointer;
+  font-size: 1rem; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s; font-family: var(--font);
+}
+.nav-btn:hover { background: rgba(255,255,255,0.28); }
+.nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+#slide-counter { font-size: 0.85rem; font-weight: 600; min-width: 60px; text-align: center; letter-spacing: 0.04em; }
+.footer-right { width: 120px; display: flex; justify-content: flex-end; }
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+#progress-bar-wrap {
+  position: fixed; bottom: var(--footer-h); left: 0; right: 0;
+  height: var(--progress-h); background: rgba(255,255,255,0.1); z-index: 999;
+}
+#progress-bar { height: 100%; background: var(--accent-blue-light); transition: width 0.3s ease; width: 0%; }
+
+/* ============================================================
+   SLIDE VIEWPORT
+   ============================================================ */
+#slide-viewport {
+  position: fixed;
+  top: var(--header-h); bottom: calc(var(--footer-h) + var(--progress-h));
+  left: 0; right: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.slide {
+  display: none;
+  width: var(--slide-w); max-width: 98vw;
+  min-height: var(--slide-h);
+  max-height: calc(100vh - var(--header-h) - var(--footer-h) - var(--progress-h) - 16px);
+  background: var(--bg-slide);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  flex-direction: column;
+}
+.slide.active { display: flex; }
+
+/* Scrollbar styling */
+.slide::-webkit-scrollbar { width: 5px; }
+.slide::-webkit-scrollbar-track { background: transparent; }
+.slide::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ============================================================
+   SLIDE INNER WRAPPER
+   ============================================================ */
+.slide-inner {
+  flex: 1; display: flex; flex-direction: column;
+  padding: 36px 44px 32px;
+  gap: 0;
+}
+
+/* ============================================================
+   SLIDE TYPES
+   ============================================================ */
+
+/* --- Title Slide --- */
+.slide-title-page {
+  background: linear-gradient(135deg, #0f2a5e 0%, #1a4080 55%, #1a56cc 100%);
+  color: #fff;
+  align-items: center; justify-content: center; text-align: center;
+  padding: 48px 56px;
+  min-height: var(--slide-h);
+}
+.title-badge {
+  display: inline-block; background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3); border-radius: 20px;
+  padding: 4px 18px; font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 20px;
+}
+.title-main { font-size: 2rem; font-weight: 800; line-height: 1.2; margin-bottom: 14px; }
+.title-sub { font-size: 1rem; opacity: 0.8; line-height: 1.6; max-width: 600px; margin: 0 auto 28px; }
+.title-meta { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; }
+.title-meta-item { font-size: 0.82rem; opacity: 0.7; display: flex; align-items: center; gap: 6px; }
+
+/* --- Section Divider --- */
+.slide-section-divider {
+  background: linear-gradient(135deg, #0f2a5e, #1a56cc);
+  color: #fff; align-items: center; justify-content: center; text-align: center;
+  padding: 48px;
+}
+.section-num { font-size: 3.5rem; font-weight: 900; opacity: 0.2; line-height: 1; }
+.section-title { font-size: 1.7rem; font-weight: 700; margin-top: -8px; margin-bottom: 10px; }
+.section-desc { font-size: 0.95rem; opacity: 0.78; max-width: 500px; }
+
+/* ============================================================
+   SLIDE HEADER BAND
+   ============================================================ */
+.slide-label {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent-blue);
+  margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+.slide-label::before { content: ''; display: block; width: 18px; height: 2px; background: var(--accent-blue); border-radius: 2px; }
+.slide-heading {
+  font-size: 1.45rem; font-weight: 800; color: var(--text-primary);
+  line-height: 1.25; margin-bottom: 20px; border-bottom: 2px solid var(--accent-blue);
+  padding-bottom: 10px;
+}
+.slide-subheading {
+  font-size: 1rem; font-weight: 700; color: var(--accent-blue);
+  margin: 16px 0 8px;
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.body-text { font-size: 0.9rem; line-height: 1.7; color: var(--text-secondary); margin-bottom: 12px; }
+.body-text strong { color: var(--text-primary); }
+.inline-code {
+  font-family: var(--font-mono); font-size: 0.82em;
+  background: var(--bg-code); color: #7dd3fc;
+  padding: 1px 6px; border-radius: 4px; white-space: nowrap;
+}
+
+/* ============================================================
+   BULLETS
+   ============================================================ */
+.bullets { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.bullets li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.9rem; line-height: 1.55; color: var(--text-secondary);
+}
+.bullets li::before {
+  content: '▸'; color: var(--accent-blue); font-size: 0.85rem;
+  margin-top: 2px; flex-shrink: 0;
+}
+.bullets li strong { color: var(--text-primary); }
+
+/* Numbered list */
+.steps { list-style: none; display: flex; flex-direction: column; gap: 10px; counter-reset: step; }
+.steps li {
+  display: flex; align-items: flex-start; gap: 12px;
+  font-size: 0.9rem; line-height: 1.55; color: var(--text-secondary);
+  counter-increment: step;
+}
+.steps li::before {
+  content: counter(step);
+  background: var(--accent-blue); color: #fff;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+}
+.steps li strong { color: var(--text-primary); }
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.cards { display: grid; gap: 14px; }
+.cards.col-2 { grid-template-columns: 1fr 1fr; }
+.cards.col-3 { grid-template-columns: 1fr 1fr 1fr; }
+.card {
+  background: var(--bg-info); border: 1px solid var(--border-info);
+  border-radius: 8px; padding: 16px 18px;
+}
+.card-icon { font-size: 1.4rem; margin-bottom: 8px; }
+.card-title { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.card-body { font-size: 0.82rem; line-height: 1.5; color: var(--text-secondary); }
+.card-tag {
+  display: inline-block; font-family: var(--font-mono); font-size: 0.75rem;
+  background: var(--accent-blue); color: #fff; border-radius: 4px;
+  padding: 1px 8px; margin-bottom: 6px;
+}
+
+/* ============================================================
+   INFO / WARN / OK BOXES
+   ============================================================ */
+.info-box, .warn-box, .ok-box {
+  border-left: 4px solid; border-radius: 0 8px 8px 0;
+  padding: 11px 16px; margin: 10px 0; font-size: 0.87rem; line-height: 1.6;
+}
+.info-box { background: var(--bg-info); border-color: var(--accent-blue); color: var(--text-primary); }
+.warn-box { background: var(--bg-warn); border-color: var(--accent-orange); color: var(--text-primary); }
+.ok-box { background: var(--bg-ok); border-color: var(--accent-green); color: var(--text-primary); }
+.info-box .box-label, .warn-box .box-label, .ok-box .box-label {
+  font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 3px;
+}
+.info-box .box-label { color: var(--accent-blue); }
+.warn-box .box-label { color: var(--accent-orange); }
+.ok-box .box-label { color: var(--accent-green); }
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.styled-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; margin: 10px 0; }
+.styled-table th {
+  background: var(--accent-blue); color: #fff; text-align: left;
+  padding: 9px 14px; font-weight: 700; font-size: 0.8rem; letter-spacing: 0.03em;
+}
+.styled-table th:first-child { border-radius: 6px 0 0 0; }
+.styled-table th:last-child { border-radius: 0 6px 0 0; }
+.styled-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+.styled-table tr:last-child td { border-bottom: none; }
+.styled-table tr:nth-child(even) td { background: rgba(26,86,204,0.04); }
+.styled-table td .inline-code { font-size: 0.8em; }
+
+/* ============================================================
+   CODE WINDOWS
+   ============================================================ */
+.code-window {
+  background: var(--bg-code); border-radius: 8px; overflow: hidden;
+  margin: 10px 0; box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+.code-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; background: #161c2b;
+}
+.code-dots { display: flex; gap: 6px; }
+.dot { width: 11px; height: 11px; border-radius: 50%; }
+.dot-red { background: #ff5f57; }
+.dot-yellow { background: #febc2e; }
+.dot-green { background: #28c840; }
+.code-lang {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #64748b; font-family: var(--font-mono);
+}
+.code-body { padding: 14px 18px; overflow-x: auto; }
+.code-body pre { font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.65; color: #e2e8f0; }
+/* Basic syntax coloring */
+.code-body pre .kw { color: #c084fc; }
+.code-body pre .fn { color: #60a5fa; }
+.code-body pre .str { color: #86efac; }
+.code-body pre .num { color: #fb923c; }
+.code-body pre .cmt { color: #64748b; font-style: italic; }
+
+/* ============================================================
+   OUTPUT & ERROR WINDOWS
+   ============================================================ */
+.output-window {
+  background: var(--bg-output); border-radius: 8px; overflow: hidden;
+  margin: 8px 0; border: 1px solid #1a3a1a;
+}
+.output-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: #0a1a0a; padding: 6px 14px;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #22c55e;
+}
+.output-bar::before { content: '▶'; font-size: 0.65rem; }
+.output-body { padding: 12px 18px; }
+.output-body pre { font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.6; color: #4ade80; }
+
+.error-window {
+  background: var(--bg-error); border-radius: 8px; overflow: hidden;
+  margin: 8px 0; border: 1px solid #4a1010;
+}
+.error-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: #2d0505; padding: 6px 14px;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #f87171;
+}
+.error-bar::before { content: '✗'; }
+.error-body { padding: 12px 18px; }
+.error-body pre { font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.6; color: #fca5a5; }
+
+/* ============================================================
+   SPLIT LAYOUTS
+   ============================================================ */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+.split.col-60-40 { grid-template-columns: 60fr 40fr; }
+
+/* ============================================================
+   FLOWCHART
+   ============================================================ */
+.flowchart { display: flex; flex-direction: column; align-items: center; gap: 0; padding: 8px 0; }
+.fc-node {
+  padding: 10px 22px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+  text-align: center; min-width: 180px; max-width: 260px;
+  background: var(--accent-blue); color: #fff;
+}
+.fc-node.start, .fc-node.end { border-radius: 24px; background: #0f2a5e; }
+.fc-node.process { border-radius: 6px; }
+.fc-node.decision {
+  border-radius: 0; background: var(--accent-orange); color: #fff;
+  transform: rotate(0deg); clip-path: polygon(20px 0%, calc(100% - 20px) 0%, 100% 50%, calc(100% - 20px) 100%, 20px 100%, 0% 50%);
+  padding: 10px 40px;
+}
+.fc-arrow {
+  width: 2px; height: 20px; background: var(--accent-blue-light);
+  position: relative; display: flex; justify-content: center;
+}
+.fc-arrow::after {
+  content: '▼'; position: absolute; bottom: -8px;
+  color: var(--accent-blue-light); font-size: 0.7rem;
+}
+
+/* ============================================================
+   ANALOGY BOX
+   ============================================================ */
+.analogy-box {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1px solid #93c5fd; border-radius: 8px; padding: 16px 18px;
+  font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);
+}
+[data-theme="dark"] .analogy-box {
+  background: linear-gradient(135deg, #1e2a42, #1a2d4a);
+  border-color: #3b7de8;
+}
+.analogy-box .analogy-title { font-weight: 700; color: var(--accent-blue); margin-bottom: 6px; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* Box diagram */
+.box-diagram { display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 0.82rem; }
+.box-visual { border: 2px solid var(--accent-blue); border-radius: 6px; padding: 8px 32px; background: rgba(26,86,204,0.08); color: var(--text-primary); font-weight: 700; }
+.box-label-text { color: var(--accent-blue); font-size: 0.75rem; }
+
+/* ============================================================
+   EXERCISE BLOCKS
+   ============================================================ */
+.exercise-block {
+  border: 2px solid var(--accent-blue); border-radius: 8px;
+  overflow: hidden; margin: 8px 0;
+}
+.exercise-header {
+  background: var(--accent-blue); color: #fff;
+  padding: 8px 16px; font-size: 0.8rem; font-weight: 700;
+  letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px;
+}
+.exercise-body { padding: 14px 18px; }
+.exercise-item { font-size: 0.86rem; line-height: 1.55; color: var(--text-secondary); margin-bottom: 8px; }
+.exercise-item:last-child { margin-bottom: 0; }
+.exercise-item strong { color: var(--text-primary); }
+
+/* ============================================================
+   PILL TAGS
+   ============================================================ */
+.pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700;
+  font-family: var(--font-mono); border: 1px solid;
+}
+.pill-int { background: #dbeafe; color: #1e3a8a; border-color: #93c5fd; }
+.pill-float { background: #dcfce7; color: #14532d; border-color: #86efac; }
+.pill-str { background: #fef3c7; color: #78350f; border-color: #fcd34d; }
+[data-theme="dark"] .pill-int { background: #1e2a42; color: #7dd3fc; }
+[data-theme="dark"] .pill-float { background: #0f2216; color: #4ade80; }
+[data-theme="dark"] .pill-str { background: #2a1f07; color: #fbbf24; }
+
+/* ============================================================
+   CLOSING SLIDE
+   ============================================================ */
+.slide-closing {
+  background: linear-gradient(135deg, #0f2a5e 0%, #1a56cc 100%);
+  color: #fff; align-items: center; justify-content: center; text-align: center;
+  padding: 48px;
+}
+.closing-icon { font-size: 3rem; margin-bottom: 16px; }
+.closing-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 10px; }
+.closing-sub { font-size: 0.95rem; opacity: 0.8; max-width: 500px; margin: 0 auto; }
+
+/* ============================================================
+   PRINT CSS
+   ============================================================ */
+@media print {
+  html, body { overflow: visible !important; height: auto !important; }
+  #app-header, #app-footer, #progress-bar-wrap { display: none !important; }
+  #slide-viewport { position: static !important; overflow: visible !important; height: auto !important; }
+  .slide { display: flex !important; page-break-after: always; box-shadow: none !important;
+    max-height: none !important; width: 100% !important; border-radius: 0 !important; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .slide-inner { padding: 28px 28px 24px; }
+  .slide-heading { font-size: 1.2rem; }
+}
+@media (max-width: 768px) {
+  .slide-inner { padding: 20px 18px 18px; }
+  .cards.col-2, .cards.col-3, .split { grid-template-columns: 1fr; }
+  .title-main { font-size: 1.4rem; }
+  .slide-heading { font-size: 1.05rem; }
+  .header-title { font-size: 0.78rem; }
+  .header-author { display: none; }
+}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- ===================== HEADER ===================== -->
+<header id="app-header">
+  <div class="header-title">Lecture #2: Variables, Basic Data Types, and User Input</div>
+  <div class="header-right">
+    <span class="header-author">Created by Fawaz Alazemi</span>
+    <button id="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+  </div>
+</header>
+
+<!-- ===================== SLIDES ===================== -->
+<div id="slide-viewport">
+
+  <!-- SLIDE 1: TITLE -->
+  <section class="slide active">
+    <div class="slide-inner slide-title-page">
+      <div class="title-badge">Introduction to Python · Lecture 2</div>
+      <div class="title-main">Variables, Basic Data Types<br>and User Input</div>
+      <div class="title-sub">Learn how Python stores and works with information — the foundation of every program you will ever write.</div>
+      <div class="title-meta">
+        <span class="title-meta-item">📚 Topics: Variables, int, float, str, input()</span>
+        <span class="title-meta-item">🎯 7 Learning Objectives</span>
+        <span class="title-meta-item">💻 Multiple Code Examples</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: WHY THIS MATTERS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">Motivation</div>
+      <div class="slide-heading">Why This Topic Matters</div>
+      <div class="body-text">Every useful program works with information. Without a way to store and remember data, a program can do nothing meaningful.</div>
+      <div class="cards col-2" style="margin-top:14px;">
+        <div class="card">
+          <div class="card-icon">📊</div>
+          <div class="card-title">Grade Calculator</div>
+          <div class="card-body">A program that calculates a student's grade must <strong>store that grade somewhere</strong> in memory to work with it.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">👋</div>
+          <div class="card-title">Greeting Program</div>
+          <div class="card-body">A program that greets a user by name must <strong>remember that name</strong> to use it in the output message.</div>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:16px;">
+        <div class="box-label">💡 The Solution</div>
+        In Python, we use <strong>variables</strong> to store and work with information. Understanding variables and data types is the <strong>foundation of all programming</strong>.
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: LEARNING OBJECTIVES -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">Goals</div>
+      <div class="slide-heading">Learning Objectives</div>
+      <div class="body-text">By the end of this lecture, you will be able to:</div>
+      <ol class="steps" style="margin-top:12px;">
+        <li>Explain what a variable is and why it is useful</li>
+        <li>Identify the three basic data types: <span class="inline-code">int</span>, <span class="inline-code">float</span>, and <span class="inline-code">str</span></li>
+        <li>Store values in variables using the assignment operator (<span class="inline-code">=</span>)</li>
+        <li>Print the value of a variable using <span class="inline-code">print()</span></li>
+        <li>Use <span class="inline-code">input()</span> to receive information from the user</li>
+        <li>Explain why <span class="inline-code">input()</span> always returns text (<span class="inline-code">str</span>)</li>
+        <li>Convert text to a number using <span class="inline-code">int()</span> and <span class="inline-code">float()</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: SECTION DIVIDER - VARIABLES -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">01</div>
+      <div class="section-title">What Is a Variable?</div>
+      <div class="section-desc">Learning how Python stores and names pieces of information in your computer's memory.</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: VARIABLE CONCEPT -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">01 · Variables</div>
+      <div class="slide-heading">What Is a Variable?</div>
+      <div class="split col-60-40">
+        <div>
+          <div class="body-text">Imagine you are solving a maths problem on paper. You write: <em>"Let x = 5."</em> You have given the name <em>x</em> to the value <em>5</em>. Later in the problem, whenever you write <em>x</em>, you mean <em>5</em>.</div>
+          <div class="body-text" style="margin-top:8px;">Python works in exactly the same way. You give a name to a piece of information, and Python remembers it for you.</div>
+          <div class="info-box" style="margin-top:12px;">
+            <div class="box-label">📖 Definition</div>
+            A <strong>variable</strong> is a named storage location in the computer's memory. You choose the name, and Python stores the value under that name.
+          </div>
+        </div>
+        <div>
+          <div class="analogy-box">
+            <div class="analogy-title">🗃️ Analogy: A Labeled Box</div>
+            <div style="margin-bottom:10px; font-size:0.85rem;">Think of a variable as a <strong>labeled box</strong>:</div>
+            <div class="box-diagram">
+              <div class="box-visual">20</div>
+              <div style="font-size:0.7rem; color:var(--text-secondary); font-family:var(--font-mono);">↑ value inside</div>
+              <div class="box-label-text" style="margin-top:4px;">age</div>
+              <div style="font-size:0.7rem; color:var(--text-secondary); font-family:var(--font-mono);">↑ label (name)</div>
+            </div>
+            <div style="margin-top:10px; font-size:0.82rem; color:var(--text-secondary);">You can change the contents any time. The label stays the same.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: ASSIGNMENT OPERATOR -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">01 · Variables</div>
+      <div class="slide-heading">Storing a Value — The Assignment Operator</div>
+      <div class="body-text">To store a value in a variable, we use the <strong>assignment operator</strong>: the equals sign <span class="inline-code">=</span>.</div>
+      <div class="warn-box">
+        <div class="box-label">⚠️ Important Distinction</div>
+        In programming, <strong><span class="inline-code">=</span> does NOT mean "is equal to."</strong> It means <strong>"store the value on the right into the variable on the left."</strong>
+      </div>
+      <div class="split" style="margin-top:14px;">
+        <div>
+          <div class="slide-subheading">Example 1: Store and Print</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>age = 20
+print(age)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>20</pre></div></div>
+          <div class="body-text" style="font-size:0.82rem;"><strong>Line 1:</strong> Python creates <span class="inline-code">age</span> and stores <span class="inline-code">20</span>. <strong>Line 2:</strong> Retrieves the value and prints it.</div>
+        </div>
+        <div>
+          <div class="slide-subheading">Example 2: Changing a Value</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>score = 10
+print(score)
+
+score = 95
+print(score)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>10
+95</pre></div></div>
+          <div class="body-text" style="font-size:0.82rem;">The variable is <strong>reassigned</strong> — old value is replaced.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: NAMING RULES -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">01 · Variables</div>
+      <div class="slide-heading">Variable Naming Rules</div>
+      <table class="styled-table">
+        <thead>
+          <tr><th>Rule</th><th>✅ Correct Example</th><th>❌ Incorrect Example</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Use letters, digits, or underscores only</td><td><span class="inline-code">student_age</span></td><td><span class="inline-code">student-age</span></td></tr>
+          <tr><td>Must not start with a digit</td><td><span class="inline-code">score1</span></td><td><span class="inline-code">1score</span></td></tr>
+          <tr><td>No spaces allowed</td><td><span class="inline-code">first_name</span></td><td><span class="inline-code">first name</span></td></tr>
+          <tr><td>Case-sensitive (<span class="inline-code">age</span> ≠ <span class="inline-code">Age</span>)</td><td><span class="inline-code">age</span>, <span class="inline-code">Age</span> are different</td><td>—</td></tr>
+          <tr><td>Avoid Python reserved words</td><td><span class="inline-code">total</span></td><td><span class="inline-code">for</span>, <span class="inline-code">if</span>, <span class="inline-code">print</span></td></tr>
+        </tbody>
+      </table>
+      <div class="ok-box" style="margin-top:14px;">
+        <div class="box-label">✅ Good Practice</div>
+        Choose names that clearly describe what the variable stores. <strong><span class="inline-code">student_name</span></strong> is better than <strong><span class="inline-code">x</span></strong> because it tells you what the variable represents.
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: SECTION DIVIDER - DATA TYPES -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">02</div>
+      <div class="section-title">Basic Data Types</div>
+      <div class="section-desc">Understanding <span style="font-family:monospace;">int</span>, <span style="font-family:monospace;">float</span>, and <span style="font-family:monospace;">str</span> — the three fundamental kinds of data in Python.</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: DATA TYPES OVERVIEW -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">02 · Data Types</div>
+      <div class="slide-heading">What Are Data Types?</div>
+      <div class="body-text">Not all information is the same. The number <span class="inline-code">42</span> is different from the text <span class="inline-code">"hello"</span>. Python uses <strong>data types</strong> to distinguish between different kinds of information.</div>
+      <div class="info-box">
+        <div class="box-label">📖 Definition</div>
+        A <strong>data type</strong> tells Python what kind of value a variable holds and what operations can be performed on it.
+      </div>
+      <div style="margin-top:18px;">
+        <div class="body-text" style="margin-bottom:12px; font-weight:600;">The three fundamental data types we study today:</div>
+        <div class="cards col-3">
+          <div class="card">
+            <div class="card-tag">int</div>
+            <div class="card-title">Integer</div>
+            <div class="card-body">Whole numbers. No decimal point.<br>Examples: <span class="inline-code">5</span>, <span class="inline-code">100</span>, <span class="inline-code">-3</span>, <span class="inline-code">0</span></div>
+          </div>
+          <div class="card" style="border-color:var(--border-ok); background:var(--bg-ok);">
+            <div class="card-tag" style="background:var(--accent-green);">float</div>
+            <div class="card-title">Float</div>
+            <div class="card-body">Decimal numbers.<br>Examples: <span class="inline-code">3.14</span>, <span class="inline-code">0.5</span>, <span class="inline-code">-1.7</span></div>
+          </div>
+          <div class="card" style="border-color:var(--border-warn); background:var(--bg-warn);">
+            <div class="card-tag" style="background:var(--accent-orange);">str</div>
+            <div class="card-title">String</div>
+            <div class="card-body">Text, characters, symbols in quotes.<br>Examples: <span class="inline-code">"hello"</span>, <span class="inline-code">"Ahmed"</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: INTEGERS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">02 · Data Types</div>
+      <div class="slide-heading">Integers — <span class="inline-code">int</span></div>
+      <div class="split">
+        <div>
+          <div class="info-box">
+            <div class="box-label">📖 Definition</div>
+            An <strong>integer</strong> is a whole number — no decimal point. It can be positive, negative, or zero.
+          </div>
+          <div class="body-text" style="margin-top:10px;">Examples: <span class="inline-code">0</span>&nbsp; <span class="inline-code">1</span>&nbsp; <span class="inline-code">-10</span>&nbsp; <span class="inline-code">500</span>&nbsp; <span class="inline-code">2025</span></div>
+          <div class="code-window" style="margin-top:12px;">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>year = 2025
+temperature = -3
+count = 0
+
+print(year)
+print(temperature)
+print(count)</pre></div>
+          </div>
+        </div>
+        <div>
+          <div class="output-window" style="margin-top:0;">
+            <div class="output-bar">Output</div>
+            <div class="output-body"><pre>2025
+-3
+0</pre></div>
+          </div>
+          <div class="ok-box" style="margin-top:12px;">
+            <div class="box-label">✅ Note</div>
+            Each variable stores a whole number. There are no decimal points. Python recognises these as integers <strong>automatically</strong>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 11: FLOATS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">02 · Data Types</div>
+      <div class="slide-heading">Floats — <span class="inline-code">float</span></div>
+      <div class="split">
+        <div>
+          <div class="info-box">
+            <div class="box-label">📖 Definition</div>
+            A <strong>float</strong> (floating-point number) includes a decimal point. Use floats when precision beyond whole numbers is needed.
+          </div>
+          <div class="body-text" style="margin-top:10px;">Examples: <span class="inline-code">3.14</span>&nbsp; <span class="inline-code">0.5</span>&nbsp; <span class="inline-code">-2.7</span>&nbsp; <span class="inline-code">100.0</span></div>
+          <div class="code-window" style="margin-top:12px;">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>price = 9.99
+height = 1.75
+pi = 3.14159
+
+print(price)
+print(height)
+print(pi)</pre></div>
+          </div>
+        </div>
+        <div>
+          <div class="output-window" style="margin-top:0;">
+            <div class="output-bar">Output</div>
+            <div class="output-body"><pre>9.99
+1.75
+3.14159</pre></div>
+          </div>
+          <div class="warn-box" style="margin-top:12px;">
+            <div class="box-label">⚠️ Important</div>
+            Even <span class="inline-code">100.0</span> is a float because it contains a decimal point, even though its value is a whole number.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 12: STRINGS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">02 · Data Types</div>
+      <div class="slide-heading">Strings — <span class="inline-code">str</span></div>
+      <div class="split">
+        <div>
+          <div class="info-box">
+            <div class="box-label">📖 Definition</div>
+            A <strong>string</strong> is a sequence of characters — letters, digits, spaces, or symbols — enclosed in quotation marks. Used to represent <strong>text</strong>.
+          </div>
+          <div class="body-text" style="margin-top:8px; font-size:0.85rem;">You can use single quotes <span class="inline-code">'...'</span> or double quotes <span class="inline-code">"..."</span>.</div>
+          <div class="code-window" style="margin-top:10px;">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>first_name = "Sara"
+greeting = "Hello, welcome to Python!"
+course_code = "CS101"
+
+print(first_name)
+print(greeting)
+print(course_code)</pre></div>
+          </div>
+        </div>
+        <div>
+          <div class="output-window" style="margin-top:0;">
+            <div class="output-bar">Output</div>
+            <div class="output-body"><pre>Sara
+Hello, welcome to Python!
+CS101</pre></div>
+          </div>
+          <div class="warn-box" style="margin-top:12px;">
+            <div class="box-label">⚠️ Watch Out</div>
+            Even <span class="inline-code">"101"</span> is a <strong>string</strong> (text), not a number — because it is enclosed in quotes!
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 13: type() FUNCTION -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">02 · Data Types</div>
+      <div class="slide-heading">Checking the Data Type with <span class="inline-code">type()</span></div>
+      <div class="body-text">Python provides a built-in function called <span class="inline-code">type()</span> that tells you the data type of any value or variable.</div>
+      <div class="split" style="margin-top:14px;">
+        <div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>age = 20
+gpa = 3.75
+name = "Ali"
+
+print(type(age))
+print(type(gpa))
+print(type(name))</pre></div>
+          </div>
+          <div class="output-window">
+            <div class="output-bar">Output</div>
+            <div class="output-body"><pre>&lt;class 'int'&gt;
+&lt;class 'float'&gt;
+&lt;class 'str'&gt;</pre></div>
+          </div>
+        </div>
+        <div>
+          <div class="cards col-2" style="gap:10px;">
+            <div class="card" style="padding:12px 14px;">
+              <div class="card-tag">int</div>
+              <div class="card-body"><span class="inline-code">age = 20</span><br>A whole number</div>
+            </div>
+            <div class="card" style="padding:12px 14px; border-color:var(--border-ok); background:var(--bg-ok);">
+              <div class="card-tag" style="background:var(--accent-green);">float</div>
+              <div class="card-body"><span class="inline-code">gpa = 3.75</span><br>A decimal number</div>
+            </div>
+            <div class="card" style="padding:12px 14px; border-color:var(--border-warn); background:var(--bg-warn); grid-column:1/-1;">
+              <div class="card-tag" style="background:var(--accent-orange);">str</div>
+              <div class="card-body"><span class="inline-code">name = "Ali"</span><br>Text in quotation marks</div>
+            </div>
+          </div>
+          <div class="info-box" style="margin-top:10px; font-size:0.83rem;">
+            You will use <span class="inline-code">type()</span> frequently to check whether a variable holds the kind of value you expect.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 14: SECTION DIVIDER - INPUT -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">03</div>
+      <div class="section-title">Getting Input from the User</div>
+      <div class="section-desc">Using <span style="font-family:monospace;">input()</span> to make programs interactive and respond to the user at runtime.</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 15: INPUT() BASICS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">03 · User Input</div>
+      <div class="slide-heading">How <span class="inline-code">input()</span> Works</div>
+      <div class="body-text">So far, all values in our programs have been written directly in the code. Most programs need to <strong>interact with the user</strong> — asking for their name, age, or other information.</div>
+      <div class="split" style="margin-top:14px; align-items:start;">
+        <div>
+          <div class="slide-subheading">The 3 Steps of input()</div>
+          <ol class="steps">
+            <li><strong>Displays a prompt message</strong> on the screen</li>
+            <li><strong>Pauses</strong> and waits for the user to type something</li>
+            <li>When the user presses Enter, Python <strong>captures</strong> what was typed and stores it in a variable</li>
+          </ol>
+          <div class="code-window" style="margin-top:14px;">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>name = input("What is your name? ")
+print("Hello,", name)</pre></div>
+          </div>
+        </div>
+        <div>
+          <div class="output-window" style="margin-top:0;">
+            <div class="output-bar">Example Interaction</div>
+            <div class="output-body"><pre>What is your name? Sara
+Hello, Sara</pre></div>
+          </div>
+          <div class="info-box" style="margin-top:12px; font-size:0.83rem;">
+            <div class="box-label">💡 Tip</div>
+            Add a space before the closing quote in the prompt — <span class="inline-code">"name? "</span> — to create a small gap between the prompt and the user's typed text.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 16: input() ALWAYS RETURNS STRING -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">03 · User Input</div>
+      <div class="slide-heading">⚠️ Critical Rule: <span class="inline-code">input()</span> Always Returns a String</div>
+      <div class="warn-box" style="font-size:0.92rem;">
+        <div class="box-label">⚠️ Most Important Rule</div>
+        <strong><span class="inline-code">input()</span> always returns a string (<span class="inline-code">str</span>), regardless of what the user types.</strong><br>
+        Even if the user types the number <span class="inline-code">25</span>, Python stores it as the text <span class="inline-code">"25"</span>, not the number <span class="inline-code">25</span>.
+      </div>
+      <div class="split" style="margin-top:14px;">
+        <div>
+          <div class="slide-subheading">Demonstration</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>age = input("How old are you? ")
+print(type(age))</pre></div>
+          </div>
+          <div class="output-window">
+            <div class="output-bar">Interaction</div>
+            <div class="output-body"><pre>How old are you? 25
+&lt;class 'str'&gt;</pre></div>
+          </div>
+        </div>
+        <div>
+          <div class="body-text">Even though the user typed <span class="inline-code">25</span>, <span class="inline-code">type(age)</span> shows <span class="inline-code">str</span>.</div>
+          <div class="error-window" style="margin-top:12px;">
+            <div class="error-bar">What Happens If You Try Arithmetic</div>
+            <div class="error-body"><pre>age = input("Your age? ")
+print(age + 1)
+# TypeError: can only concatenate
+# str (not "int") to str</pre></div>
+          </div>
+          <div class="body-text" style="font-size:0.83rem; margin-top:8px;">You <strong>cannot perform arithmetic on text</strong>. This is why type conversion is needed!</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 17: SECTION DIVIDER - TYPE CONVERSION -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">04</div>
+      <div class="section-title">Type Conversion</div>
+      <div class="section-desc">Converting strings from <span style="font-family:monospace;">input()</span> into numbers using <span style="font-family:monospace;">int()</span> and <span style="font-family:monospace;">float()</span>.</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 18: TYPE CONVERSION -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">04 · Type Conversion</div>
+      <div class="slide-heading">Converting Input to a Number</div>
+      <div class="body-text">To use a number entered by the user in calculations, you must <strong>convert</strong> it from a string to a number. This is called <strong>type conversion</strong> (or <em>type casting</em>).</div>
+      <div class="cards col-2" style="margin:12px 0;">
+        <div class="card">
+          <div class="card-tag">int()</div>
+          <div class="card-title">Convert to Whole Number</div>
+          <div class="card-body">Use when the user should enter a whole number.<br><span class="inline-code">int("25")</span> → <span class="inline-code">25</span></div>
+        </div>
+        <div class="card" style="border-color:var(--border-ok); background:var(--bg-ok);">
+          <div class="card-tag" style="background:var(--accent-green);">float()</div>
+          <div class="card-title">Convert to Decimal Number</div>
+          <div class="card-body">Use when the user may enter a decimal.<br><span class="inline-code">float("3.5")</span> → <span class="inline-code">3.5</span></div>
+        </div>
+      </div>
+      <div class="split" style="margin-top:4px;">
+        <div>
+          <div class="slide-subheading">Example — Two-step conversion</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>age_text = input("How old are you? ")
+age = int(age_text)
+print("Next year you will be", age + 1)</pre></div>
+          </div>
+          <div class="output-window">
+            <div class="output-bar">Output</div>
+            <div class="output-body"><pre>How old are you? 20
+Next year you will be 21</pre></div>
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading">Example — One-step (common style)</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>age = int(input("How old are you? "))
+print("Next year you will be", age + 1)</pre></div>
+          </div>
+          <div class="info-box" style="margin-top:10px; font-size:0.83rem;">
+            Python runs <span class="inline-code">input()</span> first, then immediately passes the result to <span class="inline-code">int()</span>. Equivalent to the two-step version.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 19: FLOAT CONVERSION -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">04 · Type Conversion</div>
+      <div class="slide-heading">Using <span class="inline-code">float()</span> for Decimal Input</div>
+      <div class="body-text">Use <span class="inline-code">float()</span> when the user may enter a decimal number.</div>
+      <div class="split" style="margin-top:14px;">
+        <div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>height = float(input("Enter your height in metres: "))
+print("Your height is", height, "metres.")</pre></div>
+          </div>
+          <div class="output-window">
+            <div class="output-bar">Interaction</div>
+            <div class="output-body"><pre>Enter your height in metres: 1.75
+Your height is 1.75 metres.</pre></div>
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading">How to choose: int() vs float()?</div>
+          <div class="cards col-2" style="gap:10px;">
+            <div class="card" style="padding:14px;">
+              <div class="card-tag">int()</div>
+              <div class="card-body">Age, count, year, number of students</div>
+            </div>
+            <div class="card" style="padding:14px; border-color:var(--border-ok); background:var(--bg-ok);">
+              <div class="card-tag" style="background:var(--accent-green);">float()</div>
+              <div class="card-body">Height, weight, price, GPA, temperature</div>
+            </div>
+          </div>
+          <div class="warn-box" style="margin-top:12px;">
+            <div class="box-label">⚠️ Cannot Use int() on Decimals</div>
+            <span class="inline-code">int("3.14")</span> causes an error! Use <span class="inline-code">float("3.14")</span> instead.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 20: SECTION DIVIDER - OUTPUT -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">05</div>
+      <div class="section-title">Combining Variables in Output</div>
+      <div class="section-desc">Two clean ways to include variable values inside printed messages.</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 21: PRINT METHODS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">05 · Output</div>
+      <div class="slide-heading">Two Ways to Include Variables in Output</div>
+      <div class="split" style="margin-top:10px;">
+        <div>
+          <div class="slide-subheading">Method 1 — Commas in print()</div>
+          <div class="body-text" style="font-size:0.85rem;">Simple: separate values with commas. Python adds a space between each.</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>name = "Lena"
+age = 22
+print("Name:", name, "Age:", age)</pre></div>
+          </div>
+          <div class="output-window">
+            <div class="output-bar">Output</div>
+            <div class="output-body"><pre>Name: Lena Age: 22</pre></div>
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading">Method 2 — f-strings (Recommended)</div>
+          <div class="body-text" style="font-size:0.85rem;">Place <span class="inline-code">f</span> before the quote, then use <span class="inline-code">{variable}</span> inside.</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>name = "Lena"
+age = 22
+print(f"My name is {name} and I am {age} years old.")</pre></div>
+          </div>
+          <div class="output-window">
+            <div class="output-bar">Output</div>
+            <div class="output-body"><pre>My name is Lena and I am 22 years old.</pre></div>
+          </div>
+          <div class="ok-box" style="margin-top:10px; font-size:0.83rem;">
+            <div class="box-label">✅ Why f-strings?</div>
+            Cleaner, more readable, widely used in Python. Python replaces <span class="inline-code">{name}</span> with the actual value of <span class="inline-code">name</span>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 22: SECTION DIVIDER - MISTAKES -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">06</div>
+      <div class="section-title">Common Mistakes</div>
+      <div class="section-desc">Five frequent errors beginners make — and how to fix them.</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 23: MISTAKES 1 & 2 -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">06 · Common Mistakes</div>
+      <div class="slide-heading">Mistakes 1 &amp; 2</div>
+      <div class="split">
+        <div>
+          <div class="warn-box">
+            <div class="box-label">❌ Mistake 1: = vs ==</div>
+            Confusing assignment <span class="inline-code">=</span> with comparison <span class="inline-code">==</span>
+          </div>
+          <div class="code-window" style="margin-top:10px;">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre># This STORES 10 in x.
+# It does NOT ask "is x equal to 10?"
+x = 10</pre></div>
+          </div>
+          <div class="info-box" style="margin-top:10px; font-size:0.83rem;">
+            <span class="inline-code">=</span> is <strong>assignment</strong> (stores a value).<br>
+            <span class="inline-code">==</span> is <strong>comparison</strong> (asks if values are equal). We study <span class="inline-code">==</span> later.
+          </div>
+        </div>
+        <div>
+          <div class="warn-box">
+            <div class="box-label">❌ Mistake 2: Using a Variable Before Assigning It</div>
+            Python reads code top-to-bottom. Use before define = error!
+          </div>
+          <div class="error-window" style="margin-top:10px;">
+            <div class="error-bar">Error</div>
+            <div class="error-body"><pre>print(score)  # Error!
+score = 85    # Too late!</pre></div>
+          </div>
+          <div class="ok-box" style="margin-top:10px; font-size:0.83rem;">
+            <div class="box-label">✅ Fix</div>
+            Always assign a value to a variable <strong>before</strong> using it.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 24: MISTAKES 3, 4, 5 -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">06 · Common Mistakes</div>
+      <div class="slide-heading">Mistakes 3, 4 &amp; 5</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div>
+          <div class="warn-box" style="margin-bottom:6px;">
+            <div class="box-label">❌ Mistake 3: Arithmetic on a String</div>
+            <span class="inline-code">input()</span> returns text. You cannot add a number to text!
+          </div>
+          <div class="split" style="gap:10px;">
+            <div class="error-window" style="margin:0;"><div class="error-bar">Wrong</div><div class="error-body"><pre>age = input("Enter age: ")
+print(age + 1)  # Error!</pre></div></div>
+            <div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>age = int(input("Enter age: "))
+print(age + 1)  # Works!</pre></div></div>
+          </div>
+        </div>
+        <div class="split" style="gap:12px;">
+          <div>
+            <div class="warn-box" style="margin-bottom:6px;">
+              <div class="box-label">❌ Mistake 4: Missing Quotes Around Strings</div>
+            </div>
+            <div class="split" style="gap:6px;">
+              <div class="error-window" style="margin:0;"><div class="error-bar">Wrong</div><div class="error-body"><pre>name = Sara  # Error!</pre></div></div>
+              <div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>name = "Sara"</pre></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="warn-box" style="margin-bottom:6px;">
+              <div class="box-label">❌ Mistake 5: int() on a Decimal String</div>
+            </div>
+            <div class="split" style="gap:6px;">
+              <div class="error-window" style="margin:0;"><div class="error-bar">Wrong</div><div class="error-body"><pre>int("3.14")  # Error!</pre></div></div>
+              <div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>float("3.14") # ✓</pre></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 25: SUMMARY -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">Summary</div>
+      <div class="slide-heading">Lecture 2 — Key Concepts</div>
+      <table class="styled-table">
+        <thead>
+          <tr><th>Concept</th><th>Key Point</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Variable</strong></td><td>Named storage in memory. Use <span class="inline-code">=</span> to assign a value.</td></tr>
+          <tr><td><span class="inline-code">int</span></td><td>Whole number with no decimal point. Example: <span class="inline-code">5</span>, <span class="inline-code">-3</span></td></tr>
+          <tr><td><span class="inline-code">float</span></td><td>Number with a decimal point. Example: <span class="inline-code">3.14</span>, <span class="inline-code">0.5</span></td></tr>
+          <tr><td><span class="inline-code">str</span></td><td>Sequence of characters in quotes. Example: <span class="inline-code">"hello"</span></td></tr>
+          <tr><td><span class="inline-code">type()</span></td><td>Returns the data type of a value or variable.</td></tr>
+          <tr><td><span class="inline-code">input()</span></td><td>Pauses and waits for user input. <strong>Always returns a <span class="inline-code">str</span>.</strong></td></tr>
+          <tr><td><span class="inline-code">int()</span></td><td>Converts a string to an integer.</td></tr>
+          <tr><td><span class="inline-code">float()</span></td><td>Converts a string to a float.</td></tr>
+          <tr><td><strong>f-string</strong></td><td>Formatted string that embeds variable values using <span class="inline-code">{variable}</span>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SLIDE 26: SECTION DIVIDER - EXERCISES -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">07</div>
+      <div class="section-title">Exercises</div>
+      <div class="section-desc">Practice problems across four sections: understanding, code tracing, code writing, and code modification.</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 27: EXERCISES - SECTION A -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">07 · Exercises</div>
+      <div class="slide-heading">Section A — Understanding Questions</div>
+      <div class="exercise-block">
+        <div class="exercise-header">🧠 Section A — Answer in your own words</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>A1.</strong> In your own words, explain what a variable is. Use the "labeled box" analogy in your answer.</div>
+          <div class="exercise-item"><strong>A2.</strong> What is the difference between an <span class="inline-code">int</span> and a <span class="inline-code">float</span>? Give one example of each.</div>
+          <div class="exercise-item"><strong>A3.</strong> Why does <span class="inline-code">input()</span> always return a string? Why is this important to know?</div>
+          <div class="exercise-item"><strong>A4.</strong> Look at the following code. What will be printed? Explain your answer.
+            <div class="code-window" style="margin-top:8px;">
+              <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+              <div class="code-body"><pre>city = "Muscat"
+city = "Dubai"
+print(city)</pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 28: EXERCISES - SECTION B -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">07 · Exercises</div>
+      <div class="slide-heading">Section B — Code Tracing</div>
+      <div class="exercise-block">
+        <div class="exercise-header">🔍 Section B — Trace the code and predict output</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>B1.</strong> Trace through the following code and write exactly what is printed:
+            <div class="code-window" style="margin-top:6px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>x = 5
+y = 3
+x = x + y
+print(x)
+print(y)</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>B2.</strong> What is the output of the following code? Explain each line.
+            <div class="code-window" style="margin-top:6px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>first_name = "Ahmad"
+age = 19
+print(f"{first_name} is {age} years old.")
+print(type(age))</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>B3.</strong> The following code contains an error. Identify the error and explain how to fix it.
+            <div class="error-window" style="margin-top:6px;"><div class="error-bar">Error to Find</div><div class="error-body"><pre>number = input("Enter a number: ")
+result = number + 10
+print(result)</pre></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 29: EXERCISES - SECTION C -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">07 · Exercises</div>
+      <div class="slide-heading">Section C — Code Writing</div>
+      <div class="exercise-block">
+        <div class="exercise-header">✍️ Section C — Write your own programs</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>C1.</strong> Write a program that stores your first name and age in variables, then prints a sentence using both. Use an f-string.</div>
+          <div class="exercise-item"><strong>C2.</strong> Write a program that asks the user for their name and favourite number, then prints:<br><span class="inline-code">Hello, [name]! Your favourite number is [number].</span></div>
+          <div class="exercise-item"><strong>C3.</strong> Write a program that asks the user to enter two decimal numbers, converts both to floats, and prints their sum.</div>
+          <div class="exercise-item"><strong>C4.</strong> Write a program that asks the user for their birth year. Calculate and print their approximate age, assuming the current year is 2025.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 30: EXERCISES - SECTION D -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">07 · Exercises</div>
+      <div class="slide-heading">Section D — Code Modification</div>
+      <div class="exercise-block">
+        <div class="exercise-header">🔧 Section D — Fix or modify the given programs</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>D1.</strong> The following program runs without errors, but the output is wrong. Find the problem and fix it. <em>Hint: Run the program and observe the output carefully.</em>
+            <div class="error-window" style="margin-top:6px;"><div class="error-bar">Buggy Code</div><div class="error-body"><pre>num1 = input("Enter first number: ")
+num2 = input("Enter second number: ")
+print("The sum is:", num1 + num2)</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>D2.</strong> Modify this program to use an f-string instead of commas:
+            <div class="code-window" style="margin-top:6px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>product = "Python Textbook"
+price = 15.99
+print("Product:", product, "Price:", price)</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>D3.</strong> The program below asks for the user's name but doesn't use it. Modify it so the greeting includes the user's name:
+            <div class="code-window" style="margin-top:6px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>name = input("Enter your name: ")
+print("Welcome to the Introduction to Python course!")</pre></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 31: CLOSING -->
+  <section class="slide">
+    <div class="slide-inner slide-closing">
+      <div class="closing-icon">🐍</div>
+      <div class="closing-title">That's Lecture 2!</div>
+      <div class="closing-sub">You now know how to store data in variables, work with <span style="font-family:monospace;">int</span>, <span style="font-family:monospace;">float</span>, and <span style="font-family:monospace;">str</span>, get user input, and convert types. These skills are used in every Python program.</div>
+      <div style="margin-top:28px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
+        <div style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:12px 20px; font-size:0.85rem;">
+          <div style="font-weight:700; margin-bottom:4px;">Next Lecture</div>
+          <div style="opacity:0.8;">Arithmetic Operators &amp; Expressions</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:12px 20px; font-size:0.85rem;">
+          <div style="font-weight:700; margin-bottom:4px;">Practice</div>
+          <div style="opacity:0.8;">Complete all Section A–D exercises</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- end slide-viewport -->
+
+<!-- ===================== PROGRESS BAR ===================== -->
+<div id="progress-bar-wrap">
+  <div id="progress-bar"></div>
+</div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer id="app-footer">
+  <button id="pdf-btn" onclick="window.print()">🖨️ Export PDF</button>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)">&#8592;</button>
+    <span id="slide-counter">1 / 31</span>
+    <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">&#8594;</button>
+  </div>
+  <div class="footer-right"></div>
+</footer>
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+  const total = slides.length;
+
+  function showSlide(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, total - 1));
+    slides[current].classList.add('active');
+    slides[current].scrollTop = 0;
+    document.getElementById('slide-counter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('progress-bar').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('prev-btn').disabled = current === 0;
+    document.getElementById('next-btn').disabled = current === total - 1;
+  }
+
+  function changeSlide(dir) { showSlide(current + dir); }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') changeSlide(-1);
+    if (e.key === 'Home') showSlide(0);
+    if (e.key === 'End') showSlide(total - 1);
+  });
+
+  function toggleTheme() {
+    const body = document.body;
+    const btn = document.getElementById('theme-btn');
+    if (body.getAttribute('data-theme') === 'light') {
+      body.setAttribute('data-theme', 'dark');
+      btn.textContent = '☀️ Light';
+    } else {
+      body.setAttribute('data-theme', 'light');
+      btn.textContent = '🌙 Dark';
+    }
+  }
+
+  // Init
+  showSlide(0);
+</script>
+</body>
+</html>
