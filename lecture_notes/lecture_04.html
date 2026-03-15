@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lecture 4: Making Decisions with if, elif, and else</title>
+<style>
+/* ============================================================
+   CSS VARIABLES & THEME
+   ============================================================ */
+:root {
+  --bg-page: #eef2f7;
+  --bg-slide: #ffffff;
+  --bg-header: #0f2a5e;
+  --bg-footer: #0f2a5e;
+  --accent-blue: #1a56cc;
+  --accent-blue-light: #3b7de8;
+  --accent-green: #16a34a;
+  --accent-orange: #d97706;
+  --accent-red: #dc2626;
+  --accent-purple: #7c3aed;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-header: #ffffff;
+  --border: #d1dce8;
+  --bg-code: #1e2433;
+  --bg-output: #0d1a0d;
+  --bg-error: #1f0707;
+  --bg-info: #eff6ff;
+  --bg-warn: #fffbeb;
+  --bg-ok: #f0fdf4;
+  --bg-purple: #f5f3ff;
+  --border-info: #93c5fd;
+  --border-warn: #fcd34d;
+  --border-ok: #86efac;
+  --border-purple: #c4b5fd;
+  --slide-w: 960px;
+  --slide-h: 540px;
+  --header-h: 52px;
+  --footer-h: 56px;
+  --progress-h: 4px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
+  --radius: 10px;
+  --shadow: 0 8px 32px rgba(15,42,94,0.13);
+}
+[data-theme="dark"] {
+  --bg-page: #111827;
+  --bg-slide: #1e2636;
+  --bg-header: #070f1e;
+  --bg-footer: #070f1e;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border: #2d3a52;
+  --bg-info: #1e2a42;
+  --bg-warn: #292010;
+  --bg-ok: #0f2216;
+  --bg-purple: #1e1a30;
+  --border-info: #3b7de8;
+  --border-warn: #b45309;
+  --border-ok: #16a34a;
+  --border-purple: #7c3aed;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: var(--font); background: var(--bg-page); color: var(--text-primary); transition: background 0.2s, color 0.2s; overflow: hidden; }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+#app-header {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+  background: var(--bg-header); color: var(--text-header);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.header-title { font-size: 0.92rem; font-weight: 600; letter-spacing: 0.01em; opacity: 0.97; }
+.header-right { display: flex; align-items: center; gap: 14px; }
+.header-author { font-size: 0.8rem; opacity: 0.75; white-space: nowrap; }
+#theme-btn {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+  color: #fff; border-radius: 6px; padding: 5px 11px; cursor: pointer;
+  font-size: 0.8rem; font-family: var(--font); transition: background 0.15s;
+}
+#theme-btn:hover { background: rgba(255,255,255,0.22); }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+#app-footer {
+  position: fixed; bottom: 0; left: 0; right: 0; height: var(--footer-h);
+  background: var(--bg-footer); color: var(--text-header);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; z-index: 1000; box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+}
+#pdf-btn {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+  color: #fff; border-radius: 6px; padding: 6px 14px; cursor: pointer;
+  font-size: 0.8rem; font-family: var(--font); transition: background 0.15s;
+}
+#pdf-btn:hover { background: rgba(255,255,255,0.22); }
+.nav-controls { display: flex; align-items: center; gap: 10px; }
+.nav-btn {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+  color: #fff; border-radius: 6px; width: 34px; height: 34px; cursor: pointer;
+  font-size: 1rem; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s; font-family: var(--font);
+}
+.nav-btn:hover { background: rgba(255,255,255,0.28); }
+.nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+#slide-counter { font-size: 0.85rem; font-weight: 600; min-width: 60px; text-align: center; letter-spacing: 0.04em; }
+.footer-right { width: 120px; }
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+#progress-bar-wrap {
+  position: fixed; bottom: var(--footer-h); left: 0; right: 0;
+  height: var(--progress-h); background: rgba(255,255,255,0.1); z-index: 999;
+}
+#progress-bar { height: 100%; background: var(--accent-blue-light); transition: width 0.3s ease; width: 0%; }
+
+/* ============================================================
+   SLIDE VIEWPORT
+   ============================================================ */
+#slide-viewport {
+  position: fixed;
+  top: var(--header-h); bottom: calc(var(--footer-h) + var(--progress-h));
+  left: 0; right: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.slide {
+  display: none;
+  width: var(--slide-w); max-width: 98vw;
+  min-height: var(--slide-h);
+  max-height: calc(100vh - var(--header-h) - var(--footer-h) - var(--progress-h) - 16px);
+  background: var(--bg-slide);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  flex-direction: column;
+}
+.slide.active { display: flex; }
+.slide::-webkit-scrollbar { width: 5px; }
+.slide::-webkit-scrollbar-track { background: transparent; }
+.slide::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ============================================================
+   SLIDE INNER
+   ============================================================ */
+.slide-inner {
+  flex: 1; display: flex; flex-direction: column;
+  padding: 34px 44px 30px;
+}
+
+/* ============================================================
+   SPECIAL SLIDE TYPES
+   ============================================================ */
+.slide-title-page {
+  background: linear-gradient(135deg, #0f2a5e 0%, #1a4080 55%, #1a56cc 100%);
+  color: #fff; align-items: center; justify-content: center; text-align: center;
+  padding: 48px 56px; min-height: var(--slide-h);
+}
+.title-badge {
+  display: inline-block; background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3); border-radius: 20px;
+  padding: 4px 18px; font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 20px;
+}
+.title-main { font-size: 2rem; font-weight: 800; line-height: 1.2; margin-bottom: 14px; }
+.title-sub { font-size: 1rem; opacity: 0.8; line-height: 1.6; max-width: 620px; margin: 0 auto 28px; }
+.title-meta { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+.title-meta-item { font-size: 0.82rem; opacity: 0.7; }
+
+.slide-section-divider {
+  background: linear-gradient(135deg, #0f2a5e, #1a56cc);
+  color: #fff; align-items: center; justify-content: center; text-align: center; padding: 48px;
+}
+.section-num { font-size: 3.5rem; font-weight: 900; opacity: 0.18; line-height: 1; }
+.section-title { font-size: 1.7rem; font-weight: 700; margin-top: -8px; margin-bottom: 10px; }
+.section-desc { font-size: 0.95rem; opacity: 0.78; max-width: 520px; font-family: var(--font-mono); }
+
+.slide-closing {
+  background: linear-gradient(135deg, #0f2a5e 0%, #1a56cc 100%);
+  color: #fff; align-items: center; justify-content: center; text-align: center; padding: 48px;
+}
+.closing-icon { font-size: 3rem; margin-bottom: 16px; }
+.closing-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 10px; }
+.closing-sub { font-size: 0.93rem; opacity: 0.8; max-width: 500px; margin: 0 auto; line-height: 1.65; }
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.slide-label {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent-blue);
+  margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+.slide-label::before { content: ''; display: block; width: 18px; height: 2px; background: var(--accent-blue); border-radius: 2px; }
+.slide-heading {
+  font-size: 1.42rem; font-weight: 800; color: var(--text-primary);
+  line-height: 1.25; margin-bottom: 18px; border-bottom: 2px solid var(--accent-blue);
+  padding-bottom: 10px;
+}
+.slide-subheading { font-size: 0.95rem; font-weight: 700; color: var(--accent-blue); margin: 12px 0 7px; }
+.body-text { font-size: 0.88rem; line-height: 1.7; color: var(--text-secondary); margin-bottom: 10px; }
+.body-text strong { color: var(--text-primary); }
+.inline-code {
+  font-family: var(--font-mono); font-size: 0.82em;
+  background: var(--bg-code); color: #7dd3fc;
+  padding: 1px 6px; border-radius: 4px; white-space: nowrap;
+}
+
+/* ============================================================
+   BULLETS & STEPS
+   ============================================================ */
+.bullets { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.bullets li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.88rem; line-height: 1.55; color: var(--text-secondary); }
+.bullets li::before { content: '▸'; color: var(--accent-blue); font-size: 0.85rem; margin-top: 2px; flex-shrink: 0; }
+.bullets li strong { color: var(--text-primary); }
+
+.steps { list-style: none; display: flex; flex-direction: column; gap: 10px; counter-reset: step; }
+.steps li { display: flex; align-items: flex-start; gap: 12px; font-size: 0.88rem; line-height: 1.55; color: var(--text-secondary); counter-increment: step; }
+.steps li::before { content: counter(step); background: var(--accent-blue); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.steps li strong { color: var(--text-primary); }
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.cards { display: grid; gap: 12px; }
+.cards.col-2 { grid-template-columns: 1fr 1fr; }
+.cards.col-3 { grid-template-columns: 1fr 1fr 1fr; }
+.card { background: var(--bg-info); border: 1px solid var(--border-info); border-radius: 8px; padding: 14px 16px; }
+.card-icon { font-size: 1.3rem; margin-bottom: 7px; }
+.card-title { font-size: 0.84rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.card-body { font-size: 0.81rem; line-height: 1.5; color: var(--text-secondary); }
+.card-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.73rem; background: var(--accent-blue); color: #fff; border-radius: 4px; padding: 1px 8px; margin-bottom: 6px; }
+
+/* ============================================================
+   BOXES
+   ============================================================ */
+.info-box, .warn-box, .ok-box, .purple-box {
+  border-left: 4px solid; border-radius: 0 8px 8px 0;
+  padding: 10px 15px; margin: 8px 0; font-size: 0.86rem; line-height: 1.6;
+}
+.info-box { background: var(--bg-info); border-color: var(--accent-blue); color: var(--text-primary); }
+.warn-box { background: var(--bg-warn); border-color: var(--accent-orange); color: var(--text-primary); }
+.ok-box { background: var(--bg-ok); border-color: var(--accent-green); color: var(--text-primary); }
+.purple-box { background: var(--bg-purple); border-color: var(--accent-purple); color: var(--text-primary); }
+.box-label { font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+.info-box .box-label { color: var(--accent-blue); }
+.warn-box .box-label { color: var(--accent-orange); }
+.ok-box .box-label { color: var(--accent-green); }
+.purple-box .box-label { color: var(--accent-purple); }
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.styled-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; margin: 8px 0; }
+.styled-table th { background: var(--accent-blue); color: #fff; text-align: left; padding: 8px 14px; font-weight: 700; font-size: 0.79rem; }
+.styled-table th:first-child { border-radius: 6px 0 0 0; }
+.styled-table th:last-child { border-radius: 0 6px 0 0; }
+.styled-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: middle; }
+.styled-table tr:last-child td { border-bottom: none; }
+.styled-table tr:nth-child(even) td { background: rgba(26,86,204,0.04); }
+.styled-table .true-val { color: var(--accent-green); font-weight: 700; font-family: var(--font-mono); }
+.styled-table .false-val { color: var(--accent-red); font-weight: 700; font-family: var(--font-mono); }
+
+/* ============================================================
+   CODE WINDOWS
+   ============================================================ */
+.code-window { background: var(--bg-code); border-radius: 8px; overflow: hidden; margin: 8px 0; box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+.code-bar { display: flex; align-items: center; justify-content: space-between; padding: 7px 14px; background: #161c2b; }
+.code-dots { display: flex; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-red { background: #ff5f57; } .dot-yellow { background: #febc2e; } .dot-green { background: #28c840; }
+.code-lang { font-size: 0.67rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; font-family: var(--font-mono); }
+.code-body { padding: 12px 18px; overflow-x: auto; }
+.code-body pre { font-family: var(--font-mono); font-size: 0.81rem; line-height: 1.65; color: #e2e8f0; }
+
+/* ============================================================
+   OUTPUT & ERROR WINDOWS
+   ============================================================ */
+.output-window { background: var(--bg-output); border-radius: 8px; overflow: hidden; margin: 6px 0; border: 1px solid #1a3a1a; }
+.output-bar { display: flex; align-items: center; gap: 8px; background: #0a1a0a; padding: 5px 14px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #22c55e; }
+.output-bar::before { content: '▶'; font-size: 0.62rem; }
+.output-body { padding: 10px 18px; }
+.output-body pre { font-family: var(--font-mono); font-size: 0.81rem; line-height: 1.6; color: #4ade80; }
+
+.error-window { background: var(--bg-error); border-radius: 8px; overflow: hidden; margin: 6px 0; border: 1px solid #4a1010; }
+.error-bar { display: flex; align-items: center; gap: 8px; background: #2d0505; padding: 5px 14px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #f87171; }
+.error-bar::before { content: '✗'; }
+.error-body { padding: 10px 18px; }
+.error-body pre { font-family: var(--font-mono); font-size: 0.81rem; line-height: 1.6; color: #fca5a5; }
+
+/* ============================================================
+   SPLIT LAYOUT
+   ============================================================ */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.split.col-60-40 { grid-template-columns: 60fr 40fr; }
+.split.col-55-45 { grid-template-columns: 55fr 45fr; }
+
+/* ============================================================
+   SYNTAX BOX
+   ============================================================ */
+.syntax-box {
+  background: #0f1c35; border: 1px solid #2d4a80; border-radius: 8px;
+  padding: 14px 18px; font-family: var(--font-mono); font-size: 0.82rem;
+  line-height: 1.9; color: #e2e8f0; margin: 8px 0;
+}
+.syn-kw { color: #c084fc; font-weight: 700; }
+.syn-cond { color: #60a5fa; }
+.syn-comment { color: #64748b; font-style: italic; }
+.syn-indent { display: inline-block; width: 28px; }
+
+/* ============================================================
+   FLOWCHART
+   ============================================================ */
+.flowchart { display: flex; flex-direction: column; align-items: center; gap: 0; padding: 4px 0; }
+.fc-node { padding: 9px 22px; border-radius: 8px; font-size: 0.79rem; font-weight: 600; text-align: center; min-width: 150px; background: var(--accent-blue); color: #fff; font-family: var(--font-mono); }
+.fc-node.start, .fc-node.end { border-radius: 24px; background: #0f2a5e; font-family: var(--font); font-size: 0.82rem; }
+.fc-node.decision { background: var(--accent-orange); color: #fff; clip-path: polygon(18px 0%,calc(100% - 18px) 0%,100% 50%,calc(100% - 18px) 100%,18px 100%,0% 50%); padding: 10px 36px; border-radius: 0; }
+.fc-node.result-ok { background: var(--accent-green); border-radius: 6px; }
+.fc-node.result-no { background: var(--accent-red); border-radius: 6px; }
+.fc-arrow { width: 2px; height: 18px; background: var(--accent-blue-light); position: relative; display: flex; justify-content: center; }
+.fc-arrow::after { content: '▼'; position: absolute; bottom: -8px; color: var(--accent-blue-light); font-size: 0.68rem; }
+.fc-branch-label { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); padding: 0 4px; }
+
+/* ============================================================
+   KEYWORD PILLS
+   ============================================================ */
+.kw-pills { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; justify-content: flex-start; }
+.kw-pill { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; padding: 8px 22px; border-radius: 8px; border: 2px solid; }
+.kw-if { background: #dbeafe; color: #1e3a8a; border-color: #93c5fd; }
+.kw-elif { background: #fef3c7; color: #78350f; border-color: #fcd34d; }
+.kw-else { background: #dcfce7; color: #14532d; border-color: #86efac; }
+[data-theme="dark"] .kw-if { background: #1e2a42; color: #7dd3fc; border-color: #3b7de8; }
+[data-theme="dark"] .kw-elif { background: #2a1f07; color: #fbbf24; border-color: #b45309; }
+[data-theme="dark"] .kw-else { background: #0f2216; color: #4ade80; border-color: #16a34a; }
+
+/* ============================================================
+   COMPARE PAIR
+   ============================================================ */
+.compare-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0; }
+.compare-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; padding: 3px 10px; border-radius: 4px; display: inline-block; }
+.compare-wrong .compare-label { background: rgba(220,38,38,0.15); color: var(--accent-red); }
+.compare-right .compare-label { background: rgba(22,163,74,0.15); color: var(--accent-green); }
+
+/* ============================================================
+   TRACE STEPS
+   ============================================================ */
+.trace-step { display: flex; align-items: center; gap: 10px; font-size: 0.82rem; margin-bottom: 6px; }
+.trace-badge { font-family: var(--font-mono); border-radius: 4px; padding: 2px 8px; min-width: 110px; text-align: center; font-size: 0.78rem; }
+.trace-true { background: rgba(22,163,74,0.12); color: var(--accent-green); }
+.trace-false { background: rgba(220,38,38,0.12); color: var(--accent-red); }
+.trace-skip { background: var(--border); color: var(--text-secondary); opacity: 0.5; }
+.trace-note { color: var(--text-secondary); }
+.trace-note.win { color: var(--accent-green); font-weight: 600; }
+
+/* ============================================================
+   TRAFFIC LIGHT
+   ============================================================ */
+.traffic-light { display: flex; flex-direction: column; align-items: center; gap: 6px; background: #222; border-radius: 12px; padding: 12px 16px; width: 60px; }
+.tl-circle { width: 32px; height: 32px; border-radius: 50%; opacity: 0.25; }
+.tl-circle.active { opacity: 1; }
+.tl-red { background: #ef4444; } .tl-yellow { background: #eab308; } .tl-green { background: #22c55e; }
+
+/* ============================================================
+   EXERCISE BLOCKS
+   ============================================================ */
+.exercise-block { border: 2px solid var(--accent-blue); border-radius: 8px; overflow: hidden; margin: 8px 0; }
+.exercise-header { background: var(--accent-blue); color: #fff; padding: 7px 16px; font-size: 0.79rem; font-weight: 700; letter-spacing: 0.05em; }
+.exercise-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.exercise-item { font-size: 0.85rem; line-height: 1.55; color: var(--text-secondary); }
+.exercise-item strong { color: var(--text-primary); }
+
+/* ============================================================
+   PRINT CSS
+   ============================================================ */
+@media print {
+  html, body { overflow: visible !important; height: auto !important; }
+  #app-header, #app-footer, #progress-bar-wrap { display: none !important; }
+  #slide-viewport { position: static !important; overflow: visible !important; height: auto !important; }
+  .slide { display: flex !important; page-break-after: always; box-shadow: none !important; max-height: none !important; width: 100% !important; border-radius: 0 !important; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .slide-inner { padding: 24px 26px 20px; }
+  .slide-heading { font-size: 1.18rem; }
+}
+@media (max-width: 768px) {
+  .slide-inner { padding: 18px 16px 16px; }
+  .cards.col-2, .cards.col-3, .split, .compare-pair { grid-template-columns: 1fr; }
+  .title-main { font-size: 1.35rem; }
+  .header-author { display: none; }
+}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- ===================== HEADER ===================== -->
+<header id="app-header">
+  <div class="header-title">Lecture #4: Making Decisions with if, elif, and else</div>
+  <div class="header-right">
+    <span class="header-author">Created by Fawaz Alazemi</span>
+    <button id="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+  </div>
+</header>
+
+<!-- ===================== SLIDES ===================== -->
+<div id="slide-viewport">
+
+  <!-- SLIDE 1: TITLE -->
+  <section class="slide active">
+    <div class="slide-inner slide-title-page">
+      <div class="title-badge">Introduction to Python · Lecture 4</div>
+      <div class="title-main">Making Decisions with<br><code style="font-family:monospace; font-size:1.75rem;">if</code>, <code style="font-family:monospace; font-size:1.75rem;">elif</code>, and <code style="font-family:monospace; font-size:1.75rem;">else</code></div>
+      <div class="title-sub">Give your programs the ability to choose — running different code for different situations, just like humans make decisions every day.</div>
+      <div class="title-meta">
+        <span class="title-meta-item">🔀 Topic: Conditional Statements</span>
+        <span class="title-meta-item">🎯 5 Learning Objectives</span>
+        <span class="title-meta-item">💻 Examples + 16 Exercises</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: WHY THIS MATTERS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">Motivation</div>
+      <div class="slide-heading">Why This Topic Matters</div>
+      <div class="body-text">Every useful program must respond differently to different situations. Without the ability to make decisions, a program would do the same thing every time, regardless of the input.</div>
+      <div class="cards col-3" style="margin-top:12px;">
+        <div class="card">
+          <div class="card-icon">📊</div>
+          <div class="card-title">Grade Calculator</div>
+          <div class="card-body">Must display <strong>"Pass"</strong> for some scores and <strong>"Fail"</strong> for others.</div>
+        </div>
+        <div class="card" style="border-color:var(--border-warn); background:var(--bg-warn);">
+          <div class="card-icon">🔐</div>
+          <div class="card-title">Login System</div>
+          <div class="card-body">Must <strong>accept</strong> correct passwords and <strong>reject</strong> incorrect ones.</div>
+        </div>
+        <div class="card" style="border-color:var(--border-ok); background:var(--bg-ok);">
+          <div class="card-icon">🌧️</div>
+          <div class="card-title">Weather App</div>
+          <div class="card-body">Must recommend an <strong>umbrella</strong> when it rains, not on sunny days.</div>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:14px;">
+        <div class="box-label">💡 The Key Idea</div>
+        <strong>Conditional statements</strong> give your program the ability to choose between actions. This is one of the most fundamental skills in all of programming.
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: LEARNING OBJECTIVES -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">Goals</div>
+      <div class="slide-heading">Learning Objectives</div>
+      <div class="body-text">By the end of this lecture, you will be able to:</div>
+      <ol class="steps" style="margin-top:14px;">
+        <li>Explain what a <strong>conditional statement</strong> is and why it is useful</li>
+        <li>Use <span class="inline-code">if</span>, <span class="inline-code">elif</span>, and <span class="inline-code">else</span> to control the flow of a program</li>
+        <li>Write and apply <strong>comparison operators</strong>: <span class="inline-code">==</span> &nbsp;<span class="inline-code">!=</span> &nbsp;<span class="inline-code">&gt;</span> &nbsp;<span class="inline-code">&lt;</span> &nbsp;<span class="inline-code">&gt;=</span> &nbsp;<span class="inline-code">&lt;=</span></li>
+        <li>Recognise and fix <strong>common mistakes</strong> in conditional statements</li>
+        <li>Build small programs that <strong>make decisions</strong> based on user input</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: WHAT IS A CONDITIONAL STATEMENT -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">01 · Introduction</div>
+      <div class="slide-heading">What Is a Conditional Statement?</div>
+      <div class="split col-60-40">
+        <div>
+          <div class="info-box">
+            <div class="box-label">📖 Definition</div>
+            A <strong>conditional statement</strong> is an instruction that tells the program:<br><em>"Do this only if a certain condition is true."</em>
+          </div>
+          <div class="body-text" style="margin-top:12px;">In Python, the three main keywords for making decisions are:</div>
+          <div class="kw-pills">
+            <span class="kw-pill kw-if">if</span>
+            <span class="kw-pill kw-elif">elif</span>
+            <span class="kw-pill kw-else">else</span>
+          </div>
+          <div class="body-text" style="margin-top:8px;">These keywords let you tell Python: <em>"Check this condition, and decide what to do next."</em></div>
+        </div>
+        <div>
+          <div class="purple-box">
+            <div class="box-label">🚦 Analogy: Traffic Light</div>
+            When the light is <strong>red</strong>, you stop. When it is <strong>green</strong>, you go. The driver decides what to do based on the condition (light colour).<br><br>
+            A conditional statement works exactly the same way.
+          </div>
+          <div style="display:flex; justify-content:center; margin-top:14px; gap:18px; align-items:center;">
+            <div class="traffic-light">
+              <div class="tl-circle tl-red active"></div>
+              <div class="tl-circle tl-yellow"></div>
+              <div class="tl-circle tl-green"></div>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-secondary); line-height:2.4; font-family:var(--font-mono);">→ Stop<br>→ Slow<br>→ Go</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: SECTION – COMPARISON OPERATORS -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">01</div>
+      <div class="section-title">Comparison Operators</div>
+      <div class="section-desc">==&nbsp;&nbsp;!=&nbsp;&nbsp;&gt;&nbsp;&nbsp;&lt;&nbsp;&nbsp;&gt;=&nbsp;&nbsp;&lt;=</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: COMPARISON OPERATORS TABLE -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">01 · Comparison Operators</div>
+      <div class="slide-heading">Comparing Values in Python</div>
+      <div class="body-text">A <strong>comparison operator</strong> compares two values and returns either <span class="inline-code">True</span> or <span class="inline-code">False</span>. These are called <strong>Boolean values</strong>.</div>
+      <table class="styled-table" style="margin-top:12px;">
+        <thead><tr><th>Operator</th><th>Meaning</th><th>Example</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td><span class="inline-code">==</span></td><td>Equal to</td><td><span class="inline-code">5 == 5</span></td><td class="true-val">True</td></tr>
+          <tr><td><span class="inline-code">!=</span></td><td>Not equal to</td><td><span class="inline-code">5 != 3</span></td><td class="true-val">True</td></tr>
+          <tr><td><span class="inline-code">&gt;</span></td><td>Greater than</td><td><span class="inline-code">7 &gt; 3</span></td><td class="true-val">True</td></tr>
+          <tr><td><span class="inline-code">&lt;</span></td><td>Less than</td><td><span class="inline-code">2 &lt; 6</span></td><td class="true-val">True</td></tr>
+          <tr><td><span class="inline-code">&gt;=</span></td><td>Greater than or equal to</td><td><span class="inline-code">5 &gt;= 5</span></td><td class="true-val">True</td></tr>
+          <tr><td><span class="inline-code">&lt;=</span></td><td>Less than or equal to</td><td><span class="inline-code">4 &lt;= 3</span></td><td class="false-val">False</td></tr>
+        </tbody>
+      </table>
+      <div class="warn-box" style="margin-top:12px;">
+        <div class="box-label">⚠️ Critical Distinction</div>
+        <span class="inline-code">==</span> checks if two values are <strong>equal</strong> (comparison). <span class="inline-code">=</span> assigns a value to a variable (assignment). These are completely different! Mixing them up is one of the most common beginner mistakes.
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: TRY IT – COMPARISONS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">01 · Comparison Operators</div>
+      <div class="slide-heading">Try It: Evaluating Comparisons</div>
+      <div class="body-text">Open your Python environment and type these lines one at a time. Each line prints either <span class="inline-code">True</span> or <span class="inline-code">False</span>. You are watching Python evaluate comparisons.</div>
+      <div class="split" style="margin-top:14px;">
+        <div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>print(10 == 10)
+print(10 == 9)
+print(7 > 3)
+print(4 <= 4)
+print(5 != 5)</pre></div>
+          </div>
+        </div>
+        <div>
+          <div class="output-window" style="margin-top:0;">
+            <div class="output-bar">Output</div>
+            <div class="output-body"><pre>True
+False
+True
+True
+False</pre></div>
+          </div>
+          <div class="info-box" style="margin-top:10px;">
+            <div class="box-label">💡 Boolean Values</div>
+            <span class="inline-code">True</span> and <span class="inline-code">False</span> are special Python values. They are the result of every comparison, and they drive all conditional logic in your programs.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: SECTION – THE if STATEMENT -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">02</div>
+      <div class="section-title">The <code style="font-size:1.5rem; font-family:monospace;">if</code> Statement</div>
+      <div class="section-desc">Run code only when a condition is True</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: THE if STATEMENT -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">02 · The if Statement</div>
+      <div class="slide-heading">The <span class="inline-code">if</span> Statement</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="body-text">The <span class="inline-code">if</span> statement tells Python: <em>"Run this block of code only if the condition is true."</em> If the condition is false, Python skips the block entirely.</div>
+          <div class="syntax-box" style="margin-top:10px;">
+<span class="syn-kw">if</span> <span class="syn-cond">condition</span>:<br>
+<span class="syn-indent"></span><span class="syn-comment"># code runs only if True</span><br>
+<span class="syn-indent"></span>print("something")
+          </div>
+          <div class="warn-box" style="margin-top:8px; font-size:0.83rem;">
+            <div class="box-label">⚠️ Two Mandatory Rules</div>
+            1. A colon <span class="inline-code">:</span> after the condition is <strong>required</strong>.<br>
+            2. The code inside must be <strong>indented 4 spaces</strong>.
+          </div>
+          <div class="purple-box" style="margin-top:8px; font-size:0.83rem;">
+            <div class="box-label">🎫 Analogy</div>
+            Imagine a door: <em>"Enter only if you have a ticket."</em> No ticket? Walk past. The <span class="inline-code">if</span> statement works exactly like this sign.
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">Example — Check Positive Number</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>number = 8
+
+if number > 0:
+    print("The number is positive.")</pre></div>
+          </div>
+          <div class="output-window">
+            <div class="output-bar">Output</div>
+            <div class="output-body"><pre>The number is positive.</pre></div>
+          </div>
+          <div class="ok-box" style="margin-top:8px; font-size:0.82rem;">
+            <div class="box-label">✅ What Happens</div>
+            <span class="inline-code">8 &gt; 0</span> is <strong>True</strong> → the indented block runs.<br>
+            Change to <span class="inline-code">number = -3</span> and nothing prints — the block is skipped.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: SECTION – if–else -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">03</div>
+      <div class="section-title">The <code style="font-size:1.4rem; font-family:monospace;">if–else</code> Statement</div>
+      <div class="section-desc">Choose between exactly two actions</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 11: if–else EXPLANATION + FLOWCHART -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">03 · if–else</div>
+      <div class="slide-heading">The <span class="inline-code">if</span>–<span class="inline-code">else</span> Statement</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="body-text">The <span class="inline-code">else</span> provides an alternative. It says: <em>"If the condition is true, do this. Otherwise, do that."</em> Only <strong>one block ever runs</strong> — never both.</div>
+          <div class="syntax-box" style="margin-top:10px;">
+<span class="syn-kw">if</span> <span class="syn-cond">condition</span>:<br>
+<span class="syn-indent"></span><span class="syn-comment"># runs if True</span><br>
+<span class="syn-kw">else</span>:<br>
+<span class="syn-indent"></span><span class="syn-comment"># runs if False</span>
+          </div>
+          <div class="purple-box" style="margin-top:10px; font-size:0.83rem;">
+            <div class="box-label">☂️ Analogy</div>
+            You check the weather before leaving. <em>If it is raining, take an umbrella. Otherwise, leave without one.</em> Exactly two possibilities — you choose one based on the condition.
+          </div>
+        </div>
+        <div>
+          <div class="flowchart" style="padding-top:8px;">
+            <div class="fc-node start">Start</div>
+            <div class="fc-arrow"></div>
+            <div class="fc-node decision">condition?</div>
+            <div style="display:flex; gap:0; width:100%; justify-content:center; margin-top:20px;">
+              <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+                <div class="fc-branch-label" style="color:var(--accent-green);">True ✓</div>
+                <div class="fc-node result-ok" style="min-width:100px; font-size:0.77rem;">if block runs</div>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+                <div class="fc-branch-label" style="color:var(--accent-red);">False ✗</div>
+                <div class="fc-node result-no" style="min-width:100px; font-size:0.77rem;">else block runs</div>
+              </div>
+            </div>
+            <div class="fc-arrow" style="margin-top:20px;"></div>
+            <div class="fc-node end" style="margin-top:8px;">Continue</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 12: if–else EXAMPLES -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">03 · if–else</div>
+      <div class="slide-heading">Examples — Pass/Fail and Even/Odd</div>
+      <div class="split">
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">Pass or Fail</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>score = 55
+
+if score >= 50:
+    print("Result: Pass")
+else:
+    print("Result: Fail")</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>Result: Pass</pre></div></div>
+          <div class="body-text" style="font-size:0.81rem; margin-top:6px;"><span class="inline-code">55 &gt;= 50</span> is True → first block runs. Change score to <span class="inline-code">40</span> and the <span class="inline-code">else</span> block runs instead.</div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">Even or Odd</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>number = 7
+
+if number % 2 == 0:
+    print("The number is even.")
+else:
+    print("The number is odd.")</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>The number is odd.</pre></div></div>
+          <div class="info-box" style="margin-top:8px; font-size:0.82rem;">
+            <div class="box-label">💡 The % Operator</div>
+            <span class="inline-code">%</span> gives the remainder. <span class="inline-code">7 % 2 = 1</span>, not 0 → the number is odd.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 13: SECTION – if–elif–else -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">04</div>
+      <div class="section-title">The <code style="font-size:1.2rem; font-family:monospace;">if–elif–else</code> Statement</div>
+      <div class="section-desc">Handle three or more possibilities in sequence</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 14: if–elif–else EXPLANATION -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">04 · if–elif–else</div>
+      <div class="slide-heading">Checking Multiple Conditions with <span class="inline-code">elif</span></div>
+      <div class="split col-55-45">
+        <div>
+          <div class="body-text">Sometimes there are <strong>more than two possibilities</strong>. The <span class="inline-code">elif</span> keyword (short for <em>else if</em>) lets you check multiple conditions in sequence.</div>
+          <div class="body-text">Python checks from <strong>top to bottom</strong> and runs only the <strong>first block</strong> whose condition is <span class="inline-code">True</span>. If none match, the <span class="inline-code">else</span> block runs.</div>
+          <div class="syntax-box" style="margin-top:8px;">
+<span class="syn-kw">if</span> <span class="syn-cond">condition_1</span>:<br>
+<span class="syn-indent"></span><span class="syn-comment"># if condition_1 is True</span><br>
+<span class="syn-kw">elif</span> <span class="syn-cond">condition_2</span>:<br>
+<span class="syn-indent"></span><span class="syn-comment"># if condition_2 is True</span><br>
+<span class="syn-kw">elif</span> <span class="syn-cond">condition_3</span>:<br>
+<span class="syn-indent"></span><span class="syn-comment"># if condition_3 is True</span><br>
+<span class="syn-kw">else</span>:<br>
+<span class="syn-indent"></span><span class="syn-comment"># if none above are True</span>
+          </div>
+        </div>
+        <div>
+          <div class="purple-box" style="margin-bottom:10px;">
+            <div class="box-label">🚦 Traffic Light — 3 Conditions</div>
+            <em>If green → go.<br>Else if yellow → slow down.<br>Else if red → stop.</em><br><br>
+            You check each in order. The first match wins.
+          </div>
+          <div class="info-box" style="font-size:0.83rem;">
+            <div class="box-label">✅ Key Rule</div>
+            Python <strong>stops checking</strong> as soon as it finds the first <span class="inline-code">True</span> condition. The remaining branches are never evaluated.
+          </div>
+          <div class="ok-box" style="margin-top:8px; font-size:0.83rem;">
+            <div class="box-label">📝 Note</div>
+            The final <span class="inline-code">else</span> is optional, but good practice — it catches anything that did not match.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 15: GRADE EXAMPLE -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">04 · if–elif–else</div>
+      <div class="slide-heading">Example — Grade Classification</div>
+      <div class="split">
+        <div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>score = 72
+
+if score >= 90:
+    print("Grade: A")
+elif score >= 75:
+    print("Grade: B")
+elif score >= 60:
+    print("Grade: C")
+elif score >= 50:
+    print("Grade: D")
+else:
+    print("Grade: F")</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>Grade: C</pre></div></div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">How Python Traces This (score = 72)</div>
+          <div class="trace-step"><span class="trace-badge trace-false">72 ≥ 90 → False</span><span class="trace-note">Move to next</span></div>
+          <div class="trace-step"><span class="trace-badge trace-false">72 ≥ 75 → False</span><span class="trace-note">Move to next</span></div>
+          <div class="trace-step"><span class="trace-badge trace-true">72 ≥ 60 → True</span><span class="trace-note win">✓ Run this block</span></div>
+          <div class="trace-step" style="opacity:0.4;"><span class="trace-badge trace-skip">72 ≥ 50</span><span class="trace-note">Skipped</span></div>
+          <div class="trace-step" style="opacity:0.4;"><span class="trace-badge trace-skip">else</span><span class="trace-note">Skipped</span></div>
+          <div class="info-box" style="margin-top:12px; font-size:0.82rem;">
+            Python does not check remaining conditions once it finds the first <span class="inline-code">True</span> result.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 16: AGE CATEGORY EXAMPLE -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">04 · if–elif–else</div>
+      <div class="slide-heading">Example — Age Category</div>
+      <div class="split">
+        <div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>age = 16
+
+if age < 13:
+    print("Child")
+elif age < 18:
+    print("Teenager")
+elif age < 65:
+    print("Adult")
+else:
+    print("Senior")</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>Teenager</pre></div></div>
+          <div class="body-text" style="font-size:0.82rem; margin-top:6px;"><span class="inline-code">16 &lt; 13</span> is False. <span class="inline-code">16 &lt; 18</span> is True → print "Teenager" and stop.</div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">All Categories at a Glance</div>
+          <div class="cards col-2" style="gap:8px;">
+            <div class="card" style="padding:10px 12px;"><div class="card-title" style="font-size:0.8rem;">age &lt; 13</div><div class="card-body">Child</div></div>
+            <div class="card" style="padding:10px 12px; border-color:var(--border-warn); background:var(--bg-warn);"><div class="card-title" style="font-size:0.8rem;">age &lt; 18 ✓</div><div class="card-body"><strong>Teenager</strong> — matches!</div></div>
+            <div class="card" style="padding:10px 12px; border-color:var(--border-ok); background:var(--bg-ok);"><div class="card-title" style="font-size:0.8rem;">age &lt; 65</div><div class="card-body">Adult</div></div>
+            <div class="card" style="padding:10px 12px;"><div class="card-title" style="font-size:0.8rem;">else</div><div class="card-body">Senior</div></div>
+          </div>
+          <div class="ok-box" style="margin-top:12px; font-size:0.82rem;">
+            <div class="box-label">🎯 Try It</div>
+            Add a new <span class="inline-code">elif</span> for <span class="inline-code">score >= 100</span> that prints <span class="inline-code">"Grade: A+"</span>. Where should this go? Why?
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 17: SECTION – INDENTATION -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">05</div>
+      <div class="section-title">Indentation</div>
+      <div class="section-desc">Python's mandatory block structure rule</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 18: INDENTATION -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">05 · Indentation</div>
+      <div class="slide-heading">Indentation — A Critical Rule in Python</div>
+      <div class="split">
+        <div>
+          <div class="info-box">
+            <div class="box-label">📖 What Is Indentation?</div>
+            <strong>Indentation</strong> means adding spaces at the beginning of a line to show it belongs to a block. In Python, indentation is <strong>not optional</strong> — it is a rule of the language. Use <strong>4 spaces</strong> per level.
+          </div>
+          <div class="compare-pair" style="margin-top:12px;">
+            <div class="compare-wrong">
+              <span class="compare-label">❌ Wrong — Error</span>
+              <div class="error-window" style="margin:0;"><div class="error-bar">IndentationError</div><div class="error-body"><pre>if score >= 50:
+print("Pass")</pre></div></div>
+            </div>
+            <div class="compare-right">
+              <span class="compare-label">✅ Correct</span>
+              <div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>if score >= 50:
+    print("Pass")</pre></div></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">Multiple Lines in One Block</div>
+          <div class="body-text" style="font-size:0.83rem;">You can have many lines inside one block — all must be indented equally.</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>temperature = 38
+
+if temperature > 37.5:
+    print("You have a fever.")
+    print("Please rest and drink water.")
+    print("Consider seeing a doctor.")
+else:
+    print("Your temperature is normal.")</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>You have a fever.
+Please rest and drink water.
+Consider seeing a doctor.</pre></div></div>
+          <div class="body-text" style="font-size:0.8rem; margin-top:6px;">All three <span class="inline-code">print</span> statements belong to the <span class="inline-code">if</span> block — same indentation level.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 19: SECTION – USER INPUT -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">06</div>
+      <div class="section-title">Using <code style="font-size:1.3rem; font-family:monospace;">if</code> with User Input</div>
+      <div class="section-desc">Making real interactive decision programs</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 20: if WITH USER INPUT -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">06 · User Input</div>
+      <div class="slide-heading">Combining <span class="inline-code">input()</span> with Conditionals</div>
+      <div class="body-text">In real programs, conditions depend on user input. This example combines <span class="inline-code">input()</span>, type conversion, and a conditional statement.</div>
+      <div class="split" style="margin-top:10px;">
+        <div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>age = int(input("Enter your age: "))
+
+if age >= 18:
+    print("You are eligible to vote.")
+else:
+    print("You are not yet eligible to vote.")</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Sample: user enters 20</div><div class="output-body"><pre>Enter your age: 20
+You are eligible to vote.</pre></div></div>
+          <div class="output-window"><div class="output-bar">Sample: user enters 15</div><div class="output-body"><pre>Enter your age: 15
+You are not yet eligible to vote.</pre></div></div>
+        </div>
+        <div>
+          <div class="warn-box" style="margin-top:0;">
+            <div class="box-label">⚠️ Always Convert input()</div>
+            <span class="inline-code">input()</span> always returns a <strong>string</strong>.<br><br>
+            If you forget <span class="inline-code">int()</span>, comparing the string to the number <span class="inline-code">18</span> will produce a <strong>TypeError</strong>.
+          </div>
+          <div class="info-box" style="margin-top:10px; font-size:0.83rem;">
+            <div class="box-label">✅ The Pattern to Remember</div>
+            <span class="inline-code">variable = int(input("prompt"))</span><br><br>
+            Always wrap <span class="inline-code">input()</span> with <span class="inline-code">int()</span> or <span class="inline-code">float()</span> before comparing to a number.
+          </div>
+          <div class="ok-box" style="margin-top:10px; font-size:0.83rem;">
+            <div class="box-label">🎯 Try It</div>
+            Extend this program to also print <span class="inline-code">"Welcome to your first vote!"</span> when the user is <strong>exactly 18</strong>. You'll need <span class="inline-code">if–elif–else</span>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 21: SECTION – COMMON MISTAKES -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">07</div>
+      <div class="section-title">Common Mistakes</div>
+      <div class="section-desc">Five errors beginners make — and how to fix each one</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 22: MISTAKES 1 & 2 -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">07 · Common Mistakes</div>
+      <div class="slide-heading">Mistakes 1 &amp; 2</div>
+      <div class="split">
+        <div>
+          <div class="warn-box" style="margin-bottom:8px;">
+            <div class="box-label">❌ Mistake 1: Using = instead of ==</div>
+            Inside <span class="inline-code">if</span> conditions, you almost always need <span class="inline-code">==</span>, not <span class="inline-code">=</span>.
+          </div>
+          <div class="compare-pair">
+            <div class="compare-wrong">
+              <span class="compare-label">❌ Wrong</span>
+              <div class="error-window" style="margin:0;"><div class="error-bar">SyntaxError</div><div class="error-body"><pre>if score = 80:
+    print("Correct")</pre></div></div>
+            </div>
+            <div class="compare-right">
+              <span class="compare-label">✅ Fixed</span>
+              <div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>if score == 80:
+    print("Correct")</pre></div></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="warn-box" style="margin-bottom:8px;">
+            <div class="box-label">❌ Mistake 2: Missing the Colon</div>
+            Every <span class="inline-code">if</span>, <span class="inline-code">elif</span>, and <span class="inline-code">else</span> line <strong>must</strong> end with a colon <span class="inline-code">:</span>.
+          </div>
+          <div class="compare-pair">
+            <div class="compare-wrong">
+              <span class="compare-label">❌ Wrong</span>
+              <div class="error-window" style="margin:0;"><div class="error-bar">SyntaxError</div><div class="error-body"><pre>if score >= 50
+    print("Pass")</pre></div></div>
+            </div>
+            <div class="compare-right">
+              <span class="compare-label">✅ Fixed</span>
+              <div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>if score >= 50:
+    print("Pass")</pre></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 23: MISTAKES 3, 4, 5 -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">07 · Common Mistakes</div>
+      <div class="slide-heading">Mistakes 3, 4 &amp; 5</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="compare-pair">
+          <div>
+            <div class="warn-box" style="margin-bottom:6px; font-size:0.83rem;"><div class="box-label">❌ Mistake 3: Missing Indentation</div></div>
+            <div class="compare-pair" style="gap:8px;">
+              <div class="compare-wrong"><span class="compare-label">❌</span><div class="error-window" style="margin:0;"><div class="error-bar">IndentationError</div><div class="error-body"><pre>if score >= 50:
+print("Pass")</pre></div></div></div>
+              <div class="compare-right"><span class="compare-label">✅</span><div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>if score >= 50:
+    print("Pass")</pre></div></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="warn-box" style="margin-bottom:6px; font-size:0.83rem;"><div class="box-label">❌ Mistake 5: else Without if</div><span class="inline-code">else</span> cannot stand alone. It must always follow an <span class="inline-code">if</span> or <span class="inline-code">elif</span>.</div>
+            <div class="compare-pair" style="gap:8px;">
+              <div class="compare-wrong"><span class="compare-label">❌</span><div class="error-window" style="margin:0;"><div class="error-bar">SyntaxError</div><div class="error-body"><pre>else:
+    print("None")</pre></div></div></div>
+              <div class="compare-right"><span class="compare-label">✅</span><div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>if score >= 50:
+    print("Pass")
+else:
+    print("Fail")</pre></div></div></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="warn-box" style="margin-bottom:6px; font-size:0.83rem;"><div class="box-label">❌ Mistake 4: Comparing a String to a Number</div><span class="inline-code">input()</span> always returns a string. You must convert it with <span class="inline-code">int()</span> before comparing to a number.</div>
+          <div class="compare-pair">
+            <div class="compare-wrong"><span class="compare-label">❌ Wrong — TypeError</span><div class="error-window" style="margin:0;"><div class="error-bar">TypeError</div><div class="error-body"><pre>age = input("Enter age: ")
+if age >= 18:
+    print("Adult")</pre></div></div></div>
+            <div class="compare-right"><span class="compare-label">✅ Fixed</span><div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>age = int(input("Enter age: "))
+if age >= 18:
+    print("Adult")</pre></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 24: SUMMARY -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">Summary</div>
+      <div class="slide-heading">Lecture 4 — Key Concepts</div>
+      <div class="split col-55-45">
+        <div>
+          <ul class="bullets">
+            <li>A <strong>comparison operator</strong> compares two values and returns <span class="inline-code">True</span> or <span class="inline-code">False</span></li>
+            <li>An <span class="inline-code">if</span> statement runs a block <strong>only when a condition is True</strong></li>
+            <li>An <span class="inline-code">if–else</span> statement chooses between <strong>exactly two blocks</strong></li>
+            <li>An <span class="inline-code">if–elif–else</span> chain handles <strong>three or more possibilities</strong>, checking in order</li>
+            <li><strong>Indentation is mandatory</strong> — the body of every block must be indented 4 spaces</li>
+            <li>Use <span class="inline-code">==</span> for comparison, <span class="inline-code">=</span> for assignment — never mix them up</li>
+            <li>Always convert user input with <span class="inline-code">int()</span> or <span class="inline-code">float()</span> before numeric comparisons</li>
+          </ul>
+        </div>
+        <div>
+          <table class="styled-table" style="margin-top:0;">
+            <thead><tr><th>Structure</th><th>Use When</th></tr></thead>
+            <tbody>
+              <tr><td><span class="inline-code">if</span> only</td><td>Do something only if condition is true</td></tr>
+              <tr><td><span class="inline-code">if–else</span></td><td>Choose between exactly two actions</td></tr>
+              <tr><td><span class="inline-code">if–elif–else</span></td><td>Choose between 3 or more actions</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 25: SECTION – EXERCISES -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">08</div>
+      <div class="section-title">Exercises</div>
+      <div class="section-desc">Parts A · B · C · D — 16 questions total</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 26: PART A -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">08 · Exercises</div>
+      <div class="slide-heading">Part A — Understanding Questions</div>
+      <div class="exercise-block">
+        <div class="exercise-header">🧠 Part A — Answer in your own words</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>1.</strong> What is the difference between <span class="inline-code">=</span> and <span class="inline-code">==</span> in Python? Give one example of each.</div>
+          <div class="exercise-item"><strong>2.</strong> What does the following expression evaluate to? Explain your reasoning.
+            <div class="code-window" style="margin-top:6px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>10 >= 10</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>3.</strong> In an <span class="inline-code">if–elif–else</span> chain, how many blocks will Python execute? Explain why.</div>
+          <div class="exercise-item"><strong>4.</strong> What does Python do when the condition of an <span class="inline-code">if</span> statement is <span class="inline-code">False</span> and there is no <span class="inline-code">else</span> block?</div>
+          <div class="exercise-item"><strong>5.</strong> Why must the body of an <span class="inline-code">if</span> statement be indented?</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 27: PART B -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">08 · Exercises</div>
+      <div class="slide-heading">Part B — Code Tracing</div>
+      <div class="exercise-block">
+        <div class="exercise-header">🔍 Part B — Trace the code and predict the output</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>6.</strong> What is the output? Trace step by step.
+            <div class="code-window" style="margin-top:6px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>x = 15
+if x > 20:
+    print("Large")
+elif x > 10:
+    print("Medium")
+else:
+    print("Small")</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>7.</strong> What is the output of this program?
+            <div class="code-window" style="margin-top:6px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>a = 5
+b = 5
+if a != b:
+    print("Different")
+else:
+    print("Same")</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>8.</strong> Trace this program when the user enters <span class="inline-code">42</span>. What is printed?
+            <div class="code-window" style="margin-top:6px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>number = int(input("Enter a number: "))
+if number > 0:
+    print("Positive")
+elif number < 0:
+    print("Negative")
+else:
+    print("Zero")</pre></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 28: PART C -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">08 · Exercises</div>
+      <div class="slide-heading">Part C — Code Writing</div>
+      <div class="exercise-block">
+        <div class="exercise-header">✍️ Part C — Write your own programs</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>9.</strong> Write a program that asks the user to enter a number. If the number is even, print <span class="inline-code">"Even"</span>. If it is odd, print <span class="inline-code">"Odd"</span>. <em>(Hint: A number is even if <span class="inline-code">number % 2 == 0</span>.)</em></div>
+          <div class="exercise-item"><strong>10.</strong> Write a program that asks the user to enter a password. If the password is <span class="inline-code">"python123"</span>, print <span class="inline-code">"Access granted"</span>. Otherwise, print <span class="inline-code">"Access denied"</span>.</div>
+          <div class="exercise-item"><strong>11.</strong> Write a program that asks for a temperature in Celsius and prints one of: <span class="inline-code">"Freezing"</span> (below 0), <span class="inline-code">"Cold"</span> (0–15), <span class="inline-code">"Comfortable"</span> (16–25), or <span class="inline-code">"Hot"</span> (above 25).</div>
+          <div class="exercise-item"><strong>12.</strong> Write a program that asks the user for two numbers. Print which one is greater, or print <span class="inline-code">"They are equal"</span> if both are the same.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 29: PART D -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">08 · Exercises</div>
+      <div class="slide-heading">Part D — Code Modification</div>
+      <div class="exercise-block">
+        <div class="exercise-header">🔧 Part D — Find errors and extend programs</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>13.</strong> Find and fix the error:
+            <div class="error-window" style="margin-top:5px;"><div class="error-bar">Has an error</div><div class="error-body"><pre>score = 75
+if score = 75:
+    print("Perfect score!")</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>14.</strong> Correct the indentation error:
+            <div class="error-window" style="margin-top:5px;"><div class="error-bar">Has an error</div><div class="error-body"><pre>age = 20
+if age >= 18:
+print("You may enter.")
+else:
+print("Entry not allowed.")</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>15.</strong> This crashes when a number is entered. Explain why, and fix it:
+            <div class="error-window" style="margin-top:5px;"><div class="error-bar">Has an error</div><div class="error-body"><pre>number = input("Enter a number: ")
+if number > 0:
+    print("Positive")
+else:
+    print("Not positive")</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>16.</strong> Extend this program to also print <span class="inline-code">"Excellent!"</span> when score ≥ 95, before checking Pass/Fail:
+            <div class="code-window" style="margin-top:5px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>score = int(input("Enter your score: "))
+if score >= 50:
+    print("Pass")
+else:
+    print("Fail")</pre></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 30: CLOSING -->
+  <section class="slide">
+    <div class="slide-inner slide-closing">
+      <div class="closing-icon">🔀</div>
+      <div class="closing-title">That's Lecture 4!</div>
+      <div class="closing-sub">Your programs can now make decisions. Using <code style="font-family:monospace;">if</code>, <code style="font-family:monospace;">elif</code>, and <code style="font-family:monospace;">else</code>, you can write code that responds differently to different inputs — the foundation of every intelligent program.</div>
+      <div style="margin-top:28px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
+        <div style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:12px 20px; font-size:0.85rem;">
+          <div style="font-weight:700; margin-bottom:4px;">Next Lecture</div>
+          <div style="opacity:0.8;">Loops — Repeating Actions with <code style="font-family:monospace;">for</code> and <code style="font-family:monospace;">while</code></div>
+        </div>
+        <div style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:12px 20px; font-size:0.85rem;">
+          <div style="font-weight:700; margin-bottom:4px;">Practice</div>
+          <div style="opacity:0.8;">Complete all Parts A–D exercises</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- end slide-viewport -->
+
+<!-- ===================== PROGRESS BAR ===================== -->
+<div id="progress-bar-wrap">
+  <div id="progress-bar"></div>
+</div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer id="app-footer">
+  <button id="pdf-btn" onclick="window.print()">🖨️ Export PDF</button>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)">&#8592;</button>
+    <span id="slide-counter">1 / 30</span>
+    <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">&#8594;</button>
+  </div>
+  <div class="footer-right"></div>
+</footer>
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+  const total = slides.length;
+
+  function showSlide(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, total - 1));
+    slides[current].classList.add('active');
+    slides[current].scrollTop = 0;
+    document.getElementById('slide-counter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('progress-bar').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('prev-btn').disabled = current === 0;
+    document.getElementById('next-btn').disabled = current === total - 1;
+  }
+
+  function changeSlide(dir) { showSlide(current + dir); }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+    if (e.key === 'Home') showSlide(0);
+    if (e.key === 'End')  showSlide(total - 1);
+  });
+
+  function toggleTheme() {
+    const body = document.body;
+    const btn  = document.getElementById('theme-btn');
+    if (body.getAttribute('data-theme') === 'light') {
+      body.setAttribute('data-theme', 'dark');
+      btn.textContent = '☀️ Light';
+    } else {
+      body.setAttribute('data-theme', 'light');
+      btn.textContent = '🌙 Dark';
+    }
+  }
+
+  showSlide(0);
+</script>
+</body>
+</html>
