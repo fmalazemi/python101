@@ -17,21 +17,7 @@ This tutorial is designed to introduce the basic ideas of programming in a clear
 
 ## About This Tutorial
 
-This tutorial provides a step-by-step introduction to programming with Python. It starts from the very beginning and gradually builds the learner’s understanding through examples and practice.
-
-The tutorial focuses on:
-
-- understanding what programming is
-- writing simple Python programs
-- learning how to use variables and data
-- receiving input and displaying output
-- performing calculations
-- making decisions in programs
-- repeating actions using loops
-- working with strings and lists
-- organizing programs using functions
-
-This material is suitable for beginners with little or no prior programming experience.
+This tutorial provides a step-by-step introduction to programming with Python. It starts from the very beginning and gradually builds the learner’s understanding through examples and practice. The material is suitable for beginners with little or no prior programming experience.
 
 ---
 
@@ -65,8 +51,3 @@ All material is reviewed and structured for learning purposes.
 Python is a powerful and beginner-friendly language. The goal of this tutorial is not only to teach syntax, but also to help learners develop programming thinking, problem-solving skills, and confidence in writing code.
 
 ---
-
-## Author
-
-**Fawaz Alazemi, PhD**  
-AI-assisted educational content
