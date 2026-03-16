@@ -24,8 +24,7 @@ Python is one of the most popular programming languages in the world. It is know
 
 ## AI Use Statement
 
-This tutorial was developed with the support of **artificial intelligence tools** to assist in drafting, organizing, and improving the educational content.  
-All material is reviewed and structured for learning purposes.
+This tutorial was developed with the support of **artificial intelligence tools** to assist in drafting, organizing, and improving the educational content.  All material is reviewed and structured for learning purposes.
 
 ---
 **Created by Fawaz Alazemi, PhD**  
