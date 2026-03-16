@@ -42,25 +42,6 @@ All material is reviewed and structured for learning purposes.
 
 ---
 
-## Learning Goals
-
-By the end of this tutorial, learners should be able to:
-
-- understand the basic idea of programming
-- write and run simple Python programs
-- use variables and basic data types
-- accept user input and display output
-- build arithmetic expressions
-- write conditional statements
-- use logical operators
-- repeat tasks using loops
-- work with text using strings
-- store multiple values using lists and collections
-- define and use functions
-- solve simple problems using Python
-
----
-
 ## Topics Covered
 
 | Lecture | Topic |
@@ -76,76 +57,6 @@ By the end of this tutorial, learners should be able to:
 | 9 | **Lists and Collections** |
 | 10 | **Functions — Organizing Code into Reusable Parts** |
 
----
-
-## Lecture Overview
-
-### Lecture 1: Introduction to Python and Writing Your First Program
-This lecture introduces Python, explains what programming is, and shows how to write and run a first simple program.
-
-### Lecture 2: Variables, Basic Data Types, and User Input
-This lecture explains how to store values in variables, use basic data types such as integers, floats, and strings, and receive input from the user.
-
-### Lecture 3: Arithmetic Operations and Expressions in Python
-This lecture explains how to perform mathematical operations and create expressions using Python operators.
-
-### Lecture 4: Making Decisions with `if`, `elif`, and `else`
-This lecture explains how programs make decisions and choose different actions based on conditions.
-
-### Lecture 5: Logical Operators and Nested Conditions
-This lecture explains how to combine conditions using `and`, `or`, and `not`, and how to build more detailed decision structures.
-
-### Lecture 6: Repetition with `while` Loops
-This lecture explains how to repeat actions using `while` loops and how repetition helps solve many programming tasks.
-
-### Lecture 7: `for` Loops and the `range()` Function
-This lecture explains how to repeat actions a fixed number of times using `for` loops and `range()`.
-
-### Lecture 8: Working with Strings in Python
-This lecture explains how to work with text, combine strings, access characters, and use common string operations.
-
-### Lecture 9: Lists and Collections
-This lecture explains how to store multiple values in lists, access items, modify them, and process groups of data.
-
-### Lecture 10: Functions — Organizing Code into Reusable Parts
-This lecture explains how to define and use functions to make programs cleaner, easier to understand, and reusable.
-
----
-
-## Teaching Style
-
-This tutorial follows a beginner-friendly teaching style based on:
-
-- simple language
-- step-by-step explanations
-- short examples
-- gradual progression
-- hands-on practice
-- focus on understanding before complexity
-
----
-
-## Suggested Tools
-
-To practice Python, learners may use:
-
-- Python 3
-- Visual Studio Code
-- Thonny
-- PyCharm Community Edition
-- online Python compilers and editors
-
----
-
-## Tips for Learners
-
-- practice regularly
-- type code by yourself
-- test your programs often
-- read error messages carefully
-- focus on understanding the logic
-- solve small problems first
-- ask questions when needed
 
 ---
 
