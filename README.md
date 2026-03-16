@@ -1,10 +1,3 @@
-# Python 101 Tutorial
-
-**Created by Fawaz Alazemi, PhD**  
-**AI-assisted educational material**
-
----
-
 ## Welcome to Python 101
 
 Welcome to **Python 101**, a beginner-friendly tutorial designed for students and anyone who wants to start learning programming using Python.
@@ -51,3 +44,6 @@ All material is reviewed and structured for learning purposes.
 Python is a powerful and beginner-friendly language. The goal of this tutorial is not only to teach syntax, but also to help learners develop programming thinking, problem-solving skills, and confidence in writing code.
 
 ---
+**Created by Fawaz Alazemi, PhD**  
+**AI-assisted educational material**
+
