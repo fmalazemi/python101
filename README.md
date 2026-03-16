@@ -32,16 +32,16 @@ All material is reviewed and structured for learning purposes.
 
 | No.1 | Lecture | Slides |
 |:--:|:-:|:--|
-| 1 | **Introduction to Python and Writing Your First Program** |
-| 2 | **Variables, Basic Data Types, and User Input** |
-| 3 | **Arithmetic Operations and Expressions in Python** |
-| 4 | **Making Decisions with `if`, `elif`, and `else`** |
-| 5 | **Logical Operators and Nested Conditions** |
-| 6 | **Repetition with `while` Loops** |
-| 7 | **`for` Loops and the `range()` Function** |
-| 8 | **Working with Strings in Python** |
-| 9 | **Lists and Collections** |
-| 10 | **Functions — Organizing Code into Reusable Parts** |
+| 1 | [Introduction to Python and Writing Your First Program](lecture_notes/lecture_01.md) | 
+| 2 | [Variables, Basic Data Types, and User Input](lecture_notes/lecture_02.md) |
+| 3 | [Arithmetic Operations and Expressions in Python](lecture_notes/lecture_03.md) |
+| 4 | [Making Decisions with `if`, `elif`, and `else`](lecture_notes/lecture_04.md) |
+| 5 | [Logical Operators and Nested Conditions](lecture_notes/lecture_05.md) |
+| 6 | [Repetition with `while` Loops](lecture_notes/lecture_06.md) |
+| 7 | [`for` Loops and the `range()` Function](lecture_notes/lecture_07.md) |
+| 8 | [Working with Strings in Python](lecture_notes/lecture_08.md) |
+| 9 | [Lists and Collections](lecture_notes/lecture_09.md) |
+| 10 | [Functions — Organizing Code into Reusable Parts](lecture_notes/lecture_01.md) |
 | 11 | [pptx](Lecture_notes/lecture_1_introduction.pptx) | ww
 
 
