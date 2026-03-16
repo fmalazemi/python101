@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lecture 10: Functions — Organizing Code into Reusable Parts</title>
+<style>
+:root {
+  --bg-page:#eef2f7;--bg-slide:#ffffff;--bg-header:#0f2a5e;--bg-footer:#0f2a5e;
+  --accent-blue:#1a56cc;--accent-blue-light:#3b7de8;--accent-green:#16a34a;
+  --accent-orange:#d97706;--accent-red:#dc2626;--accent-purple:#7c3aed;--accent-teal:#0d9488;
+  --text-primary:#0f172a;--text-secondary:#475569;--text-header:#ffffff;--border:#d1dce8;
+  --bg-code:#1e2433;--bg-output:#0d1a0d;--bg-error:#1f0707;
+  --bg-info:#eff6ff;--bg-warn:#fffbeb;--bg-ok:#f0fdf4;--bg-purple:#f5f3ff;--bg-teal:#f0fdfa;
+  --border-info:#93c5fd;--border-warn:#fcd34d;--border-ok:#86efac;--border-purple:#c4b5fd;--border-teal:#5eead4;
+  --slide-w:960px;--slide-h:540px;--header-h:52px;--footer-h:56px;--progress-h:4px;
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif;
+  --font-mono:'Cascadia Code','Fira Code','Courier New',monospace;
+  --radius:10px;--shadow:0 8px 32px rgba(15,42,94,0.13);
+}
+[data-theme="dark"] {
+  --bg-page:#111827;--bg-slide:#1e2636;--bg-header:#070f1e;--bg-footer:#070f1e;
+  --text-primary:#e2e8f0;--text-secondary:#94a3b8;--border:#2d3a52;
+  --bg-info:#1e2a42;--bg-warn:#292010;--bg-ok:#0f2216;--bg-purple:#1e1a30;--bg-teal:#0a1f1e;
+  --border-info:#3b7de8;--border-warn:#b45309;--border-ok:#16a34a;--border-purple:#7c3aed;--border-teal:#0d9488;
+  --shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:var(--font);background:var(--bg-page);color:var(--text-primary);transition:background 0.2s,color 0.2s;overflow:hidden;}
+#app-header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:var(--bg-header);color:var(--text-header);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:1000;box-shadow:0 2px 8px rgba(0,0,0,0.3);}
+.header-title{font-size:0.92rem;font-weight:600;letter-spacing:0.01em;opacity:0.97;}
+.header-right{display:flex;align-items:center;gap:14px;}
+.header-author{font-size:0.8rem;opacity:0.75;white-space:nowrap;}
+#theme-btn{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:#fff;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:0.8rem;font-family:var(--font);transition:background 0.15s;}
+#theme-btn:hover{background:rgba(255,255,255,0.22);}
+#app-footer{position:fixed;bottom:0;left:0;right:0;height:var(--footer-h);background:var(--bg-footer);color:var(--text-header);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:1000;box-shadow:0 -2px 8px rgba(0,0,0,0.3);}
+#pdf-btn{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:#fff;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:0.8rem;font-family:var(--font);transition:background 0.15s;}
+#pdf-btn:hover{background:rgba(255,255,255,0.22);}
+.nav-controls{display:flex;align-items:center;gap:10px;}
+.nav-btn{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:#fff;border-radius:6px;width:34px;height:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:background 0.15s;font-family:var(--font);}
+.nav-btn:hover{background:rgba(255,255,255,0.28);}
+.nav-btn:disabled{opacity:0.35;cursor:not-allowed;}
+#slide-counter{font-size:0.85rem;font-weight:600;min-width:60px;text-align:center;letter-spacing:0.04em;}
+.footer-right{width:120px;}
+#progress-bar-wrap{position:fixed;bottom:var(--footer-h);left:0;right:0;height:var(--progress-h);background:rgba(255,255,255,0.1);z-index:999;}
+#progress-bar{height:100%;background:var(--accent-blue-light);transition:width 0.3s ease;width:0%;}
+#slide-viewport{position:fixed;top:var(--header-h);bottom:calc(var(--footer-h) + var(--progress-h));left:0;right:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.slide{display:none;width:var(--slide-w);max-width:98vw;min-height:var(--slide-h);max-height:calc(100vh - var(--header-h) - var(--footer-h) - var(--progress-h) - 16px);background:var(--bg-slide);border-radius:var(--radius);box-shadow:var(--shadow);overflow-y:auto;overflow-x:hidden;position:relative;flex-direction:column;}
+.slide.active{display:flex;}
+.slide::-webkit-scrollbar{width:5px;}.slide::-webkit-scrollbar-track{background:transparent;}.slide::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.slide-inner{flex:1;display:flex;flex-direction:column;padding:34px 44px 30px;}
+/* Slide types */
+.slide-title-page{background:linear-gradient(135deg,#0f2a5e 0%,#1a3f6f 50%,#1a56cc 100%);color:#fff;align-items:center;justify-content:center;text-align:center;padding:48px 56px;min-height:var(--slide-h);}
+.title-badge{display:inline-block;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:4px 18px;font-size:0.8rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:20px;}
+.title-main{font-size:2rem;font-weight:800;line-height:1.22;margin-bottom:14px;}
+.title-sub{font-size:1rem;opacity:0.82;line-height:1.65;max-width:620px;margin:0 auto 28px;}
+.title-meta{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;}
+.title-meta-item{font-size:0.82rem;opacity:0.7;}
+.slide-section-divider{background:linear-gradient(135deg,#0f2a5e,#1a56cc);color:#fff;align-items:center;justify-content:center;text-align:center;padding:48px;}
+.section-num{font-size:3.5rem;font-weight:900;opacity:0.18;line-height:1;}
+.section-title{font-size:1.7rem;font-weight:700;margin-top:-8px;margin-bottom:10px;}
+.section-desc{font-size:0.95rem;opacity:0.78;max-width:520px;font-family:var(--font-mono);}
+.slide-closing{background:linear-gradient(135deg,#0f2a5e 0%,#1a56cc 100%);color:#fff;align-items:center;justify-content:center;text-align:center;padding:48px;}
+.closing-icon{font-size:3rem;margin-bottom:16px;}
+.closing-title{font-size:1.6rem;font-weight:800;margin-bottom:10px;}
+.closing-sub{font-size:0.93rem;opacity:0.8;max-width:520px;margin:0 auto;line-height:1.65;}
+/* Typography */
+.slide-label{font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent-blue);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.slide-label::before{content:'';display:block;width:18px;height:2px;background:var(--accent-blue);border-radius:2px;}
+.slide-heading{font-size:1.42rem;font-weight:800;color:var(--text-primary);line-height:1.25;margin-bottom:18px;border-bottom:2px solid var(--accent-blue);padding-bottom:10px;}
+.slide-subheading{font-size:0.95rem;font-weight:700;color:var(--accent-blue);margin:12px 0 7px;}
+.body-text{font-size:0.88rem;line-height:1.7;color:var(--text-secondary);margin-bottom:8px;}
+.body-text strong{color:var(--text-primary);}
+.inline-code{font-family:var(--font-mono);font-size:0.82em;background:var(--bg-code);color:#7dd3fc;padding:1px 6px;border-radius:4px;white-space:nowrap;}
+/* Bullets & Steps */
+.bullets{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.bullets li{display:flex;align-items:flex-start;gap:10px;font-size:0.88rem;line-height:1.55;color:var(--text-secondary);}
+.bullets li::before{content:'▸';color:var(--accent-blue);font-size:0.85rem;margin-top:2px;flex-shrink:0;}
+.bullets li strong{color:var(--text-primary);}
+.steps{list-style:none;display:flex;flex-direction:column;gap:9px;counter-reset:step;}
+.steps li{display:flex;align-items:flex-start;gap:12px;font-size:0.88rem;line-height:1.55;color:var(--text-secondary);counter-increment:step;}
+.steps li::before{content:counter(step);background:var(--accent-blue);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;flex-shrink:0;margin-top:1px;}
+.steps li strong{color:var(--text-primary);}
+/* Cards */
+.cards{display:grid;gap:12px;}
+.cards.col-2{grid-template-columns:1fr 1fr;}
+.cards.col-3{grid-template-columns:1fr 1fr 1fr;}
+.card{background:var(--bg-info);border:1px solid var(--border-info);border-radius:8px;padding:14px 16px;}
+.card-icon{font-size:1.3rem;margin-bottom:7px;}
+.card-title{font-size:0.84rem;font-weight:700;color:var(--text-primary);margin-bottom:4px;}
+.card-body{font-size:0.81rem;line-height:1.5;color:var(--text-secondary);}
+/* Boxes */
+.info-box,.warn-box,.ok-box,.purple-box,.teal-box{border-left:4px solid;border-radius:0 8px 8px 0;padding:10px 15px;margin:8px 0;font-size:0.86rem;line-height:1.6;}
+.info-box{background:var(--bg-info);border-color:var(--accent-blue);color:var(--text-primary);}
+.warn-box{background:var(--bg-warn);border-color:var(--accent-orange);color:var(--text-primary);}
+.ok-box{background:var(--bg-ok);border-color:var(--accent-green);color:var(--text-primary);}
+.purple-box{background:var(--bg-purple);border-color:var(--accent-purple);color:var(--text-primary);}
+.teal-box{background:var(--bg-teal);border-color:var(--accent-teal);color:var(--text-primary);}
+.box-label{font-weight:700;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;}
+.info-box .box-label{color:var(--accent-blue);}
+.warn-box .box-label{color:var(--accent-orange);}
+.ok-box .box-label{color:var(--accent-green);}
+.purple-box .box-label{color:var(--accent-purple);}
+.teal-box .box-label{color:var(--accent-teal);}
+/* Tables */
+.styled-table{width:100%;border-collapse:collapse;font-size:0.82rem;margin:8px 0;}
+.styled-table th{background:var(--accent-blue);color:#fff;text-align:left;padding:8px 13px;font-weight:700;font-size:0.78rem;}
+.styled-table th:first-child{border-radius:6px 0 0 0;}
+.styled-table th:last-child{border-radius:0 6px 0 0;}
+.styled-table td{padding:7px 13px;border-bottom:1px solid var(--border);color:var(--text-secondary);vertical-align:middle;}
+.styled-table tr:last-child td{border-bottom:none;}
+.styled-table tr:nth-child(even) td{background:rgba(26,86,204,0.04);}
+.styled-table .mono{font-family:var(--font-mono);font-size:0.8rem;}
+/* Code windows */
+.code-window{background:var(--bg-code);border-radius:8px;overflow:hidden;margin:8px 0;box-shadow:0 4px 16px rgba(0,0,0,0.25);}
+.code-bar{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;background:#161c2b;}
+.code-dots{display:flex;gap:6px;}
+.dot{width:10px;height:10px;border-radius:50%;}
+.dot-red{background:#ff5f57;}.dot-yellow{background:#febc2e;}.dot-green{background:#28c840;}
+.code-lang{font-size:0.67rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#64748b;font-family:var(--font-mono);}
+.code-body{padding:12px 18px;overflow-x:auto;}
+.code-body pre{font-family:var(--font-mono);font-size:0.81rem;line-height:1.65;color:#e2e8f0;}
+/* Output & Error */
+.output-window{background:var(--bg-output);border-radius:8px;overflow:hidden;margin:6px 0;border:1px solid #1a3a1a;}
+.output-bar{display:flex;align-items:center;gap:8px;background:#0a1a0a;padding:5px 14px;font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#22c55e;}
+.output-bar::before{content:'▶';font-size:0.62rem;}
+.output-body{padding:10px 18px;}
+.output-body pre{font-family:var(--font-mono);font-size:0.81rem;line-height:1.6;color:#4ade80;}
+.error-window{background:var(--bg-error);border-radius:8px;overflow:hidden;margin:6px 0;border:1px solid #4a1010;}
+.error-bar{display:flex;align-items:center;gap:8px;background:#2d0505;padding:5px 14px;font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#f87171;}
+.error-bar::before{content:'✗';}
+.error-body{padding:10px 18px;}
+.error-body pre{font-family:var(--font-mono);font-size:0.81rem;line-height:1.6;color:#fca5a5;}
+/* Split */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+.split.col-60-40{grid-template-columns:60fr 40fr;}
+.split.col-55-45{grid-template-columns:55fr 45fr;}
+/* Compare pair */
+.compare-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0;}
+.compare-label{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;padding:3px 10px;border-radius:4px;display:inline-block;}
+.compare-wrong .compare-label{background:rgba(220,38,38,0.15);color:var(--accent-red);}
+.compare-right .compare-label{background:rgba(22,163,74,0.15);color:var(--accent-green);}
+/* Function anatomy */
+.fn-anatomy{background:var(--bg-code);border-radius:8px;padding:18px 22px;font-family:var(--font-mono);font-size:0.84rem;line-height:2.4;}
+.fn-kw{color:#c084fc;font-weight:700;}
+.fn-name{color:#fb923c;font-weight:700;}
+.fn-param{color:#60a5fa;font-weight:600;}
+.fn-ret{color:#4ade80;font-weight:700;}
+.fn-body{color:#e2e8f0;}
+.fn-cm{color:#64748b;font-style:italic;}
+.fn-indent{display:inline-block;width:28px;}
+.fn-label{display:inline-block;font-family:var(--font);font-size:0.66rem;font-weight:700;border-radius:10px;padding:1px 9px;margin-left:10px;vertical-align:middle;}
+.fn-label.kw{background:rgba(192,132,252,0.18);color:#c084fc;}
+.fn-label.name{background:rgba(251,146,60,0.18);color:#fb923c;}
+.fn-label.param{background:rgba(96,165,250,0.18);color:#60a5fa;}
+.fn-label.body{background:rgba(226,232,240,0.12);color:#94a3b8;}
+.fn-label.ret{background:rgba(74,222,128,0.18);color:#4ade80;}
+/* Function flow */
+.fn-flow{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;margin:14px 0;}
+.fn-box{border-radius:10px;padding:12px 18px;text-align:center;font-size:0.82rem;font-weight:600;min-width:110px;}
+.fn-box.caller{background:rgba(26,86,204,0.12);border:2px solid var(--accent-blue);color:var(--accent-blue);}
+.fn-box.fn{background:rgba(124,58,237,0.12);border:2px solid var(--accent-purple);color:var(--accent-purple);}
+.fn-box.result{background:rgba(22,163,74,0.12);border:2px solid var(--accent-green);color:var(--accent-green);}
+.fn-arrow{font-size:1.4rem;color:var(--accent-blue-light);padding:0 8px;align-self:center;line-height:1;}
+/* Print vs Return table */
+.pvr-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+.pvr-table th{padding:9px 14px;font-weight:700;font-size:0.8rem;text-align:left;}
+.pvr-table th:nth-child(1){background:#1e2a42;color:#94a3b8;border-radius:6px 0 0 0;width:28%;}
+.pvr-table th:nth-child(2){background:var(--accent-orange);color:#fff;}
+.pvr-table th:nth-child(3){background:var(--accent-green);color:#fff;border-radius:0 6px 0 0;}
+.pvr-table td{padding:8px 14px;border-bottom:1px solid var(--border);color:var(--text-secondary);font-size:0.81rem;vertical-align:top;}
+.pvr-table td:nth-child(2){background:rgba(215,119,6,0.05);}
+.pvr-table td:nth-child(3){background:rgba(22,163,74,0.05);}
+.pvr-table tr:last-child td{border-bottom:none;}
+.pvr-table td strong{color:var(--text-primary);}
+/* Parameter call visual */
+.param-call{display:flex;flex-direction:column;gap:6px;margin:8px 0;}
+.pc-row{display:flex;align-items:center;gap:10px;font-size:0.82rem;}
+.pc-call{font-family:var(--font-mono);background:rgba(26,86,204,0.12);border:1px solid var(--border-info);border-radius:6px;padding:4px 12px;color:var(--accent-blue);font-weight:600;min-width:160px;}
+.pc-arrow{color:var(--accent-blue-light);font-size:1rem;}
+.pc-bind{font-family:var(--font-mono);background:var(--bg-ok);border:1px solid var(--border-ok);border-radius:6px;padding:4px 12px;color:var(--accent-green);font-weight:600;}
+/* Return flow */
+.ret-flow{display:flex;flex-direction:column;gap:8px;margin:10px 0;}
+.ret-step{border-radius:7px;padding:8px 13px;font-size:0.81rem;}
+.ret-step.call{background:rgba(26,86,204,0.08);border:1px solid var(--border-info);}
+.ret-step.proc{background:rgba(124,58,237,0.08);border:1px solid var(--border-purple);}
+.ret-step.back{background:rgba(22,163,74,0.08);border:1px solid var(--border-ok);}
+.ret-arrow{text-align:center;font-size:1.1rem;color:var(--accent-blue-light);padding-left:20px;}
+/* Exercise blocks */
+.exercise-block{border:2px solid var(--accent-blue);border-radius:8px;overflow:hidden;margin:8px 0;}
+.exercise-header{background:var(--accent-blue);color:#fff;padding:7px 16px;font-size:0.79rem;font-weight:700;}
+.exercise-body{padding:12px 16px;display:flex;flex-direction:column;gap:10px;}
+.exercise-item{font-size:0.85rem;line-height:1.55;color:var(--text-secondary);}
+.exercise-item strong{color:var(--text-primary);}
+/* Print */
+@media print{html,body{overflow:visible!important;height:auto!important;}#app-header,#app-footer,#progress-bar-wrap{display:none!important;}#slide-viewport{position:static!important;overflow:visible!important;height:auto!important;}.slide{display:flex!important;page-break-after:always;box-shadow:none!important;max-height:none!important;width:100%!important;border-radius:0!important;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}}
+/* Responsive */
+@media(max-width:1024px){.slide-inner{padding:24px 26px 20px;}.slide-heading{font-size:1.18rem;}}
+@media(max-width:768px){.slide-inner{padding:18px 16px 16px;}.cards.col-2,.cards.col-3,.split,.compare-pair{grid-template-columns:1fr;}.title-main{font-size:1.35rem;}.header-author{display:none;}.fn-flow{flex-direction:column;}}
+</style>
+</head>
+<body data-theme="light">
+
+<header id="app-header">
+  <div class="header-title">Lecture #10: Functions — Organizing Code into Reusable Parts</div>
+  <div class="header-right">
+    <span class="header-author">Created by Fawaz Alazemi</span>
+    <button id="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+  </div>
+</header>
+
+<div id="slide-viewport">
+
+  <!-- SLIDE 1: TITLE -->
+  <section class="slide active">
+    <div class="slide-inner slide-title-page">
+      <div class="title-badge">Introduction to Python · Lecture 10</div>
+      <div class="title-main">Functions — Organizing Code<br>into Reusable Parts</div>
+      <div class="title-sub">Write a piece of code once, give it a name, and reuse it as many times as you need — making programs shorter, cleaner, and easier to maintain.</div>
+      <div class="title-meta">
+        <span class="title-meta-item">⚙️ Define · Call · Return</span>
+        <span class="title-meta-item">🎯 6 Learning Objectives</span>
+        <span class="title-meta-item">💻 7 Examples + Exercises</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: WHY THIS MATTERS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">Motivation</div>
+      <div class="slide-heading">Why Functions Matter</div>
+      <div class="body-text">As your programs grow longer, some tasks appear <strong>again and again</strong>. Without functions, you would rewrite the same code every time — making programs hard to read, fix, and maintain.</div>
+      <div class="cards col-3" style="margin-top:12px;">
+        <div class="card"><div class="card-icon">♻️</div><div class="card-title">Write Once, Use Many Times</div><div class="card-body">Define the code once and call it wherever you need it — no duplication.</div></div>
+        <div class="card" style="border-color:var(--border-warn);background:var(--bg-warn);"><div class="card-icon">🔧</div><div class="card-title">Easy to Fix</div><div class="card-body">When a bug is found, fix it in <strong>one place</strong> — updated everywhere instantly.</div></div>
+        <div class="card" style="border-color:var(--border-ok);background:var(--bg-ok);"><div class="card-icon">📖</div><div class="card-title">Readable Code</div><div class="card-body">Named functions read like English: <em>calculate_area(), print_report()</em></div></div>
+      </div>
+      <div class="info-box" style="margin-top:14px;">
+        <div class="box-label">💡 The Big Idea</div>
+        Functions allow you to write a piece of code once, give it a name, and use it as many times as you need. Nearly every program you will ever write relies heavily on functions.
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: LEARNING OBJECTIVES -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">Goals</div>
+      <div class="slide-heading">Learning Objectives</div>
+      <div class="body-text">By the end of this lecture, you will be able to:</div>
+      <ol class="steps" style="margin-top:14px;">
+        <li>Explain what a function is and <strong>why functions are useful</strong></li>
+        <li>Define a function using the <span class="inline-code">def</span> keyword</li>
+        <li><strong>Call</strong> a function to execute its code</li>
+        <li>Write functions that accept <strong>parameters</strong> (inputs)</li>
+        <li>Write functions that <strong>return values</strong> (outputs)</li>
+        <li>Distinguish between <strong>printing</strong> inside a function and <strong>returning</strong> a value</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: WHAT IS A FUNCTION -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">01 · Introduction</div>
+      <div class="slide-heading">What Is a Function?</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="info-box">
+            <div class="box-label">📖 Definition</div>
+            A <strong>function</strong> is a named block of code that performs a specific task. You define it once and can execute it ("call" it) at any point in your program.
+          </div>
+          <ul class="bullets" style="margin-top:14px;">
+            <li>The <strong>input</strong> to a function is called a <strong>parameter</strong> (or <em>argument</em>)</li>
+            <li>The <strong>output</strong> from a function is called the <strong>return value</strong></li>
+            <li>Some functions take no input and produce no output — they simply <strong>perform an action</strong></li>
+          </ul>
+        </div>
+        <div>
+          <div class="purple-box" style="margin-bottom:14px;">
+            <div class="box-label">🏭 Analogy: A Factory Machine</div>
+            Think of a function as a machine in a factory. You place <strong>raw materials</strong> in (input), the machine performs an operation, and produces a <strong>finished product</strong> (output).<br><br>
+            You can use the same machine as many times as you need — you do not rebuild it each time.
+          </div>
+          <div class="fn-flow">
+            <div class="fn-box caller"><div>Input</div><div style="font-size:0.7rem;opacity:0.7;font-weight:400;margin-top:2px;">(argument)</div></div>
+            <div class="fn-arrow">→</div>
+            <div class="fn-box fn"><div>Function</div><div style="font-size:0.7rem;opacity:0.7;font-weight:400;margin-top:2px;">(the machine)</div></div>
+            <div class="fn-arrow">→</div>
+            <div class="fn-box result"><div>Output</div><div style="font-size:0.7rem;opacity:0.7;font-weight:400;margin-top:2px;">(return value)</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: SECTION – DEFINING -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">01</div>
+      <div class="section-title">Defining &amp; Calling Functions</div>
+      <div class="section-desc">def · function_name() · body · call</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: ANATOMY -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">01 · Defining Functions</div>
+      <div class="slide-heading">Anatomy of a Function Definition</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="fn-anatomy">
+            <div><span class="fn-kw">def</span><span class="fn-label kw">keyword</span> <span class="fn-name">greet</span><span class="fn-label name">name</span><span style="color:#e2e8f0;">(</span><span class="fn-param">name</span><span class="fn-label param">parameter</span><span style="color:#e2e8f0;">):</span></div>
+            <div><span class="fn-indent"></span><span class="fn-body">message = "Hello, " + name</span><span class="fn-label body">body</span></div>
+            <div><span class="fn-indent"></span><span class="fn-ret">return</span><span class="fn-label ret">return</span><span class="fn-body"> message</span></div>
+          </div>
+          <ul class="bullets" style="margin-top:14px;">
+            <li><span class="inline-code">def</span> — keyword that begins the definition</li>
+            <li><strong>Function name</strong> — follows variable naming rules</li>
+            <li><span class="inline-code">()</span> — holds parameters (can be empty)</li>
+            <li><span class="inline-code">:</span> — colon ends the function header</li>
+            <li><strong>Indented body</strong> — code that runs when called</li>
+          </ul>
+        </div>
+        <div>
+          <div class="warn-box" style="margin-bottom:12px;">
+            <div class="box-label">⚠️ Define ≠ Run</div>
+            Defining a function does <strong>not</strong> run it. You must <strong>call</strong> the function separately. The body only executes when called.
+          </div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>def greet():
+    print("Hello! Welcome.")
+
+# Nothing runs yet...
+
+greet()   # ← This runs it!</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>Hello! Welcome.</pre></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: REUSABILITY -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">01 · Defining Functions</div>
+      <div class="slide-heading">Calling a Function — Reusability in Action</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="teal-box" style="margin-bottom:10px;">
+            <div class="box-label">💡 The Power of Reuse</div>
+            Call the same function as many times as needed. Change the separator in one place — updated everywhere.
+          </div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>def print_separator():
+    print("--------------------")
+
+print_separator()
+print("Student Name: Ali")
+print_separator()
+print("Grade: A")
+print_separator()</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>--------------------
+Student Name: Ali
+--------------------
+Grade: A
+--------------------</pre></div></div>
+        </div>
+        <div>
+          <div class="body-text">Instead of writing <span class="inline-code">print("----")</span> three times, define once, call whenever needed.</div>
+          <div class="cards col-2" style="margin-top:12px;gap:10px;">
+            <div class="card" style="padding:12px;border-color:#fca5a5;background:#fff5f5;">
+              <div class="card-title" style="color:var(--accent-red);">❌ Without Functions</div>
+              <div class="card-body">Repeated code everywhere. Changing separator = find and edit every line.</div>
+            </div>
+            <div class="card" style="padding:12px;border-color:var(--border-ok);background:var(--bg-ok);">
+              <div class="card-title" style="color:var(--accent-green);">✅ With Functions</div>
+              <div class="card-body">Define once, call many times. Fix in one place — fixed everywhere.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: SECTION – PARAMETERS -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">02</div>
+      <div class="section-title">Functions with Parameters</div>
+      <div class="section-desc">Passing inputs into a function</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: ONE PARAMETER -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">02 · Parameters</div>
+      <div class="slide-heading">Functions with One Parameter</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="info-box">
+            <div class="box-label">📖 Parameter vs Argument</div>
+            A <strong>parameter</strong> is the variable placeholder in the function definition.<br>
+            An <strong>argument</strong> is the actual value you pass when calling.
+          </div>
+          <div class="code-window" style="margin-top:10px;">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>def greet_student(name):     # ← parameter
+    print("Hello,", name, "!")
+
+greet_student("Sara")        # ← argument
+greet_student("Omar")
+greet_student("Lena")</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>Hello, Sara !
+Hello, Omar !
+Hello, Lena !</pre></div></div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">What Python does on each call</div>
+          <div class="param-call">
+            <div class="pc-row"><div class="pc-call">greet_student("Sara")</div><div class="pc-arrow">→</div><div class="pc-bind">name = "Sara"</div></div>
+            <div class="pc-row"><div class="pc-call">greet_student("Omar")</div><div class="pc-arrow">→</div><div class="pc-bind">name = "Omar"</div></div>
+            <div class="pc-row"><div class="pc-call">greet_student("Lena")</div><div class="pc-arrow">→</div><div class="pc-bind">name = "Lena"</div></div>
+          </div>
+          <div class="info-box" style="margin-top:10px;font-size:0.83rem;">
+            <div class="box-label">💡 Same Function, Different Results</div>
+            Each call assigns a new value to <span class="inline-code">name</span>. The function body runs with the new value.
+          </div>
+          <div class="ok-box" style="margin-top:8px;font-size:0.82rem;">
+            <div class="box-label">🎯 Try It</div>
+            Write <span class="inline-code">announce(subject)</span> that prints: <span class="inline-code">"Today's lecture is about: [subject]"</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: MULTIPLE PARAMETERS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">02 · Parameters</div>
+      <div class="slide-heading">Functions with Multiple Parameters</div>
+      <div class="split">
+        <div>
+          <div class="info-box" style="margin-bottom:10px;">
+            <div class="box-label">📖 Multiple Parameters</div>
+            Separate parameters with commas. The order of arguments must match the order of parameters.
+          </div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>def calculate_area(length, width):
+    area = length * width
+    print("The area is:", area)
+
+calculate_area(5, 3)
+calculate_area(10, 4)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>The area is: 15
+The area is: 40</pre></div></div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">Argument order matters</div>
+          <div class="param-call">
+            <div class="pc-row"><div class="pc-call">calculate_area(5, 3)</div><div class="pc-arrow">→</div><div class="pc-bind">length=5, width=3</div></div>
+            <div class="pc-row"><div class="pc-call">calculate_area(10, 4)</div><div class="pc-arrow">→</div><div class="pc-bind">length=10, width=4</div></div>
+          </div>
+          <div class="warn-box" style="margin-top:12px;font-size:0.83rem;">
+            <div class="box-label">⚠️ Order Matters!</div>
+            First argument → first parameter, second → second. Wrong order gives wrong results with no error message.
+          </div>
+          <div class="ok-box" style="margin-top:8px;font-size:0.82rem;">
+            <div class="box-label">🎯 Try It</div>
+            Write <span class="inline-code">calculate_perimeter(length, width)</span>. Formula: <span class="inline-code">2 * length + 2 * width</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 11: SECTION – RETURN -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">03</div>
+      <div class="section-title">Return Values</div>
+      <div class="section-desc">return · send a value back to the caller</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 12: RETURN BASICS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">03 · Return Values</div>
+      <div class="slide-heading">Returning Values from a Function</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="info-box">
+            <div class="box-label">📖 The return Keyword</div>
+            A <strong>return value</strong> is the output that a function sends back to the calling code. Use <span class="inline-code">return</span> to send it. Once Python reaches <span class="inline-code">return</span>, it immediately exits the function.
+          </div>
+          <div class="code-window" style="margin-top:10px;">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>def calculate_area(length, width):
+    area = length * width
+    return area          # ← sends value back
+
+room_area = calculate_area(6, 4)
+print("Room area:", room_area)
+
+print("Area:", calculate_area(7, 3))</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>Room area: 24
+Area: 21</pre></div></div>
+        </div>
+        <div>
+          <div class="ret-flow">
+            <div class="ret-step call"><strong>Call:</strong> calculate_area(6, 4)</div>
+            <div class="ret-arrow">↓ enters function</div>
+            <div class="ret-step proc"><strong>Inside:</strong> area = 6 × 4 = 24 → return 24</div>
+            <div class="ret-arrow">↓ value sent back</div>
+            <div class="ret-step back"><strong>Caller:</strong> room_area = 24 ✓</div>
+          </div>
+          <div class="ok-box" style="margin-top:12px;font-size:0.83rem;">
+            <div class="box-label">✅ Why return?</div>
+            The returned value can be <strong>stored</strong>, <strong>printed</strong>, or used in <strong>further calculations</strong> — unlike a value that is only printed inside the function.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 13: RETURN MAXIMUM EXAMPLE -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">03 · Return Values</div>
+      <div class="slide-heading">Example — Maximum of Two Numbers</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>def find_maximum(a, b):
+    if a > b:
+        return a     # exits function immediately
+    else:
+        return b
+
+result = find_maximum(15, 9)
+print("The maximum is:", result)
+
+print("The maximum is:", find_maximum(100, 250))</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>The maximum is: 15
+The maximum is: 250</pre></div></div>
+        </div>
+        <div>
+          <div class="body-text">A function can have <strong>more than one</strong> <span class="inline-code">return</span> statement, but only <strong>one executes</strong> per call. As soon as Python hits a <span class="inline-code">return</span>, it exits the function.</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px;">
+            <div style="background:rgba(26,86,204,0.08);border:1px solid var(--border-info);border-radius:7px;padding:8px 13px;font-size:0.81rem;">
+              <strong>Call 1:</strong> find_maximum(15, 9)<br>
+              <span class="inline-code">15 &gt; 9</span> → True → <span style="color:var(--accent-green);font-weight:600;">return 15</span>
+            </div>
+            <div style="background:rgba(26,86,204,0.08);border:1px solid var(--border-info);border-radius:7px;padding:8px 13px;font-size:0.81rem;">
+              <strong>Call 2:</strong> find_maximum(100, 250)<br>
+              <span class="inline-code">100 &gt; 250</span> → False → else → <span style="color:var(--accent-green);font-weight:600;">return 250</span>
+            </div>
+          </div>
+          <div class="ok-box" style="margin-top:10px;font-size:0.82rem;">
+            <div class="box-label">🎯 Try It</div>
+            Write <span class="inline-code">find_minimum(a, b)</span> that returns the <strong>smaller</strong> of two numbers.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 14: SECTION – PRINT vs RETURN -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">04</div>
+      <div class="section-title">print() vs return</div>
+      <div class="section-desc">The most common source of confusion for beginners</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 15: PRINT vs RETURN TABLE -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">04 · print vs return</div>
+      <div class="slide-heading">The Difference Between <span class="inline-code">print()</span> and <span class="inline-code">return</span></div>
+      <table class="pvr-table" style="margin-bottom:14px;">
+        <thead><tr><th></th><th>print() inside a function</th><th>return inside a function</th></tr></thead>
+        <tbody>
+          <tr><td><strong>What it does</strong></td><td>Displays output on the screen</td><td>Sends a value back to the caller</td></tr>
+          <tr><td><strong>Use result later?</strong></td><td><strong>No</strong> — value is displayed and gone</td><td><strong>Yes</strong> — caller can store or reuse it</td></tr>
+          <tr><td><strong>Visible to user?</strong></td><td>Yes (immediately)</td><td>Only if you print the returned value</td></tr>
+          <tr><td><strong>If not used</strong></td><td>Function returns <span class="inline-code">None</span></td><td>Function returns the specified value</td></tr>
+        </tbody>
+      </table>
+      <div class="info-box" style="font-size:0.83rem;">
+        <div class="box-label">💡 Rule of Thumb</div>
+        Use <span class="inline-code">return</span> when you want to <strong>use the result elsewhere</strong> — store it, calculate with it, pass it on. Use <span class="inline-code">print()</span> only to display something and you do <strong>not</strong> need the value again.
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 16: PRINT vs RETURN SIDE BY SIDE -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">04 · print vs return</div>
+      <div class="slide-heading">Side-by-Side Comparison</div>
+      <div class="split">
+        <div>
+          <div class="slide-subheading" style="margin-top:0;color:var(--accent-orange);">⚠️ Version with print()</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>def add_with_print(a, b):
+    print(a + b)   # displays 7
+
+result1 = add_with_print(3, 4)
+print("Result1:", result1)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>7
+Result1: None</pre></div></div>
+          <div class="warn-box" style="font-size:0.82rem;margin-top:6px;">
+            The function prints <span class="inline-code">7</span> but returns nothing. <span class="inline-code">result1</span> is assigned <span class="inline-code">None</span> — Python's way of saying "nothing was returned."
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;color:var(--accent-green);">✅ Version with return</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>def add_with_return(a, b):
+    return a + b   # sends 7 back
+
+result2 = add_with_return(3, 4)
+print("Result2:", result2)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>Result2: 7</pre></div></div>
+          <div class="ok-box" style="font-size:0.82rem;margin-top:6px;">
+            The function returns <span class="inline-code">7</span>. The calling code stores it in <span class="inline-code">result2</span> and can use it freely.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 17: SECTION – COMMON MISTAKES -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">05</div>
+      <div class="section-title">Common Mistakes</div>
+      <div class="section-desc">Five errors beginners make — and how to fix each one</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 18: MISTAKES 1 & 2 -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">05 · Common Mistakes</div>
+      <div class="slide-heading">Mistakes 1 &amp; 2</div>
+      <div class="split">
+        <div>
+          <div class="warn-box" style="margin-bottom:8px;">
+            <div class="box-label">❌ Mistake 1: Defining But Not Calling</div>
+            Defining a function does nothing. You must <strong>call</strong> it to make it run.
+          </div>
+          <div class="compare-pair">
+            <div class="compare-wrong"><span class="compare-label">❌ No Output</span><div class="error-window" style="margin:0;"><div class="error-bar">Nothing happens</div><div class="error-body"><pre>def greet():
+    print("Hello!")
+# Never called!</pre></div></div></div>
+            <div class="compare-right"><span class="compare-label">✅ Fixed</span><div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>def greet():
+    print("Hello!")
+greet()  # ← runs it</pre></div></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="warn-box" style="margin-bottom:8px;">
+            <div class="box-label">❌ Mistake 2: Calling Before Defining</div>
+            Python reads top to bottom. The function must exist <em>before</em> you call it.
+          </div>
+          <div class="compare-pair">
+            <div class="compare-wrong"><span class="compare-label">❌ NameError</span><div class="error-window" style="margin:0;"><div class="error-bar">NameError</div><div class="error-body"><pre>greet()  # Error! Not defined yet.
+
+def greet():
+    print("Hello!")</pre></div></div></div>
+            <div class="compare-right"><span class="compare-label">✅ Fixed</span><div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>def greet():
+    print("Hello!")
+greet()  # ← after definition</pre></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 19: MISTAKES 3, 4, 5 -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">05 · Common Mistakes</div>
+      <div class="slide-heading">Mistakes 3, 4 &amp; 5</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="compare-pair">
+          <div>
+            <div class="warn-box" style="margin-bottom:6px;font-size:0.83rem;"><div class="box-label">❌ Mistake 3: print() Instead of return</div>Using <span class="inline-code">print()</span> but trying to use the result gives <span class="inline-code">None</span> → <span class="inline-code">TypeError</span>.</div>
+            <div class="compare-pair" style="gap:8px;">
+              <div class="compare-wrong"><span class="compare-label">❌ TypeError</span><div class="error-window" style="margin:0;"><div class="error-bar">None + 1 → Error</div><div class="error-body"><pre>def double(n):
+    print(n * 2)  # None!
+result = double(5)
+print(result + 1) # Crash!</pre></div></div></div>
+              <div class="compare-right"><span class="compare-label">✅ Fixed</span><div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>def double(n):
+    return n * 2  # value!
+result = double(5)
+print(result + 1) # 11 ✓</pre></div></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="warn-box" style="margin-bottom:6px;font-size:0.83rem;"><div class="box-label">❌ Mistake 4: Wrong Number of Arguments</div>The count of arguments must exactly match the count of parameters.</div>
+            <div class="compare-pair" style="gap:8px;">
+              <div class="compare-wrong"><span class="compare-label">❌ TypeError</span><div class="error-window" style="margin:0;"><div class="error-bar">TypeError</div><div class="error-body"><pre>def greet_student(name):
+    print("Hello,", name)
+greet_student("Ali", "Omar")
+# 2 args, 1 param → Error!</pre></div></div></div>
+              <div class="compare-right"><span class="compare-label">✅ Fixed</span><div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>greet_student("Ali")
+# 1 arg, 1 param ✓</pre></div></div></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="warn-box" style="margin-bottom:6px;font-size:0.83rem;"><div class="box-label">❌ Mistake 5: Using a Variable Outside Its Function (Scope)</div>Variables inside a function exist only within it. To use a value outside, <span class="inline-code">return</span> it.</div>
+          <div class="compare-pair">
+            <div class="compare-wrong"><span class="compare-label">❌ NameError</span><div class="error-window" style="margin:0;"><div class="error-bar">NameError</div><div class="error-body"><pre>def calculate():
+    answer = 42
+calculate()
+print(answer)  # answer is gone!</pre></div></div></div>
+            <div class="compare-right"><span class="compare-label">✅ Fixed</span><div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>def calculate():
+    answer = 42
+    return answer
+result = calculate()
+print(result)  # 42 ✓</pre></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 20: SUMMARY -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">Summary</div>
+      <div class="slide-heading">Lecture 10 — Key Concepts</div>
+      <div class="split col-55-45">
+        <div>
+          <table class="styled-table" style="margin-top:0;">
+            <thead><tr><th>Concept</th><th>Explanation</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">def</td><td>Keyword used to define a function</td></tr>
+              <tr><td><strong>Function name</strong></td><td>The name you give (follows variable naming rules)</td></tr>
+              <tr><td><strong>Parameter</strong></td><td>Variable placeholder in the definition</td></tr>
+              <tr><td><strong>Argument</strong></td><td>Actual value passed when calling</td></tr>
+              <tr><td class="mono">return</td><td>Sends a value back to caller; exits the function</td></tr>
+              <tr><td><strong>Calling</strong></td><td>Writing <span class="inline-code">function_name()</span> to execute</td></tr>
+              <tr><td class="mono">None</td><td>Returned automatically if no <span class="inline-code">return</span> statement</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Quick Reference</span></div>
+            <div class="code-body"><pre># No parameters, no return
+def greet():
+    print("Hello!")
+
+# With parameter
+def greet(name):
+    print("Hello,", name)
+
+# With return value
+def square(n):
+    return n * n
+
+# Multiple parameters + return
+def add(a, b):
+    return a + b
+
+# Calling
+greet()
+greet("Sara")
+result = square(5)    # 25
+total  = add(3, 7)    # 10
+print(result, total)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 21: SECTION – EXERCISES -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">06</div>
+      <div class="section-title">Exercises</div>
+      <div class="section-desc">Parts A · B · C · D</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 22: PART A -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">06 · Exercises</div>
+      <div class="slide-heading">Part A — Understanding Questions</div>
+      <div class="exercise-block">
+        <div class="exercise-header">🧠 Part A — Answer in your own words</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>1.</strong> What is the purpose of a function in a Python program?</div>
+          <div class="exercise-item"><strong>2.</strong> What is the difference between a <strong>parameter</strong> and an <strong>argument</strong>? Give an example of each.</div>
+          <div class="exercise-item"><strong>3.</strong> What does the <span class="inline-code">return</span> keyword do? What happens if a function has no <span class="inline-code">return</span> statement?</div>
+          <div class="exercise-item"><strong>4.</strong> Why is it a problem to call a function before it has been defined?</div>
+          <div class="exercise-item"><strong>5.</strong> What is <span class="inline-code">None</span> in Python? When does a function return <span class="inline-code">None</span>?</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 23: PART B -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">06 · Exercises</div>
+      <div class="slide-heading">Part B — Code Tracing</div>
+      <div class="exercise-block">
+        <div class="exercise-header">🔍 Part B — Trace and predict before running</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>Q1.</strong> Trace step by step. What is the final output?
+            <div class="code-window" style="margin-top:6px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>def multiply(x, y):
+    result = x * y
+    return result
+
+a = multiply(3, 4)
+b = multiply(a, 2)
+print(b)</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>Q2.</strong> What is the output of all three print calls?
+            <div class="code-window" style="margin-top:6px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>def check_positive(n):
+    if n > 0:
+        return "positive"
+    else:
+        return "not positive"
+
+print(check_positive(10))
+print(check_positive(-3))
+print(check_positive(0))</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>Q3.</strong> Identify the mistake. What will happen when this runs?
+            <div class="error-window" style="margin-top:6px;"><div class="error-bar">Has a mistake</div><div class="error-body"><pre>def add(a, b):
+    print(a + b)
+
+total = add(5, 7)
+print("Total:", total * 2)</pre></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 24: PART C -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">06 · Exercises</div>
+      <div class="slide-heading">Part C — Code Writing</div>
+      <div class="exercise-block">
+        <div class="exercise-header">✍️ Part C — Write your own functions</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>C1.</strong> Write a function called <span class="inline-code">greet_user</span> that takes a name as a parameter and prints: <span class="inline-code">"Good morning, [name]!"</span></div>
+          <div class="exercise-item"><strong>C2.</strong> Write <span class="inline-code">celsius_to_fahrenheit</span> that takes a temperature in Celsius and <strong>returns</strong> the equivalent in Fahrenheit. Formula: <span class="inline-code">(celsius * 9 / 5) + 32</span>. Call it with three different values.</div>
+          <div class="exercise-item"><strong>C3.</strong> Write <span class="inline-code">is_even</span> that takes an integer and <strong>returns</strong> <span class="inline-code">True</span> if even, <span class="inline-code">False</span> if odd. Call it with several numbers and print the results.</div>
+          <div class="exercise-item"><strong>C4.</strong> Write <span class="inline-code">calculate_bmi</span> that takes weight (kg) and height (m) and <strong>returns</strong> the BMI. Formula: <span class="inline-code">weight / (height ** 2)</span>. Call with two different sets of values.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 25: PART D -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">06 · Exercises</div>
+      <div class="slide-heading">Part D — Code Modification</div>
+      <div class="exercise-block">
+        <div class="exercise-header">🔧 Part D — Fix or extend the given functions</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>D1.</strong> Modify to <strong>return</strong> the square instead of printing it. Then use the returned value in a calculation.
+            <div class="code-window" style="margin-top:5px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>def square(n):
+    print(n * n)</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>D2.</strong> Modify to accept a <span class="inline-code">name</span> parameter so it can greet anyone.
+            <div class="code-window" style="margin-top:5px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>def greet():
+    print("Hello, Ahmed! How are you today?")</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>D3.</strong> Find and fix the logic error — this function should return the <em>larger</em> number.
+            <div class="error-window" style="margin-top:5px;"><div class="error-bar">Logic error</div><div class="error-body"><pre>def find_max(a, b):
+    if a > b:
+        return b    # ← mistake!
+    else:
+        return a</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>D4.</strong> Extend <span class="inline-code">calculate_area</span> to also return the perimeter. <em>Hint: <span class="inline-code">return area, perimeter</span> returns both values.</em></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 26: CLOSING -->
+  <section class="slide">
+    <div class="slide-inner slide-closing">
+      <div class="closing-icon">⚙️</div>
+      <div class="closing-title">That's Lecture 10!</div>
+      <div class="closing-sub">Functions are one of the most important concepts in all of programming. You can now write reusable named blocks of code, pass data in through parameters, and send results back with return. Every larger program you write from here will rely on functions.</div>
+      <div style="margin-top:28px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+        <div style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:8px;padding:12px 20px;font-size:0.85rem;">
+          <div style="font-weight:700;margin-bottom:4px;">Next Lecture</div>
+          <div style="opacity:0.8;">Putting it all together — Larger programs with functions, loops &amp; lists</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:8px;padding:12px 20px;font-size:0.85rem;">
+          <div style="font-weight:700;margin-bottom:4px;">Practice</div>
+          <div style="opacity:0.8;">Complete all Parts A–D exercises</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<footer id="app-footer">
+  <button id="pdf-btn" onclick="window.print()">🖨️ Export PDF</button>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)">&#8592;</button>
+    <span id="slide-counter">1 / 26</span>
+    <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">&#8594;</button>
+  </div>
+  <div class="footer-right"></div>
+</footer>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+  const total = slides.length;
+  function showSlide(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, total - 1));
+    slides[current].classList.add('active');
+    slides[current].scrollTop = 0;
+    document.getElementById('slide-counter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('progress-bar').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('prev-btn').disabled = current === 0;
+    document.getElementById('next-btn').disabled = current === total - 1;
+  }
+  function changeSlide(dir) { showSlide(current + dir); }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+    if (e.key === 'Home') showSlide(0);
+    if (e.key === 'End')  showSlide(total - 1);
+  });
+  function toggleTheme() {
+    const body = document.body;
+    const btn  = document.getElementById('theme-btn');
+    if (body.getAttribute('data-theme') === 'light') {
+      body.setAttribute('data-theme', 'dark'); btn.textContent = '☀️ Light';
+    } else {
+      body.setAttribute('data-theme', 'light'); btn.textContent = '🌙 Dark';
+    }
+  }
+  showSlide(0);
+</script>
+</body>
+</html>

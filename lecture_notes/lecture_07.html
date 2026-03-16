@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lecture 7: for Loops and the range() Function</title>
+<style>
+/* ============================================================
+   CSS VARIABLES & THEME
+   ============================================================ */
+:root {
+  --bg-page: #eef2f7;
+  --bg-slide: #ffffff;
+  --bg-header: #0f2a5e;
+  --bg-footer: #0f2a5e;
+  --accent-blue: #1a56cc;
+  --accent-blue-light: #3b7de8;
+  --accent-green: #16a34a;
+  --accent-orange: #d97706;
+  --accent-red: #dc2626;
+  --accent-purple: #7c3aed;
+  --accent-teal: #0d9488;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-header: #ffffff;
+  --border: #d1dce8;
+  --bg-code: #1e2433;
+  --bg-output: #0d1a0d;
+  --bg-error: #1f0707;
+  --bg-info: #eff6ff;
+  --bg-warn: #fffbeb;
+  --bg-ok: #f0fdf4;
+  --bg-purple: #f5f3ff;
+  --bg-teal: #f0fdfa;
+  --border-info: #93c5fd;
+  --border-warn: #fcd34d;
+  --border-ok: #86efac;
+  --border-purple: #c4b5fd;
+  --border-teal: #5eead4;
+  --slide-w: 960px;
+  --slide-h: 540px;
+  --header-h: 52px;
+  --footer-h: 56px;
+  --progress-h: 4px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
+  --radius: 10px;
+  --shadow: 0 8px 32px rgba(15,42,94,0.13);
+}
+[data-theme="dark"] {
+  --bg-page: #111827;
+  --bg-slide: #1e2636;
+  --bg-header: #070f1e;
+  --bg-footer: #070f1e;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border: #2d3a52;
+  --bg-info: #1e2a42;
+  --bg-warn: #292010;
+  --bg-ok: #0f2216;
+  --bg-purple: #1e1a30;
+  --bg-teal: #0a1f1e;
+  --border-info: #3b7de8;
+  --border-warn: #b45309;
+  --border-ok: #16a34a;
+  --border-purple: #7c3aed;
+  --border-teal: #0d9488;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: var(--font); background: var(--bg-page); color: var(--text-primary); transition: background 0.2s, color 0.2s; overflow: hidden; }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+#app-header {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+  background: var(--bg-header); color: var(--text-header);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.header-title { font-size: 0.92rem; font-weight: 600; letter-spacing: 0.01em; opacity: 0.97; }
+.header-right { display: flex; align-items: center; gap: 14px; }
+.header-author { font-size: 0.8rem; opacity: 0.75; white-space: nowrap; }
+#theme-btn {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+  color: #fff; border-radius: 6px; padding: 5px 11px; cursor: pointer;
+  font-size: 0.8rem; font-family: var(--font); transition: background 0.15s;
+}
+#theme-btn:hover { background: rgba(255,255,255,0.22); }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+#app-footer {
+  position: fixed; bottom: 0; left: 0; right: 0; height: var(--footer-h);
+  background: var(--bg-footer); color: var(--text-header);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; z-index: 1000; box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+}
+#pdf-btn {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+  color: #fff; border-radius: 6px; padding: 6px 14px; cursor: pointer;
+  font-size: 0.8rem; font-family: var(--font); transition: background 0.15s;
+}
+#pdf-btn:hover { background: rgba(255,255,255,0.22); }
+.nav-controls { display: flex; align-items: center; gap: 10px; }
+.nav-btn {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+  color: #fff; border-radius: 6px; width: 34px; height: 34px; cursor: pointer;
+  font-size: 1rem; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s; font-family: var(--font);
+}
+.nav-btn:hover { background: rgba(255,255,255,0.28); }
+.nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+#slide-counter { font-size: 0.85rem; font-weight: 600; min-width: 60px; text-align: center; letter-spacing: 0.04em; }
+.footer-right { width: 120px; }
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+#progress-bar-wrap {
+  position: fixed; bottom: var(--footer-h); left: 0; right: 0;
+  height: var(--progress-h); background: rgba(255,255,255,0.1); z-index: 999;
+}
+#progress-bar { height: 100%; background: var(--accent-blue-light); transition: width 0.3s ease; width: 0%; }
+
+/* ============================================================
+   SLIDE VIEWPORT
+   ============================================================ */
+#slide-viewport {
+  position: fixed;
+  top: var(--header-h); bottom: calc(var(--footer-h) + var(--progress-h));
+  left: 0; right: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.slide {
+  display: none;
+  width: var(--slide-w); max-width: 98vw;
+  min-height: var(--slide-h);
+  max-height: calc(100vh - var(--header-h) - var(--footer-h) - var(--progress-h) - 16px);
+  background: var(--bg-slide);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow-y: auto; overflow-x: hidden;
+  position: relative; flex-direction: column;
+}
+.slide.active { display: flex; }
+.slide::-webkit-scrollbar { width: 5px; }
+.slide::-webkit-scrollbar-track { background: transparent; }
+.slide::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ============================================================
+   SLIDE INNER
+   ============================================================ */
+.slide-inner { flex: 1; display: flex; flex-direction: column; padding: 34px 44px 30px; }
+
+/* ============================================================
+   SPECIAL SLIDE TYPES
+   ============================================================ */
+.slide-title-page {
+  background: linear-gradient(135deg, #0f2a5e 0%, #1a3f6f 50%, #1a56cc 100%);
+  color: #fff; align-items: center; justify-content: center; text-align: center;
+  padding: 48px 56px; min-height: var(--slide-h);
+}
+.title-badge {
+  display: inline-block; background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3); border-radius: 20px;
+  padding: 4px 18px; font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 20px;
+}
+.title-main { font-size: 2rem; font-weight: 800; line-height: 1.22; margin-bottom: 14px; }
+.title-sub { font-size: 1rem; opacity: 0.82; line-height: 1.65; max-width: 620px; margin: 0 auto 28px; }
+.title-meta { display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; }
+.title-meta-item { font-size: 0.82rem; opacity: 0.7; }
+
+.slide-section-divider {
+  background: linear-gradient(135deg, #0f2a5e, #1a56cc);
+  color: #fff; align-items: center; justify-content: center; text-align: center; padding: 48px;
+}
+.section-num { font-size: 3.5rem; font-weight: 900; opacity: 0.18; line-height: 1; }
+.section-title { font-size: 1.7rem; font-weight: 700; margin-top: -8px; margin-bottom: 10px; }
+.section-desc { font-size: 0.95rem; opacity: 0.78; max-width: 520px; font-family: var(--font-mono); }
+
+.slide-closing {
+  background: linear-gradient(135deg, #0f2a5e 0%, #1a56cc 100%);
+  color: #fff; align-items: center; justify-content: center; text-align: center; padding: 48px;
+}
+.closing-icon { font-size: 3rem; margin-bottom: 16px; }
+.closing-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 10px; }
+.closing-sub { font-size: 0.93rem; opacity: 0.8; max-width: 520px; margin: 0 auto; line-height: 1.65; }
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.slide-label {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent-blue);
+  margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+.slide-label::before { content: ''; display: block; width: 18px; height: 2px; background: var(--accent-blue); border-radius: 2px; }
+.slide-heading {
+  font-size: 1.42rem; font-weight: 800; color: var(--text-primary);
+  line-height: 1.25; margin-bottom: 18px; border-bottom: 2px solid var(--accent-blue); padding-bottom: 10px;
+}
+.slide-subheading { font-size: 0.95rem; font-weight: 700; color: var(--accent-blue); margin: 12px 0 7px; }
+.body-text { font-size: 0.88rem; line-height: 1.7; color: var(--text-secondary); margin-bottom: 8px; }
+.body-text strong { color: var(--text-primary); }
+.inline-code {
+  font-family: var(--font-mono); font-size: 0.82em;
+  background: var(--bg-code); color: #7dd3fc;
+  padding: 1px 6px; border-radius: 4px; white-space: nowrap;
+}
+
+/* ============================================================
+   BULLETS & STEPS
+   ============================================================ */
+.bullets { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.bullets li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.88rem; line-height: 1.55; color: var(--text-secondary); }
+.bullets li::before { content: '▸'; color: var(--accent-blue); font-size: 0.85rem; margin-top: 2px; flex-shrink: 0; }
+.bullets li strong { color: var(--text-primary); }
+
+.steps { list-style: none; display: flex; flex-direction: column; gap: 9px; counter-reset: step; }
+.steps li { display: flex; align-items: flex-start; gap: 12px; font-size: 0.88rem; line-height: 1.55; color: var(--text-secondary); counter-increment: step; }
+.steps li::before { content: counter(step); background: var(--accent-blue); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.steps li strong { color: var(--text-primary); }
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.cards { display: grid; gap: 12px; }
+.cards.col-2 { grid-template-columns: 1fr 1fr; }
+.cards.col-3 { grid-template-columns: 1fr 1fr 1fr; }
+.card { background: var(--bg-info); border: 1px solid var(--border-info); border-radius: 8px; padding: 14px 16px; }
+.card-icon { font-size: 1.3rem; margin-bottom: 7px; }
+.card-title { font-size: 0.84rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.card-body { font-size: 0.81rem; line-height: 1.5; color: var(--text-secondary); }
+
+/* ============================================================
+   BOXES
+   ============================================================ */
+.info-box, .warn-box, .ok-box, .purple-box, .teal-box {
+  border-left: 4px solid; border-radius: 0 8px 8px 0;
+  padding: 10px 15px; margin: 8px 0; font-size: 0.86rem; line-height: 1.6;
+}
+.info-box { background: var(--bg-info); border-color: var(--accent-blue); color: var(--text-primary); }
+.warn-box { background: var(--bg-warn); border-color: var(--accent-orange); color: var(--text-primary); }
+.ok-box   { background: var(--bg-ok);   border-color: var(--accent-green); color: var(--text-primary); }
+.purple-box { background: var(--bg-purple); border-color: var(--accent-purple); color: var(--text-primary); }
+.teal-box { background: var(--bg-teal); border-color: var(--accent-teal); color: var(--text-primary); }
+.box-label { font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+.info-box .box-label { color: var(--accent-blue); }
+.warn-box .box-label { color: var(--accent-orange); }
+.ok-box .box-label   { color: var(--accent-green); }
+.purple-box .box-label { color: var(--accent-purple); }
+.teal-box .box-label { color: var(--accent-teal); }
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.styled-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 8px 0; }
+.styled-table th { background: var(--accent-blue); color: #fff; text-align: left; padding: 8px 13px; font-weight: 700; font-size: 0.78rem; }
+.styled-table th:first-child { border-radius: 6px 0 0 0; }
+.styled-table th:last-child  { border-radius: 0 6px 0 0; }
+.styled-table td { padding: 7px 13px; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: middle; }
+.styled-table tr:last-child td { border-bottom: none; }
+.styled-table tr:nth-child(even) td { background: rgba(26,86,204,0.04); }
+.styled-table .mono { font-family: var(--font-mono); font-size: 0.81rem; }
+.styled-table .g-val { color: var(--accent-green); font-weight: 700; font-family: var(--font-mono); }
+
+/* ============================================================
+   CODE WINDOWS
+   ============================================================ */
+.code-window { background: var(--bg-code); border-radius: 8px; overflow: hidden; margin: 8px 0; box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+.code-bar { display: flex; align-items: center; justify-content: space-between; padding: 7px 14px; background: #161c2b; }
+.code-dots { display: flex; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-red { background: #ff5f57; } .dot-yellow { background: #febc2e; } .dot-green { background: #28c840; }
+.code-lang { font-size: 0.67rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; font-family: var(--font-mono); }
+.code-body { padding: 12px 18px; overflow-x: auto; }
+.code-body pre { font-family: var(--font-mono); font-size: 0.81rem; line-height: 1.65; color: #e2e8f0; }
+
+/* ============================================================
+   OUTPUT & ERROR WINDOWS
+   ============================================================ */
+.output-window { background: var(--bg-output); border-radius: 8px; overflow: hidden; margin: 6px 0; border: 1px solid #1a3a1a; }
+.output-bar { display: flex; align-items: center; gap: 8px; background: #0a1a0a; padding: 5px 14px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #22c55e; }
+.output-bar::before { content: '▶'; font-size: 0.62rem; }
+.output-body { padding: 10px 18px; }
+.output-body pre { font-family: var(--font-mono); font-size: 0.81rem; line-height: 1.6; color: #4ade80; }
+
+.error-window { background: var(--bg-error); border-radius: 8px; overflow: hidden; margin: 6px 0; border: 1px solid #4a1010; }
+.error-bar { display: flex; align-items: center; gap: 8px; background: #2d0505; padding: 5px 14px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #f87171; }
+.error-bar::before { content: '✗'; }
+.error-body { padding: 10px 18px; }
+.error-body pre { font-family: var(--font-mono); font-size: 0.81rem; line-height: 1.6; color: #fca5a5; }
+
+/* ============================================================
+   SPLIT LAYOUT
+   ============================================================ */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.split.col-60-40 { grid-template-columns: 60fr 40fr; }
+.split.col-55-45 { grid-template-columns: 55fr 45fr; }
+
+/* ============================================================
+   COMPARE PAIR
+   ============================================================ */
+.compare-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0; }
+.compare-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; padding: 3px 10px; border-radius: 4px; display: inline-block; }
+.compare-wrong .compare-label { background: rgba(220,38,38,0.15); color: var(--accent-red); }
+.compare-right .compare-label { background: rgba(22,163,74,0.15); color: var(--accent-green); }
+
+/* ============================================================
+   FOR LOOP ANATOMY
+   ============================================================ */
+.for-anatomy {
+  background: var(--bg-code); border-radius: 8px;
+  padding: 18px 22px; font-family: var(--font-mono);
+  font-size: 0.85rem; line-height: 2.4;
+}
+.fa-kw   { color: #c084fc; font-weight: 700; }
+.fa-var  { color: #fb923c; font-weight: 700; }
+.fa-in   { color: #c084fc; font-weight: 700; }
+.fa-seq  { color: #60a5fa; font-weight: 700; }
+.fa-body { color: #e2e8f0; }
+.fa-cm   { color: #64748b; font-style: italic; }
+.fa-label {
+  display: inline-block; font-family: var(--font); font-size: 0.68rem;
+  font-weight: 700; border-radius: 10px; padding: 1px 9px; margin-left: 10px;
+  vertical-align: middle;
+}
+.fa-label.kw   { background: rgba(192,132,252,0.18); color: #c084fc; }
+.fa-label.var  { background: rgba(251,146,60,0.18); color: #fb923c; }
+.fa-label.in   { background: rgba(192,132,252,0.18); color: #c084fc; }
+.fa-label.seq  { background: rgba(96,165,250,0.18); color: #60a5fa; }
+.fa-label.body { background: rgba(226,232,240,0.12); color: #94a3b8; }
+.fa-indent { display: inline-block; width: 28px; }
+
+/* ============================================================
+   RANGE VISUAL STRIPS
+   ============================================================ */
+.range-visual { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; align-items: center; }
+.range-num {
+  width: 34px; height: 34px; border-radius: 6px; display: flex;
+  align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700;
+  border: 2px solid;
+}
+.range-num.active { background: rgba(26,86,204,0.15); border-color: var(--accent-blue); color: var(--accent-blue); }
+.range-num.excluded { background: rgba(220,38,38,0.06); border-color: rgba(220,38,38,0.25); color: var(--accent-red); opacity: 0.55; text-decoration: line-through; }
+.range-step-active { background: rgba(13,148,136,0.15); border-color: var(--accent-teal); color: var(--accent-teal); }
+.range-arrow { color: var(--accent-blue-light); font-size: 0.85rem; margin: 0 2px; align-self: center; }
+.range-label { font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-secondary); align-self: center; margin-left: 6px; }
+
+/* ============================================================
+   RANGE FORMS TABLE
+   ============================================================ */
+.range-forms { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.range-form-row {
+  display: grid; grid-template-columns: 160px 1fr; gap: 12px;
+  align-items: center; background: var(--bg-info);
+  border: 1px solid var(--border-info); border-radius: 8px; padding: 10px 14px;
+}
+.range-form-syntax { font-family: var(--font-mono); font-weight: 700; font-size: 0.84rem; color: var(--accent-blue); }
+.range-form-desc { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+
+/* ============================================================
+   TRACE TABLE (for loops)
+   ============================================================ */
+.trace-table { width: 100%; border-collapse: collapse; font-size: 0.79rem; }
+.trace-table th { background: #0f2a5e; color: #fff; padding: 7px 12px; font-size: 0.74rem; text-align: center; }
+.trace-table th:first-child { border-radius: 6px 0 0 0; text-align: left; }
+.trace-table th:last-child  { border-radius: 0 6px 0 0; }
+.trace-table td { padding: 6px 12px; border-bottom: 1px solid var(--border); text-align: center; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary); }
+.trace-table td:first-child { text-align: left; font-family: var(--font); font-size: 0.77rem; }
+.trace-table tr:last-child td { border-bottom: none; }
+.trace-table .tr-run td { background: rgba(22,163,74,0.06); }
+.trace-table .tr-after td { background: rgba(26,86,204,0.06); }
+.trace-table .g-val { color: var(--accent-green); font-weight: 700; }
+
+/* ============================================================
+   FOR vs WHILE COMPARISON TABLE
+   ============================================================ */
+.vs-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.vs-table th { padding: 9px 14px; font-weight: 700; font-size: 0.8rem; text-align: left; }
+.vs-table th:nth-child(1) { background: #1e2a42; color: #94a3b8; border-radius: 6px 0 0 0; width: 28%; }
+.vs-table th:nth-child(2) { background: var(--accent-blue); color: #fff; }
+.vs-table th:nth-child(3) { background: #1a4035; color: #86efac; border-radius: 0 6px 0 0; }
+.vs-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: top; font-size: 0.81rem; }
+.vs-table td:nth-child(2) { background: rgba(26,86,204,0.05); }
+.vs-table td:nth-child(3) { background: rgba(22,163,74,0.04); }
+.vs-table tr:last-child td { border-bottom: none; }
+.vs-table td strong { color: var(--text-primary); }
+
+/* ============================================================
+   STAR PATTERN VISUAL
+   ============================================================ */
+.star-pattern {
+  font-family: var(--font-mono); font-size: 1.2rem;
+  line-height: 1.6; color: var(--accent-orange);
+  background: var(--bg-code); border-radius: 8px;
+  padding: 14px 20px; letter-spacing: 2px;
+}
+
+/* ============================================================
+   EXERCISE BLOCKS
+   ============================================================ */
+.exercise-block { border: 2px solid var(--accent-blue); border-radius: 8px; overflow: hidden; margin: 8px 0; }
+.exercise-header { background: var(--accent-blue); color: #fff; padding: 7px 16px; font-size: 0.79rem; font-weight: 700; }
+.exercise-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.exercise-item { font-size: 0.85rem; line-height: 1.55; color: var(--text-secondary); }
+.exercise-item strong { color: var(--text-primary); }
+
+/* ============================================================
+   PRINT CSS
+   ============================================================ */
+@media print {
+  html, body { overflow: visible !important; height: auto !important; }
+  #app-header, #app-footer, #progress-bar-wrap { display: none !important; }
+  #slide-viewport { position: static !important; overflow: visible !important; height: auto !important; }
+  .slide { display: flex !important; page-break-after: always; box-shadow: none !important; max-height: none !important; width: 100% !important; border-radius: 0 !important; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .slide-inner { padding: 24px 26px 20px; }
+  .slide-heading { font-size: 1.18rem; }
+}
+@media (max-width: 768px) {
+  .slide-inner { padding: 18px 16px 16px; }
+  .cards.col-2, .cards.col-3, .split, .compare-pair { grid-template-columns: 1fr; }
+  .range-form-row { grid-template-columns: 1fr; }
+  .title-main { font-size: 1.35rem; }
+  .header-author { display: none; }
+}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- ===================== HEADER ===================== -->
+<header id="app-header">
+  <div class="header-title">Lecture #7: for Loops and the range() Function</div>
+  <div class="header-right">
+    <span class="header-author">Created by Fawaz Alazemi</span>
+    <button id="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+  </div>
+</header>
+
+<!-- ===================== SLIDES ===================== -->
+<div id="slide-viewport">
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 1: TITLE                              -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide active">
+    <div class="slide-inner slide-title-page">
+      <div class="title-badge">Introduction to Python · Lecture 7</div>
+      <div class="title-main"><code style="font-family:monospace; font-size:1.85rem;">for</code> Loops and the <code style="font-family:monospace; font-size:1.85rem;">range()</code> Function</div>
+      <div class="title-sub">Repeat actions a precise, known number of times — automatically, cleanly, and without the risk of infinite loops. The most frequently used loop in Python.</div>
+      <div class="title-meta">
+        <span class="title-meta-item">🔢 3 Forms of range()</span>
+        <span class="title-meta-item">🎯 6 Learning Objectives</span>
+        <span class="title-meta-item">💻 Practical Examples + Exercises</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 2: WHY THIS MATTERS                   -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">Motivation</div>
+      <div class="slide-heading">Why This Topic Matters</div>
+      <div class="body-text">One of the most common programming tasks is repeating an action a <strong>specific number of times</strong>. Writing the same line of code repeatedly is inefficient and impractical.</div>
+      <div class="cards col-3" style="margin-top:12px;">
+        <div class="card">
+          <div class="card-icon">👋</div>
+          <div class="card-title">Greet 10 Times</div>
+          <div class="card-body">Print a greeting message exactly <strong>10 times</strong> without writing 10 print statements.</div>
+        </div>
+        <div class="card" style="border-color:var(--border-warn); background:var(--bg-warn);">
+          <div class="card-icon">➕</div>
+          <div class="card-title">Sum 1 to 100</div>
+          <div class="card-body">Add up numbers from 1 to 100 in a <strong>single loop</strong> — no manual addition.</div>
+        </div>
+        <div class="card" style="border-color:var(--border-ok); background:var(--bg-ok);">
+          <div class="card-icon">⭐</div>
+          <div class="card-title">Print Patterns</div>
+          <div class="card-body">Display rows of stars, numbers, or text that grow or shrink each line.</div>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:14px;">
+        <div class="box-label">💡 Why for Loops?</div>
+        The <span class="inline-code">for</span> loop is one of the <strong>most frequently used tools</strong> in Python. Mastering it allows you to process lists of data, repeat calculations, and generate output patterns — efficiently.
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 3: LEARNING OBJECTIVES                -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">Goals</div>
+      <div class="slide-heading">Learning Objectives</div>
+      <div class="body-text">By the end of this lecture, you will be able to:</div>
+      <ol class="steps" style="margin-top:14px;">
+        <li>Explain what a <span class="inline-code">for</span> loop is and <strong>when to use it</strong></li>
+        <li>Write a <span class="inline-code">for</span> loop using the <span class="inline-code">range()</span> function</li>
+        <li>Use all <strong>three forms</strong> of <span class="inline-code">range()</span>: <span class="inline-code">range(stop)</span>, <span class="inline-code">range(start, stop)</span>, <span class="inline-code">range(start, stop, step)</span></li>
+        <li>Use a <span class="inline-code">for</span> loop to print numbers, calculate totals, and display text patterns</li>
+        <li>Explain the difference between a <span class="inline-code">for</span> loop and a <span class="inline-code">while</span> loop</li>
+        <li>Identify and avoid common mistakes, including <strong>off-by-one errors</strong></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 4: INTRODUCTION                       -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">01 · Introduction</div>
+      <div class="slide-heading">The <span class="inline-code">for</span> Loop — Repeating a Known Number of Times</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="info-box">
+            <div class="box-label">📖 Definition</div>
+            The <span class="inline-code">for</span> loop is used when you know <strong>exactly how many times</strong> you want to repeat something. It loops through every value in a defined sequence and stops automatically when the sequence is exhausted.
+          </div>
+          <div class="cards col-2" style="margin-top:12px; gap:10px;">
+            <div class="card" style="padding:12px;">
+              <div class="card-title"><span class="inline-code">while</span> loop</div>
+              <div class="card-body">Repeats while a <strong>condition is True</strong>. Number of repetitions may be unknown.</div>
+            </div>
+            <div class="card" style="padding:12px; border-color:var(--border-ok); background:var(--bg-ok);">
+              <div class="card-title"><span class="inline-code">for</span> loop</div>
+              <div class="card-body">Repeats for each value in a <strong>sequence</strong>. Number of repetitions is fixed.</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="purple-box">
+            <div class="box-label">🃏 Analogy: Instruction Cards</div>
+            Imagine a stack of 5 identical instruction cards. Each card says: <em>"Do this action."</em><br><br>
+            You pick up each card one by one, follow the instruction, and stop when the stack is empty.<br><br>
+            The <span class="inline-code">for</span> loop works exactly this way — it repeats for every item in a sequence, then stops automatically.
+          </div>
+          <div class="info-box" style="margin-top:10px; font-size:0.83rem;">
+            <div class="box-label">🔧 The Tool That Creates the Sequence</div>
+            The <span class="inline-code">range()</span> function creates the sequence of numbers for the loop to work through.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 5: SECTION – FOR LOOP STRUCTURE       -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">01</div>
+      <div class="section-title">The Structure of a <code style="font-family:monospace; font-size:1.4rem;">for</code> Loop</div>
+      <div class="section-desc">for · variable · in · sequence · body</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 6: FOR LOOP ANATOMY                   -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">01 · Structure</div>
+      <div class="slide-heading">Anatomy of a <span class="inline-code">for</span> Loop</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="for-anatomy">
+            <div><span class="fa-kw">for</span><span class="fa-label kw">keyword</span> <span class="fa-var">i</span><span class="fa-label var">loop variable</span> <span class="fa-in">in</span><span class="fa-label in">keyword</span> <span class="fa-seq">range(5)</span><span class="fa-label seq">sequence</span><span style="color:#e2e8f0;">:</span></div>
+            <div><span class="fa-indent"></span><span class="fa-body">print("Hello!")</span><span class="fa-label body">loop body (indented)</span></div>
+          </div>
+          <div class="bullets" style="margin-top:14px;">
+            <li><span class="inline-code">for</span> — the keyword that starts the loop</li>
+            <li><span class="inline-code">i</span> (loop variable) — holds the current value from the sequence on each repetition</li>
+            <li><span class="inline-code">in</span> — connects the variable to the sequence</li>
+            <li><span class="inline-code">range(5)</span> — creates the sequence of values</li>
+            <li><strong>Indented block</strong> — the code that runs on every repetition</li>
+          </ul>
+        </div>
+        <div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>for i in range(5):
+    print("Hello!")</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output — 5 times</div><div class="output-body"><pre>Hello!
+Hello!
+Hello!
+Hello!
+Hello!</pre></div></div>
+          <div class="ok-box" style="margin-top:10px; font-size:0.83rem;">
+            <div class="box-label">💡 Loop Variable Convention</div>
+            The name <span class="inline-code">i</span> stands for <em>index</em> and is a common convention. But you may use any name — <span class="inline-code">number</span>, <span class="inline-code">count</span>, etc. Choose what makes the code clearest.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 7: THE LOOP VARIABLE                  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">01 · Structure</div>
+      <div class="slide-heading">The Loop Variable — Tracking Each Value</div>
+      <div class="split">
+        <div>
+          <div class="body-text">The loop variable automatically takes a <strong>new value</strong> from the sequence on each repetition. You can use this variable inside the loop body.</div>
+          <div class="code-window" style="margin-top:10px;">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>for i in range(5):
+    print(i)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>0
+1
+2
+3
+4</pre></div></div>
+          <div class="warn-box" style="margin-top:10px; font-size:0.83rem;">
+            <div class="box-label">⚠️ range(5) Starts at 0, Not 1!</div>
+            <span class="inline-code">range(5)</span> generates: <strong>0, 1, 2, 3, 4</strong> — NOT 1, 2, 3, 4, 5. This is a very common point of confusion. We cover this fully in the next section.
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">What i holds on each repetition</div>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+            <div style="display:flex; align-items:center; gap:10px; background:rgba(26,86,204,0.08); border:1px solid var(--border-info); border-radius:7px; padding:7px 12px;">
+              <span style="background:var(--accent-blue); color:#fff; border-radius:4px; padding:2px 8px; font-family:var(--font-mono); font-size:0.8rem; min-width:48px; text-align:center;">Rep 1</span>
+              <span style="font-family:var(--font-mono); color:var(--text-primary);">i = <strong>0</strong></span>
+              <span style="font-size:0.78rem; color:var(--text-secondary);">→ print(0)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; background:rgba(26,86,204,0.08); border:1px solid var(--border-info); border-radius:7px; padding:7px 12px;">
+              <span style="background:var(--accent-blue); color:#fff; border-radius:4px; padding:2px 8px; font-family:var(--font-mono); font-size:0.8rem; min-width:48px; text-align:center;">Rep 2</span>
+              <span style="font-family:var(--font-mono); color:var(--text-primary);">i = <strong>1</strong></span>
+              <span style="font-size:0.78rem; color:var(--text-secondary);">→ print(1)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; background:rgba(26,86,204,0.08); border:1px solid var(--border-info); border-radius:7px; padding:7px 12px;">
+              <span style="background:var(--accent-blue); color:#fff; border-radius:4px; padding:2px 8px; font-family:var(--font-mono); font-size:0.8rem; min-width:48px; text-align:center;">Rep 3</span>
+              <span style="font-family:var(--font-mono); color:var(--text-primary);">i = <strong>2</strong></span>
+              <span style="font-size:0.78rem; color:var(--text-secondary);">→ print(2)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; background:rgba(26,86,204,0.08); border:1px solid var(--border-info); border-radius:7px; padding:7px 12px;">
+              <span style="background:var(--accent-blue); color:#fff; border-radius:4px; padding:2px 8px; font-family:var(--font-mono); font-size:0.8rem; min-width:48px; text-align:center;">Rep 4</span>
+              <span style="font-family:var(--font-mono); color:var(--text-primary);">i = <strong>3</strong></span>
+              <span style="font-size:0.78rem; color:var(--text-secondary);">→ print(3)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; background:rgba(26,86,204,0.08); border:1px solid var(--border-info); border-radius:7px; padding:7px 12px;">
+              <span style="background:var(--accent-blue); color:#fff; border-radius:4px; padding:2px 8px; font-family:var(--font-mono); font-size:0.8rem; min-width:48px; text-align:center;">Rep 5</span>
+              <span style="font-family:var(--font-mono); color:var(--text-primary);">i = <strong>4</strong></span>
+              <span style="font-size:0.78rem; color:var(--text-secondary);">→ print(4)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 8: SECTION – RANGE()                  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">02</div>
+      <div class="section-title">The <code style="font-family:monospace; font-size:1.5rem;">range()</code> Function</div>
+      <div class="section-desc">range(stop) · range(start, stop) · range(start, stop, step)</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 9: RANGE OVERVIEW                     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">02 · range()</div>
+      <div class="slide-heading">Three Ways to Use <span class="inline-code">range()</span></div>
+      <div class="body-text">The <span class="inline-code">range()</span> function generates a sequence of integers. There are <strong>three forms</strong>, each giving you more control over the sequence.</div>
+      <div class="range-forms" style="margin-top:16px;">
+        <div class="range-form-row">
+          <div class="range-form-syntax">range(stop)</div>
+          <div class="range-form-desc">Generates integers from <strong>0</strong> up to, but <strong>not including</strong>, <span class="inline-code">stop</span>. Always starts at zero.<br><span class="inline-code">range(5)</span> → 0, 1, 2, 3, 4</div>
+        </div>
+        <div class="range-form-row" style="border-color:var(--border-warn); background:var(--bg-warn);">
+          <div class="range-form-syntax" style="color:var(--accent-orange);">range(start, stop)</div>
+          <div class="range-form-desc">Generates integers from <strong>start</strong> up to, but <strong>not including</strong>, <span class="inline-code">stop</span>.<br><span class="inline-code">range(1, 6)</span> → 1, 2, 3, 4, 5</div>
+        </div>
+        <div class="range-form-row" style="border-color:var(--border-ok); background:var(--bg-ok);">
+          <div class="range-form-syntax" style="color:var(--accent-green);">range(start, stop, step)</div>
+          <div class="range-form-desc">Generates integers from <strong>start</strong> to <strong>stop</strong>, advancing by <strong>step</strong> each time. Supports negative steps for counting down.<br><span class="inline-code">range(0, 10, 2)</span> → 0, 2, 4, 6, 8</div>
+        </div>
+      </div>
+      <div class="warn-box" style="margin-top:12px; font-size:0.83rem;">
+        <div class="box-label">⚠️ Critical Rule: Stop Is Never Included</div>
+        In all three forms, the <span class="inline-code">stop</span> value is <strong>never included</strong> in the sequence. To include a number <span class="inline-code">n</span>, you must write <span class="inline-code">n + 1</span> as the stop value.
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 10: range(stop)                       -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">02 · range()</div>
+      <div class="slide-heading"><span class="inline-code">range(stop)</span> — Starting from Zero</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="info-box">
+            <div class="box-label">📖 How It Works</div>
+            Generates integers from <strong>0</strong> up to, but not including, <span class="inline-code">stop</span>. The sequence contains exactly <span class="inline-code">stop</span> numbers.
+          </div>
+          <div class="code-window" style="margin-top:12px;">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>for i in range(4):
+    print(i)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>0
+1
+2
+3</pre></div></div>
+          <div class="body-text" style="font-size:0.82rem; margin-top:6px;"><span class="inline-code">range(4)</span> produces 0, 1, 2, 3 — stops <em>before</em> 4. Contains exactly <strong>4</strong> numbers.</div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">Visual Sequence</div>
+          <div class="range-visual">
+            <div class="range-num active">0</div>
+            <div class="range-num active">1</div>
+            <div class="range-num active">2</div>
+            <div class="range-num active">3</div>
+            <div class="range-num excluded">4</div>
+            <div class="range-label">← not included</div>
+          </div>
+          <div class="slide-subheading">Quick Reference</div>
+          <table class="styled-table">
+            <thead><tr><th>Call</th><th>Values Produced</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">range(3)</td><td class="mono">0, 1, 2</td></tr>
+              <tr><td class="mono">range(5)</td><td class="mono">0, 1, 2, 3, 4</td></tr>
+              <tr><td class="mono">range(1)</td><td class="mono">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 11: range(start, stop)                -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">02 · range()</div>
+      <div class="slide-heading"><span class="inline-code">range(start, stop)</span> — Custom Starting Point</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="info-box">
+            <div class="box-label">📖 How It Works</div>
+            Generates integers from <strong>start</strong> up to, but not including, <span class="inline-code">stop</span>. Useful when you want to start from 1 (or any other number) instead of 0.
+          </div>
+          <div class="code-window" style="margin-top:12px;">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>for i in range(1, 6):
+    print(i)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>1
+2
+3
+4
+5</pre></div></div>
+          <div class="body-text" style="font-size:0.82rem; margin-top:6px;"><span class="inline-code">range(1, 6)</span> starts at 1 and stops before 6 → prints 1 through 5.</div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">Visual Sequence</div>
+          <div class="range-visual">
+            <div class="range-num active">1</div>
+            <div class="range-num active">2</div>
+            <div class="range-num active">3</div>
+            <div class="range-num active">4</div>
+            <div class="range-num active">5</div>
+            <div class="range-num excluded">6</div>
+            <div class="range-label">← stop</div>
+          </div>
+          <div class="slide-subheading">Quick Reference</div>
+          <table class="styled-table">
+            <thead><tr><th>Call</th><th>Values Produced</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">range(1, 5)</td><td class="mono">1, 2, 3, 4</td></tr>
+              <tr><td class="mono">range(3, 8)</td><td class="mono">3, 4, 5, 6, 7</td></tr>
+              <tr><td class="mono">range(10, 13)</td><td class="mono">10, 11, 12</td></tr>
+            </tbody>
+          </table>
+          <div class="ok-box" style="margin-top:10px; font-size:0.82rem;">
+            <div class="box-label">✅ To Print 1 to N</div>
+            Use <span class="inline-code">range(1, N+1)</span>. The stop must be one more than the last number you want.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 12: range(start, stop, step)          -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">02 · range()</div>
+      <div class="slide-heading"><span class="inline-code">range(start, stop, step)</span> — Custom Interval</div>
+      <div class="split">
+        <div>
+          <div class="info-box">
+            <div class="box-label">📖 How It Works</div>
+            Advances by <span class="inline-code">step</span> each time. Use a <strong>negative step</strong> to count downwards.
+          </div>
+          <div class="slide-subheading" style="margin-top:10px;">Count Up by 2 (Even Numbers)</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>for i in range(0, 10, 2):
+    print(i)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>0  2  4  6  8</pre></div></div>
+          <div class="range-visual" style="margin-top:8px;">
+            <div class="range-num range-step-active">0</div><div class="range-num excluded" style="opacity:0.3;">1</div>
+            <div class="range-num range-step-active">2</div><div class="range-num excluded" style="opacity:0.3;">3</div>
+            <div class="range-num range-step-active">4</div><div class="range-num excluded" style="opacity:0.3;">5</div>
+            <div class="range-num range-step-active">6</div><div class="range-num excluded" style="opacity:0.3;">7</div>
+            <div class="range-num range-step-active">8</div><div class="range-num excluded">10</div>
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">Count Down (Negative Step)</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>for i in range(5, 0, -1):
+    print(i)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>5  4  3  2  1</pre></div></div>
+          <div class="slide-subheading">Quick Reference</div>
+          <table class="styled-table">
+            <thead><tr><th>Call</th><th>Values Produced</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">range(0, 10, 2)</td><td class="mono">0, 2, 4, 6, 8</td></tr>
+              <tr><td class="mono">range(1, 10, 3)</td><td class="mono">1, 4, 7</td></tr>
+              <tr><td class="mono">range(10, 0, -2)</td><td class="mono">10, 8, 6, 4, 2</td></tr>
+            </tbody>
+          </table>
+          <div class="warn-box" style="margin-top:8px; font-size:0.82rem;">
+            <div class="box-label">⚠️ Counting Down: start > stop</div>
+            With a negative step, <span class="inline-code">start</span> must be <strong>greater than</strong> <span class="inline-code">stop</span>. Otherwise the range is empty and the loop never runs.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 13: SECTION – PRACTICAL EXAMPLES      -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">03</div>
+      <div class="section-title">Practical Examples</div>
+      <div class="section-desc">Printing numbers · Calculating totals · Displaying patterns</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 14: EXAMPLE – PRINT SERIES            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">03 · Practical Examples</div>
+      <div class="slide-heading">Example 1 — Print Numbers from 1 to 10</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="teal-box" style="margin-bottom:10px;">
+            <div class="box-label">📋 Task</div>
+            Print the numbers from 1 to 10, one per line.
+          </div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>for number in range(1, 11):
+    print(number)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>1  2  3  4  5  6  7  8  9  10</pre></div></div>
+          <div class="body-text" style="font-size:0.82rem; margin-top:8px;"><span class="inline-code">range(1, 11)</span> generates 1 through 10. The loop variable is named <span class="inline-code">number</span> for readability. <strong>Note:</strong> we need <span class="inline-code">11</span> as stop to include <span class="inline-code">10</span>.</div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">Why range(1, 11) and not range(1, 10)?</div>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+            <div style="background:rgba(220,38,38,0.08); border:1px solid rgba(220,38,38,0.25); border-radius:7px; padding:9px 13px; font-size:0.82rem;">
+              <div style="color:var(--accent-red); font-weight:700; font-size:0.74rem; margin-bottom:3px;">❌ range(1, 10)</div>
+              Produces: 1, 2, 3, 4, 5, 6, 7, 8, <strong>9</strong> — stops before 10!
+            </div>
+            <div style="background:rgba(22,163,74,0.08); border:1px solid rgba(22,163,74,0.25); border-radius:7px; padding:9px 13px; font-size:0.82rem;">
+              <div style="color:var(--accent-green); font-weight:700; font-size:0.74rem; margin-bottom:3px;">✅ range(1, 11)</div>
+              Produces: 1, 2, 3, 4, 5, 6, 7, 8, 9, <strong>10</strong> — includes 10!
+            </div>
+          </div>
+          <div class="ok-box" style="margin-top:12px; font-size:0.82rem;">
+            <div class="box-label">🎯 Try It</div>
+            Modify to print only <strong>even</strong> numbers from 2 to 20.<br>
+            Hint: use <span class="inline-code">range(2, 21, 2)</span>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 15: EXAMPLE – SUMMATION               -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">03 · Practical Examples</div>
+      <div class="slide-heading">Example 2 — Calculating a Sum (Accumulator Pattern)</div>
+      <div class="split">
+        <div>
+          <div class="teal-box" style="margin-bottom:10px;">
+            <div class="box-label">📋 Task</div>
+            Calculate the sum of all integers from 1 to 5.
+          </div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>total = 0
+
+for i in range(1, 6):
+    total = total + i
+
+print("The total is:", total)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>The total is: 15</pre></div></div>
+          <div class="info-box" style="margin-top:10px; font-size:0.83rem;">
+            <div class="box-label">📖 Accumulator Pattern</div>
+            <span class="inline-code">total</span> is called an <strong>accumulator</strong> — it starts at 0 and collects the running sum. The <span class="inline-code">print()</span> is <strong>outside</strong> the loop (not indented), so it runs only once at the end.
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">Trace — total after each iteration</div>
+          <table class="trace-table">
+            <thead><tr><th>Repetition</th><th>i</th><th>total after addition</th></tr></thead>
+            <tbody>
+              <tr class="tr-run"><td>1st</td><td>1</td><td class="g-val">0 + 1 = 1</td></tr>
+              <tr class="tr-run"><td>2nd</td><td>2</td><td class="g-val">1 + 2 = 3</td></tr>
+              <tr class="tr-run"><td>3rd</td><td>3</td><td class="g-val">3 + 3 = 6</td></tr>
+              <tr class="tr-run"><td>4th</td><td>4</td><td class="g-val">6 + 4 = 10</td></tr>
+              <tr class="tr-run"><td>5th</td><td>5</td><td class="g-val">10 + 5 = 15</td></tr>
+              <tr class="tr-after"><td>After loop</td><td>—</td><td>print: <strong>15</strong></td></tr>
+            </tbody>
+          </table>
+          <div class="ok-box" style="margin-top:10px; font-size:0.82rem;">
+            <div class="box-label">🎯 Try It</div>
+            Change to sum integers from 1 to 100. Only one number needs to change. The answer is 5050.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 16: EXAMPLE – PATTERN                 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">03 · Practical Examples</div>
+      <div class="slide-heading">Example 3 — Displaying a Star Triangle Pattern</div>
+      <div class="split col-55-45">
+        <div>
+          <div class="teal-box" style="margin-bottom:10px;">
+            <div class="box-label">📋 Task</div>
+            Print a triangle pattern of stars with 5 rows.
+          </div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>for i in range(1, 6):
+    print("*" * i)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>*
+**
+***
+****
+*****</pre></div></div>
+          <div class="info-box" style="margin-top:10px; font-size:0.83rem;">
+            <div class="box-label">💡 String Multiplication</div>
+            <span class="inline-code">"*" * i</span> repeats the string <span class="inline-code">"*"</span> exactly <span class="inline-code">i</span> times.<br>
+            When <span class="inline-code">i = 3</span>, the result is <span class="inline-code">"***"</span>.
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">What happens on each repetition</div>
+          <div style="display:flex; flex-direction:column; gap:5px; margin-top:4px;">
+            <div style="display:flex; align-items:center; gap:12px; font-size:0.82rem;">
+              <span style="font-family:var(--font-mono); background:var(--accent-blue); color:#fff; border-radius:4px; padding:2px 8px; min-width:36px; text-align:center;">i=1</span>
+              <span style="font-family:var(--font-mono); color:var(--accent-orange); font-size:1rem; letter-spacing:3px;">*</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; font-size:0.82rem;">
+              <span style="font-family:var(--font-mono); background:var(--accent-blue); color:#fff; border-radius:4px; padding:2px 8px; min-width:36px; text-align:center;">i=2</span>
+              <span style="font-family:var(--font-mono); color:var(--accent-orange); font-size:1rem; letter-spacing:3px;">**</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; font-size:0.82rem;">
+              <span style="font-family:var(--font-mono); background:var(--accent-blue); color:#fff; border-radius:4px; padding:2px 8px; min-width:36px; text-align:center;">i=3</span>
+              <span style="font-family:var(--font-mono); color:var(--accent-orange); font-size:1rem; letter-spacing:3px;">***</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; font-size:0.82rem;">
+              <span style="font-family:var(--font-mono); background:var(--accent-blue); color:#fff; border-radius:4px; padding:2px 8px; min-width:36px; text-align:center;">i=4</span>
+              <span style="font-family:var(--font-mono); color:var(--accent-orange); font-size:1rem; letter-spacing:3px;">****</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; font-size:0.82rem;">
+              <span style="font-family:var(--font-mono); background:var(--accent-blue); color:#fff; border-radius:4px; padding:2px 8px; min-width:36px; text-align:center;">i=5</span>
+              <span style="font-family:var(--font-mono); color:var(--accent-orange); font-size:1rem; letter-spacing:3px;">*****</span>
+            </div>
+          </div>
+          <div class="ok-box" style="margin-top:12px; font-size:0.82rem;">
+            <div class="box-label">🎯 Try It</div>
+            1. Change to <span class="inline-code">range(1, 8)</span> — more rows.<br>
+            2. Replace <span class="inline-code">"*"</span> with <span class="inline-code">"-"</span>.<br>
+            3. Print the triangle in reverse: use <span class="inline-code">range(5, 0, -1)</span>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 17: SECTION – FOR vs WHILE            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">04</div>
+      <div class="section-title"><code style="font-family:monospace; font-size:1.3rem;">for</code> Loops vs. <code style="font-family:monospace; font-size:1.3rem;">while</code> Loops</div>
+      <div class="section-desc">Choosing the right loop for the right job</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 18: FOR vs WHILE                      -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">04 · for vs while</div>
+      <div class="slide-heading">When to Use <span class="inline-code">for</span> vs <span class="inline-code">while</span></div>
+      <table class="vs-table" style="margin-bottom:14px;">
+        <thead>
+          <tr><th>Feature</th><th>for Loop</th><th>while Loop</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Best used when</strong></td>
+            <td>You know <strong>exactly</strong> how many times to repeat</td>
+            <td>You repeat until a <strong>condition</strong> becomes False</td>
+          </tr>
+          <tr>
+            <td><strong>Counting</strong></td>
+            <td>Handled automatically with <span class="inline-code">range()</span></td>
+            <td>You must update the counter manually</td>
+          </tr>
+          <tr>
+            <td><strong>Infinite loop risk</strong></td>
+            <td>Very low — <span class="inline-code">range()</span> has a defined end</td>
+            <td>Higher — if condition never becomes False</td>
+          </tr>
+          <tr>
+            <td><strong>Common use</strong></td>
+            <td>Fixed sequences, data processing</td>
+            <td>User input validation, unknown repetitions</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="cards col-2" style="gap:12px;">
+        <div class="card" style="padding:12px; border-color:var(--border-ok); background:var(--bg-ok);">
+          <div class="card-title" style="color:var(--accent-green);">✅ Use for when:</div>
+          <div class="card-body">You want to repeat something a specific, known number of times — e.g. <em>"repeat 10 times"</em>, <em>"go through 5 items"</em>.</div>
+        </div>
+        <div class="card" style="padding:12px; border-color:var(--border-info); background:var(--bg-info);">
+          <div class="card-title" style="color:var(--accent-blue);">✅ Use while when:</div>
+          <div class="card-body">You repeat until a condition changes and you do not know in advance how many repetitions will be needed — e.g. <em>"keep asking until valid input"</em>.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 19: FOR vs WHILE SIDE BY SIDE         -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">04 · for vs while</div>
+      <div class="slide-heading">Same Output — Two Different Loops</div>
+      <div class="body-text">These two programs produce exactly the same output. Study the differences in structure.</div>
+      <div class="split" style="margin-top:10px;">
+        <div>
+          <div class="slide-subheading" style="margin-top:0; color:var(--accent-green);">✅ Using a for loop (recommended here)</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>for i in range(1, 4):
+    print(i)</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>1
+2
+3</pre></div></div>
+          <div class="ok-box" style="margin-top:8px; font-size:0.82rem;">
+            Shorter, cleaner, and safer. No manual initialisation or increment needed. No risk of infinite loop.
+          </div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0; color:var(--accent-blue);">Using a while loop (more work)</div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div>
+            <div class="code-body"><pre>i = 1
+while i < 4:
+    print(i)
+    i = i + 1</pre></div>
+          </div>
+          <div class="output-window"><div class="output-bar">Output</div><div class="output-body"><pre>1
+2
+3</pre></div></div>
+          <div class="warn-box" style="margin-top:8px; font-size:0.82rem;">
+            Requires: (1) initialise <span class="inline-code">i</span>, (2) write the condition, (3) manually increment. Forgetting step 3 causes an infinite loop.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 20: SECTION – COMMON MISTAKES         -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">05</div>
+      <div class="section-title">Common Mistakes</div>
+      <div class="section-desc">Five errors beginners make — and how to fix each one</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 21: MISTAKES 1 & 2                    -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">05 · Common Mistakes</div>
+      <div class="slide-heading">Mistakes 1 &amp; 2</div>
+      <div class="split">
+        <div>
+          <div class="warn-box" style="margin-bottom:8px;">
+            <div class="box-label">❌ Mistake 1: Off-by-One Error with range()</div>
+            <span class="inline-code">range(start, stop)</span> stops <strong>before</strong> stop. To include a number, the stop must be one higher.
+          </div>
+          <div class="compare-pair">
+            <div class="compare-wrong">
+              <span class="compare-label">❌ Prints 1–4</span>
+              <div class="error-window" style="margin:0;"><div class="error-bar">Off by one</div><div class="error-body"><pre>for i in range(1, 5):
+    print(i)
+# Stops before 5!</pre></div></div>
+            </div>
+            <div class="compare-right">
+              <span class="compare-label">✅ Prints 1–5</span>
+              <div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>for i in range(1, 6):
+    print(i)
+# stop = 6 to include 5</pre></div></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="warn-box" style="margin-bottom:8px;">
+            <div class="box-label">❌ Mistake 2: Assuming range() Starts at 1</div>
+            <span class="inline-code">range(5)</span> produces <strong>0, 1, 2, 3, 4</strong> — NOT 1, 2, 3, 4, 5. If you need to start from 1, use <span class="inline-code">range(1, n+1)</span>.
+          </div>
+          <div class="compare-pair">
+            <div class="compare-wrong">
+              <span class="compare-label">❌ Gets 0–4</span>
+              <div class="error-window" style="margin:0;"><div class="error-bar">Wrong assumption</div><div class="error-body"><pre>for i in range(5):
+    print(i)
+# Prints 0, 1, 2, 3, 4</pre></div></div>
+            </div>
+            <div class="compare-right">
+              <span class="compare-label">✅ Gets 1–5</span>
+              <div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>for i in range(1, 6):
+    print(i)
+# Prints 1, 2, 3, 4, 5</pre></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 22: MISTAKES 3, 4, 5                  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">05 · Common Mistakes</div>
+      <div class="slide-heading">Mistakes 3, 4 &amp; 5</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="compare-pair">
+          <div>
+            <div class="warn-box" style="margin-bottom:6px; font-size:0.83rem;"><div class="box-label">❌ Mistake 3: Incorrect Indentation</div>Any statement meant to run on every repetition must be <strong>inside</strong> the loop (indented). An un-indented statement runs only once, after the loop ends.</div>
+            <div class="compare-pair" style="gap:8px;">
+              <div class="compare-wrong"><span class="compare-label">❌ print once</span><div class="error-window" style="margin:0;"><div class="error-bar">Only runs once</div><div class="error-body"><pre>for i in range(3):
+    total = i + 1
+print(total)  # outside!</pre></div></div></div>
+              <div class="compare-right"><span class="compare-label">✅ print each time</span><div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>for i in range(3):
+    total = i + 1
+    print(total)  # inside!</pre></div></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="warn-box" style="margin-bottom:6px; font-size:0.83rem;"><div class="box-label">❌ Mistake 5: Negative Step Without Adjusting start/stop</div>With a negative step, <span class="inline-code">start</span> must be <strong>greater than</strong> <span class="inline-code">stop</span>. Otherwise the range is empty and the loop never runs.</div>
+            <div class="compare-pair" style="gap:8px;">
+              <div class="compare-wrong"><span class="compare-label">❌ No output</span><div class="error-window" style="margin:0;"><div class="error-bar">Empty range</div><div class="error-body"><pre>for i in range(1, 5, -1):
+    print(i)  # nothing!</pre></div></div></div>
+              <div class="compare-right"><span class="compare-label">✅ Fixed</span><div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>for i in range(5, 0, -1):
+    print(i)  # 5 4 3 2 1</pre></div></div></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="warn-box" style="margin-bottom:6px; font-size:0.83rem;"><div class="box-label">❌ Mistake 4: Modifying the Loop Variable Inside the Loop</div>Changing <span class="inline-code">i</span> inside the loop body does not affect how many times the loop runs — <span class="inline-code">range()</span> has already determined the sequence. On each new repetition, Python overwrites your change.</div>
+          <div class="compare-pair">
+            <div class="compare-wrong"><span class="compare-label">❌ Misleading</span><div class="error-window" style="margin:0;"><div class="error-bar">Does not skip numbers</div><div class="error-body"><pre>for i in range(5):
+    i = i + 2   # overwritten next iter!
+    print(i)</pre></div></div></div>
+            <div class="compare-right"><span class="compare-label">✅ Use step instead</span><div class="code-window" style="margin:0;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Fixed</span></div><div class="code-body"><pre>for i in range(0, 10, 3):
+    print(i)  # 0 3 6 9</pre></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 23: SUMMARY                           -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">Summary</div>
+      <div class="slide-heading">Lecture 7 — Key Concepts</div>
+      <div class="split col-55-45">
+        <div>
+          <ul class="bullets">
+            <li>A <span class="inline-code">for</span> loop repeats a block for every value in a sequence</li>
+            <li>The <strong>loop variable</strong> automatically holds the current value on each repetition</li>
+            <li><span class="inline-code">range(stop)</span> — integers from <strong>0</strong> up to (not including) <span class="inline-code">stop</span></li>
+            <li><span class="inline-code">range(start, stop)</span> — integers from <span class="inline-code">start</span> up to (not including) <span class="inline-code">stop</span></li>
+            <li><span class="inline-code">range(start, stop, step)</span> — custom interval; negative step counts down</li>
+            <li>Use <span class="inline-code">for</span> when repetitions are <strong>known</strong>; use <span class="inline-code">while</span> when they depend on an unpredictable condition</li>
+            <li>Common pitfalls: off-by-one errors, assuming <span class="inline-code">range()</span> starts at 1, wrong indentation</li>
+          </ul>
+        </div>
+        <div>
+          <div class="code-window">
+            <div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Quick Reference</span></div>
+            <div class="code-body"><pre># range(stop) — 0 to stop-1
+for i in range(5):      # 0,1,2,3,4
+    print(i)
+
+# range(start, stop) — start to stop-1
+for i in range(1, 6):   # 1,2,3,4,5
+    print(i)
+
+# range(start, stop, step) — with interval
+for i in range(0, 10, 2):  # 0,2,4,6,8
+    print(i)
+
+# Counting down
+for i in range(5, 0, -1):  # 5,4,3,2,1
+    print(i)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 24: SECTION – EXERCISES               -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner slide-section-divider">
+      <div class="section-num">06</div>
+      <div class="section-title">Exercises</div>
+      <div class="section-desc">Parts A · B · C · D</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 25: PART A                            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">06 · Exercises</div>
+      <div class="slide-heading">Part A — Understanding Questions</div>
+      <div class="exercise-block">
+        <div class="exercise-header">🧠 Part A — Answer in your own words</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>1.</strong> What is the difference between a <span class="inline-code">for</span> loop and a <span class="inline-code">while</span> loop? When would you choose one over the other?</div>
+          <div class="exercise-item"><strong>2.</strong> What values does <span class="inline-code">range(1, 8)</span> produce? Write them out.</div>
+          <div class="exercise-item"><strong>3.</strong> What values does <span class="inline-code">range(0, 15, 3)</span> produce? Write them out.</div>
+          <div class="exercise-item"><strong>4.</strong> Explain what the loop variable does. What happens to it on each repetition of the loop?</div>
+          <div class="exercise-item"><strong>5.</strong> Why is <span class="inline-code">range(5)</span> not the same as <span class="inline-code">range(1, 6)</span>?</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 26: PART B                            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">06 · Exercises</div>
+      <div class="slide-heading">Part B — Code Tracing</div>
+      <div class="body-text">Predict the output of each program <strong>without running it first</strong>. Then run the code to check your answer.</div>
+      <div class="split" style="margin-top:10px;">
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">Exercise 1</div>
+          <div class="code-window"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>for i in range(3):
+    print(i * 3)</pre></div></div>
+          <div class="slide-subheading">Exercise 2</div>
+          <div class="code-window"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>total = 0
+for i in range(1, 5):
+    total = total + i
+    print(total)</pre></div></div>
+        </div>
+        <div>
+          <div class="slide-subheading" style="margin-top:0;">Exercise 3</div>
+          <div class="code-window"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>for i in range(10, 4, -2):
+    print(i)</pre></div></div>
+          <div class="slide-subheading">Exercise 4</div>
+          <div class="code-window"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python</span></div><div class="code-body"><pre>for i in range(4):
+    print("=" * (i + 1))</pre></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 27: PART C                            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">06 · Exercises</div>
+      <div class="slide-heading">Part C — Code Writing</div>
+      <div class="exercise-block">
+        <div class="exercise-header">✍️ Part C — Write your own programs</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>5.</strong> Print all <strong>odd numbers from 1 to 19</strong>. Use <span class="inline-code">range()</span> with a step value.</div>
+          <div class="exercise-item"><strong>6.</strong> Write a program that uses a <span class="inline-code">for</span> loop to calculate and print the <strong>product</strong> of all integers from 1 to 5 (answer: 120). <em>Hint: initialise <span class="inline-code">product = 1</span> before the loop. Multiply by <span class="inline-code">i</span> each repetition.</em></div>
+          <div class="exercise-item"><strong>7.</strong> Write a program that asks the user to enter a number <span class="inline-code">n</span>, and then prints all <strong>multiples of 3</strong> from 3 up to and including <span class="inline-code">n * 3</span>.<br>Example — if user enters 5, print: 3, 6, 9, 12, 15.</div>
+          <div class="exercise-item"><strong>8.</strong> Write a program that prints this pattern using a <span class="inline-code">for</span> loop:
+            <div class="output-window" style="margin-top:6px;"><div class="output-bar">Expected Output</div><div class="output-body"><pre>1
+22
+333
+4444
+55555</pre></div></div>
+            <em>Hint: On row i, print the digit i repeated i times. Use <span class="inline-code">str(i) * i</span>.</em>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 28: PART D                            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-label">06 · Exercises</div>
+      <div class="slide-heading">Part D — Code Modification</div>
+      <div class="exercise-block">
+        <div class="exercise-header">🔧 Part D — Fix or extend the given programs</div>
+        <div class="exercise-body">
+          <div class="exercise-item"><strong>9.</strong> This program is intended to print numbers from 1 to 10, but it has an off-by-one error. Find and fix it.
+            <div class="error-window" style="margin-top:5px;"><div class="error-bar">Off-by-one error</div><div class="error-body"><pre>for i in range(1, 10):
+    print(i)</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>10.</strong> The <span class="inline-code">print</span> is in the wrong position. Fix the indentation so that only the <strong>final total</strong> is printed (not the running sum after each step).
+            <div class="error-window" style="margin-top:5px;"><div class="error-bar">Indentation error</div><div class="error-body"><pre>total = 0
+for i in range(1, 6):
+    total = total + i
+    print("Final total:", total)</pre></div></div>
+          </div>
+          <div class="exercise-item"><strong>11 (Challenge).</strong> Rewrite this <span class="inline-code">while</span> loop as a <span class="inline-code">for</span> loop. Your output must be identical.
+            <div class="code-window" style="margin-top:5px;"><div class="code-bar"><div class="code-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div><span class="code-lang">Python — rewrite as for loop</span></div><div class="code-body"><pre>i = 5
+while i >= 1:
+    print(i)
+    i = i - 1
+print("Go!")</pre></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 29: CLOSING                           -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="slide-inner slide-closing">
+      <div class="closing-icon">🔢</div>
+      <div class="closing-title">That's Lecture 7!</div>
+      <div class="closing-sub">The <code style="font-family:monospace;">for</code> loop with <code style="font-family:monospace;">range()</code> is one of the most powerful and frequently used tools in Python. You can now count up, count down, skip numbers, accumulate sums, and generate patterns — all in just a few lines of clean, readable code.</div>
+      <div style="margin-top:28px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
+        <div style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:12px 20px; font-size:0.85rem;">
+          <div style="font-weight:700; margin-bottom:4px;">Next Lecture</div>
+          <div style="opacity:0.8;">Lists — Storing and working with collections of values</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:12px 20px; font-size:0.85rem;">
+          <div style="font-weight:700; margin-bottom:4px;">Practice</div>
+          <div style="opacity:0.8;">Complete all Parts A–D exercises</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- end slide-viewport -->
+
+<!-- ===================== PROGRESS BAR ===================== -->
+<div id="progress-bar-wrap">
+  <div id="progress-bar"></div>
+</div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer id="app-footer">
+  <button id="pdf-btn" onclick="window.print()">🖨️ Export PDF</button>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)">&#8592;</button>
+    <span id="slide-counter">1 / 29</span>
+    <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">&#8594;</button>
+  </div>
+  <div class="footer-right"></div>
+</footer>
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+  const total = slides.length;
+
+  function showSlide(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, total - 1));
+    slides[current].classList.add('active');
+    slides[current].scrollTop = 0;
+    document.getElementById('slide-counter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('progress-bar').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('prev-btn').disabled = current === 0;
+    document.getElementById('next-btn').disabled = current === total - 1;
+  }
+
+  function changeSlide(dir) { showSlide(current + dir); }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+    if (e.key === 'Home') showSlide(0);
+    if (e.key === 'End')  showSlide(total - 1);
+  });
+
+  function toggleTheme() {
+    const body = document.body;
+    const btn  = document.getElementById('theme-btn');
+    if (body.getAttribute('data-theme') === 'light') {
+      body.setAttribute('data-theme', 'dark');
+      btn.textContent = '☀️ Light';
+    } else {
+      body.setAttribute('data-theme', 'light');
+      btn.textContent = '🌙 Dark';
+    }
+  }
+
+  showSlide(0);
+</script>
+</body>
+</html>
