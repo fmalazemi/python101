@@ -1,5 +1,3 @@
-## Welcome to Python 101
-
 Welcome to **Python 101**, a beginner-friendly tutorial designed for students and anyone who wants to start learning programming using Python.
 
 Python is one of the most popular programming languages in the world. It is known for its simple syntax, clear structure, and wide range of real-world applications. Python is often the first language taught to beginners because it helps learners focus on logic and problem solving without too much syntax complexity. This tutorial is designed to introduce the basic ideas of programming in a clear, simple, and practical way.
