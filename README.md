@@ -30,8 +30,8 @@ All material is reviewed and structured for learning purposes.
 
 ## Topics Covered
 
-| Lecture | Topic |
-|:--:|:--|
+| No.1 | Lecture | Slides |
+|:--:|:-:|:--|
 | 1 | **Introduction to Python and Writing Your First Program** |
 | 2 | **Variables, Basic Data Types, and User Input** |
 | 3 | **Arithmetic Operations and Expressions in Python** |
