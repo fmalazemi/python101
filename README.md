@@ -1,191 +1,161 @@
-# Computer Science Department
+# Python 101 Tutorial
 
-![Python Programming](https://img.shields.io/badge/Python-Programming-blue.svg)
-![License](https://img.shields.io/badge/License-Educational-green.svg)
-![Course](https://img.shields.io/badge/Course-CS101-red.svg)
-
----
-
-## Welcome to CS 101
-
-Welcome to **CS 101: Introduction to Python**.
-
-This course is designed for students who are learning programming for the first time. Python is a widely used programming language known for its simple syntax, readability, and usefulness in many areas of computing. It is often chosen as a first language because it allows students to focus on understanding programming logic and problem solving without getting lost in complex syntax.
-
-Python is used in many fields, including:
-
-- Software development
-- Data analysis
-- Artificial intelligence
-- Automation
-- Scientific computing
-- Cybersecurity
-- Education
-
-This course introduces the core ideas of programming through clear explanations, practical examples, and hands-on coding practice.
+**Created by Fawaz Alazemi, PhD**  
+**AI-assisted educational material**
 
 ---
 
-## Course Information
+## Welcome to Python 101
 
-**Course Number:** CS 101  
-**Course Title:** Introduction to Python  
+Welcome to **Python 101**, a beginner-friendly tutorial designed for students and anyone who wants to start learning programming using Python.
 
----
+Python is one of the most popular programming languages in the world. It is known for its simple syntax, clear structure, and wide range of real-world applications. Python is often the first language taught to beginners because it helps learners focus on logic and problem solving without too much syntax complexity.
 
-## Course Description
-
-This course introduces the basic concepts of computer programming using Python. Students learn how to write, run, test, and debug simple Python programs. The course focuses on problem solving and program design through topics such as variables, input and output, arithmetic expressions, decision making, repetition, strings, lists, and functions.
-
-The course is intended for beginners and emphasizes step-by-step learning and regular practice.
+This tutorial is designed to introduce the basic ideas of programming in a clear, simple, and practical way.
 
 ---
 
-## Learning Outcomes
+## About This Tutorial
 
-By the end of this course, students should be able to:
+This tutorial provides a step-by-step introduction to programming with Python. It starts from the very beginning and gradually builds the learner’s understanding through examples and practice.
 
-- Understand the purpose of programming and the role of Python
-- Write and run simple Python programs
-- Use variables and basic data types
-- Accept input from the user and display output
-- Build arithmetic expressions and compute results
-- Use conditions to make decisions in programs
-- Apply logical operators in compound conditions
-- Use loops to repeat actions
-- Work with strings and basic list structures
-- Write functions to organize code into reusable parts
-- Solve simple programming problems using clear logic
+The tutorial focuses on:
 
----
+- understanding what programming is
+- writing simple Python programs
+- learning how to use variables and data
+- receiving input and displaying output
+- performing calculations
+- making decisions in programs
+- repeating actions using loops
+- working with strings and lists
+- organizing programs using functions
 
-## Major Topics Covered
-
-| Topic | Description |
-|:--|:--|
-| Introduction to programming | Understanding what programs are and how Python is used |
-| Writing simple programs | Running Python code and creating first programs |
-| Variables and data types | Using numbers, text, and stored values |
-| User input and output | Reading data from the user and displaying results |
-| Arithmetic expressions | Performing calculations and building formulas |
-| Decision making | Using conditions to control program behavior |
-| Logical reasoning | Combining conditions with logical operators |
-| Repetition | Repeating actions using loops |
-| Strings | Working with text in Python |
-| Lists and collections | Storing and processing multiple values |
-| Functions | Organizing code into reusable blocks |
+This material is suitable for beginners with little or no prior programming experience.
 
 ---
 
-## Lecture Sequence
+## AI Use Statement
 
-| Lecture | Title |
+This tutorial was developed with the support of **artificial intelligence tools** to assist in drafting, organizing, and improving the educational content.  
+All material is reviewed and structured for learning purposes.
+
+---
+
+## Learning Goals
+
+By the end of this tutorial, learners should be able to:
+
+- understand the basic idea of programming
+- write and run simple Python programs
+- use variables and basic data types
+- accept user input and display output
+- build arithmetic expressions
+- write conditional statements
+- use logical operators
+- repeat tasks using loops
+- work with text using strings
+- store multiple values using lists and collections
+- define and use functions
+- solve simple problems using Python
+
+---
+
+## Topics Covered
+
+| Lecture | Topic |
 |:--:|:--|
-| 1 | **Lecture 1: Introduction to Python and Writing Your First Program** |
-| 2 | **Lecture 2: Variables, Basic Data Types, and User Input** |
-| 3 | **Lecture 3: Arithmetic Operations and Expressions in Python** |
-| 4 | **Lecture 4: Making Decisions with if, elif, and else** |
-| 5 | **Lecture 5: Logical Operators and Nested Conditions** |
-| 6 | **Lecture 6: Repetition with while Loops** |
-| 7 | **Lecture 7: for Loops and the range() Function** |
-| 8 | **Lecture 8: Working with Strings in Python** |
-| 9 | **Lecture 9: Lists and Collections** |
-| 10 | **Lecture 10: Functions — Organizing Code into Reusable Parts** |
+| 1 | **Introduction to Python and Writing Your First Program** |
+| 2 | **Variables, Basic Data Types, and User Input** |
+| 3 | **Arithmetic Operations and Expressions in Python** |
+| 4 | **Making Decisions with `if`, `elif`, and `else`** |
+| 5 | **Logical Operators and Nested Conditions** |
+| 6 | **Repetition with `while` Loops** |
+| 7 | **`for` Loops and the `range()` Function** |
+| 8 | **Working with Strings in Python** |
+| 9 | **Lists and Collections** |
+| 10 | **Functions — Organizing Code into Reusable Parts** |
 
 ---
 
 ## Lecture Overview
 
 ### Lecture 1: Introduction to Python and Writing Your First Program
-Students are introduced to the idea of programming, what Python is, and why it is a good first language. They learn how to write and run a very simple Python program.
+This lecture introduces Python, explains what programming is, and shows how to write and run a first simple program.
 
 ### Lecture 2: Variables, Basic Data Types, and User Input
-Students learn how to store information in variables, use common data types such as integers, floats, and strings, and accept input from the user.
+This lecture explains how to store values in variables, use basic data types such as integers, floats, and strings, and receive input from the user.
 
 ### Lecture 3: Arithmetic Operations and Expressions in Python
-Students learn how to perform calculations using arithmetic operators and how to build expressions that combine values and operations.
+This lecture explains how to perform mathematical operations and create expressions using Python operators.
 
-### Lecture 4: Making Decisions with if, elif, and else
-Students learn how programs can make decisions by checking conditions and choosing different actions.
+### Lecture 4: Making Decisions with `if`, `elif`, and `else`
+This lecture explains how programs make decisions and choose different actions based on conditions.
 
 ### Lecture 5: Logical Operators and Nested Conditions
-Students learn how to combine conditions using logical operators such as `and`, `or`, and `not`, and how to write conditions inside other conditions.
+This lecture explains how to combine conditions using `and`, `or`, and `not`, and how to build more detailed decision structures.
 
-### Lecture 6: Repetition with while Loops
-Students learn how to repeat actions using `while` loops and how repetition helps solve many programming tasks.
+### Lecture 6: Repetition with `while` Loops
+This lecture explains how to repeat actions using `while` loops and how repetition helps solve many programming tasks.
 
-### Lecture 7: for Loops and the range() Function
-Students learn how to repeat actions a specific number of times using `for` loops and `range()`.
+### Lecture 7: `for` Loops and the `range()` Function
+This lecture explains how to repeat actions a fixed number of times using `for` loops and `range()`.
 
 ### Lecture 8: Working with Strings in Python
-Students learn how to work with text, access characters, combine strings, and apply useful string operations.
+This lecture explains how to work with text, combine strings, access characters, and use common string operations.
 
 ### Lecture 9: Lists and Collections
-Students learn how to store multiple values in a list, access elements, modify items, and process collections of data.
+This lecture explains how to store multiple values in lists, access items, modify them, and process groups of data.
 
 ### Lecture 10: Functions — Organizing Code into Reusable Parts
-Students learn how to define and call functions, pass arguments, and use functions to make programs more organized and reusable.
+This lecture explains how to define and use functions to make programs cleaner, easier to understand, and reusable.
 
 ---
 
-## Teaching Approach
+## Teaching Style
 
-This course is designed for beginner students and focuses on:
+This tutorial follows a beginner-friendly teaching style based on:
 
-- Clear explanations
-- Small examples
-- Step-by-step learning
-- Practice through coding
-- Gradual increase in difficulty
-- Strong focus on problem solving
+- simple language
+- step-by-step explanations
+- short examples
+- gradual progression
+- hands-on practice
+- focus on understanding before complexity
 
 ---
 
-## Recommended Software
+## Suggested Tools
 
-### Python 3
-Install Python 3 from the official Python website.
+To practice Python, learners may use:
 
-### Code Editors / IDEs
+- Python 3
 - Visual Studio Code
 - Thonny
 - PyCharm Community Edition
-
-### Online Python Tools
-- Replit
-- OnlineGDB
-- Programiz Python Compiler
+- online Python compilers and editors
 
 ---
 
-## Tips for Success
+## Tips for Learners
 
-- Practice writing code regularly
-- Type programs yourself
-- Read error messages carefully
-- Test your code with different inputs
-- Focus on understanding each concept before moving on
-- Solve many small problems
-- Ask questions whenever something is unclear
-
----
-
-## Resources
-
-### Documentation and Tutorials
-- Python Official Documentation
-- W3Schools Python Tutorial
-- Programiz Python Tutorial
-- Real Python
+- practice regularly
+- type code by yourself
+- test your programs often
+- read error messages carefully
+- focus on understanding the logic
+- solve small problems first
+- ask questions when needed
 
 ---
 
-## Academic Integrity
+## Final Note
 
-Students are expected to submit their own work, use resources responsibly, and follow the academic integrity policies of their institution.
+Python is a powerful and beginner-friendly language. The goal of this tutorial is not only to teach syntax, but also to help learners develop programming thinking, problem-solving skills, and confidence in writing code.
 
 ---
 
-## License
+## Author
 
-This material is intended for educational use.
+**Fawaz Alazemi, PhD**  
+AI-assisted educational content
