@@ -42,6 +42,7 @@ All material is reviewed and structured for learning purposes.
 | 8 | **Working with Strings in Python** |
 | 9 | **Lists and Collections** |
 | 10 | **Functions — Organizing Code into Reusable Parts** |
+| 11 | [pptx](Lecture_notes/lecture_1_introduction.pptx) | ww
 
 
 ---
