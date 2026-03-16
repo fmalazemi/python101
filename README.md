@@ -1,4 +1,4 @@
-# Kuwait University - Computer Science Department
+# Computer Science Department
 
 ![Python Programming](https://img.shields.io/badge/Python-Programming-blue.svg)
 ![License](https://img.shields.io/badge/License-Educational-green.svg)
@@ -6,190 +6,186 @@
 
 ---
 
-## 🚀 Quick Links
+## Welcome to CS 101
 
-👉 [Important Dates](#important-dates)
+Welcome to **CS 101: Introduction to Python**.
 
-👉 [Lecture Material](#lecture-material)
+This course is designed for students who are learning programming for the first time. Python is a widely used programming language known for its simple syntax, readability, and usefulness in many areas of computing. It is often chosen as a first language because it allows students to focus on understanding programming logic and problem solving without getting lost in complex syntax.
 
-👉 [Moodle](https://moodle.ku.edu.kw)
+Python is used in many fields, including:
 
----
+- Software development
+- Data analysis
+- Artificial intelligence
+- Automation
+- Scientific computing
+- Cybersecurity
+- Education
 
-## 🌟 Welcome to CS 101!
-
-You are about to begin learning one of the most popular and beginner-friendly programming languages in the world.  
-Python is widely used in:
-
-- 🌐 Web development
-- 🤖 Artificial intelligence and machine learning
-- 📊 Data analysis and visualization
-- 🔬 Scientific computing
-- 🛠️ Automation and scripting
-- 🎮 Game development
-- 🧠 Education and problem solving
-
-Python is a great first programming language because it is simple to read, easy to write, and helps you focus on problem solving.
+This course introduces the core ideas of programming through clear explanations, practical examples, and hands-on coding practice.
 
 ---
 
-## 📚 Course Information
+## Course Information
 
 **Course Number:** CS 101  
-**Course Title:** Introduction to Python Programming  
-**Credits:** 3 Credits (42 Hours)  
-**Prerequisite:** Introduction to Computers  
-**Platform:** [moodle.ku.edu.kw](https://moodle.ku.edu.kw)
-
-**Instructor:** Dr. Fawaz Alazemi  
-- Office: S02A2-150  
-- Office Hours: Monday and Wednesday 12:30 PM – 1:50 PM  
-
-**Teaching Assistant:** TBA  
-- Office: TBA  
-- Office Hours: TBA  
+**Course Title:** Introduction to Python  
 
 ---
 
-## 📅 Class Schedule & Important Dates
+## Course Description
 
-### 🕐 Lecture & Lab Times
+This course introduces the basic concepts of computer programming using Python. Students learn how to write, run, test, and debug simple Python programs. The course focuses on problem solving and program design through topics such as variables, input and output, arithmetic expressions, decision making, repetition, strings, lists, and functions.
 
-| Lectures | Labs |
-|------------|------------|
-| 📍 **Location:** C1-007 | 📍 **Location:** B1-089 |
-| 🗓️ **Days:** Sunday & Tuesday | 🗓️ **Days:** Monday & Tuesday |
-| ⏰ **Time:** 11:00 AM – 12:15 PM | ⏰ **Time:** 2:00 PM – 3:15 PM |
-
-### Important Dates
-- **Midterm 1:**  
-- **Midterm 2:**  
-- **Final Exam:** Wed 20/05/2026, 12:00 PM – 2:00 PM  
+The course is intended for beginners and emphasizes step-by-step learning and regular practice.
 
 ---
 
-## 📖 Required Textbook
+## Learning Outcomes
 
-**Title:** Python Crash Course  
-**Author:** Eric Matthes  
-**Publisher:** No Starch Press  
-**Edition:** Latest Edition  
+By the end of this course, students should be able to:
 
-Optional references:
-
-- Automate the Boring Stuff with Python — Al Sweigart  
-- Official Python Documentation — [python.org](https://www.python.org)
-
----
-
-## 📋 Major Topics Covered
-
-| Topic | Hours |
-|:-------:|:-------:|
-| Introduction to programming, Python basics, variables, input/output | 6 |
-| Data types, operators, expressions, and simple problem solving | 6 |
-| Conditional statements and logical expressions | 6 |
-| Loops: while loops and for loops | 6 |
-| Functions and modular programming | 6 |
-| Strings, lists, and basic collection processing | 6 |
-| Nested loops, problem solving, and simple algorithms | 3 |
-| Introduction to files and basic exception handling | 3 |
-| **Total** | **42** |
+- Understand the purpose of programming and the role of Python
+- Write and run simple Python programs
+- Use variables and basic data types
+- Accept input from the user and display output
+- Build arithmetic expressions and compute results
+- Use conditions to make decisions in programs
+- Apply logical operators in compound conditions
+- Use loops to repeat actions
+- Work with strings and basic list structures
+- Write functions to organize code into reusable parts
+- Solve simple programming problems using clear logic
 
 ---
 
-## Lecture Material
+## Major Topics Covered
 
-| Lecture | Topic | Slides | Exercises |
-|:-------:|:-----:|:------:|:---------:|
-| 1 | Introduction to Python | [pptx](Lecture_notes/lecture_1_introduction.pptx) | [🔗](Lecture_notes/lecture_1_introduction_exercises.md) |
-| 2 | Variables and Basic Data Types | [pptx](Lecture_notes/lecture_2_variables.pptx) | [🔗](Lecture_notes/lecture_2_variables_exercises.md) |
-| 3 | Input, Output, and Expressions | [pptx](Lecture_notes/lecture_3_input_output.pptx) | [🔗](Lecture_notes/lecture_3_input_output_exercises.md) |
-| 4 | If Statements and Conditionals | [pptx](Lecture_notes/lecture_4_if_statements.pptx) | [🔗](Lecture_notes/lecture_4_if_statements_exercises.md) |
-| 5 | Loops with `while` | [pptx](Lecture_notes/lecture_5_while_loops.pptx) | [🔗](Lecture_notes/lecture_5_while_loops_exercises.md) |
-| 6 | Loops with `for` and `range()` | [pptx](Lecture_notes/lecture_6_for_loops.pptx) | [🔗](Lecture_notes/lecture_6_for_loops_exercises.md) |
-| 7 | Functions | [pptx](Lecture_notes/lecture_7_functions.pptx) | [🔗](Lecture_notes/lecture_7_functions_exercises.md) |
-| 8 | Lists | [pptx](Lecture_notes/lecture_8_lists.pptx) | [🔗](Lecture_notes/lecture_8_lists_exercises.md) |
-| 9 | Nested Loops and Patterns | [pptx](Lecture_notes/lecture_9_nested_loops.pptx) | [🔗](Lecture_notes/lecture_9_nested_loops_exercises.md) |
-| 10 | Strings | [pptx](Lecture_notes/lecture_10_strings.pptx) | [🔗](Lecture_notes/lecture_10_strings_exercises.md) |
-| 11 | File Input and Output | [pptx](Lecture_notes/lecture_11_files.pptx) | [🔗](Lecture_notes/lecture_11_files_exercises.md) |
-| 12 | Scope and Simple Exceptions | [pptx](Lecture_notes/lecture_12_scope_exceptions.pptx) | [🔗](Lecture_notes/lecture_12_scope_exceptions_exercises.md) |
-
----
-
-## 📝 Grading
-
-Course evaluation includes:
-
-- 📊 **Quizzes** — 0–5%  
-- 💻 **Lab Assignments** — 15%–20%  
-- 📝 **Two Midterm Exams** — 40%  
-- 📝 **Final Exam** — 40%  
+| Topic | Description |
+|:--|:--|
+| Introduction to programming | Understanding what programs are and how Python is used |
+| Writing simple programs | Running Python code and creating first programs |
+| Variables and data types | Using numbers, text, and stored values |
+| User input and output | Reading data from the user and displaying results |
+| Arithmetic expressions | Performing calculations and building formulas |
+| Decision making | Using conditions to control program behavior |
+| Logical reasoning | Combining conditions with logical operators |
+| Repetition | Repeating actions using loops |
+| Strings | Working with text in Python |
+| Lists and collections | Storing and processing multiple values |
+| Functions | Organizing code into reusable blocks |
 
 ---
 
-## Required Software
+## Lecture Sequence
 
-### 1. Python 3
-- Install Python 3 from [python.org](https://www.python.org)
+| Lecture | Title |
+|:--:|:--|
+| 1 | **Lecture 1: Introduction to Python and Writing Your First Program** |
+| 2 | **Lecture 2: Variables, Basic Data Types, and User Input** |
+| 3 | **Lecture 3: Arithmetic Operations and Expressions in Python** |
+| 4 | **Lecture 4: Making Decisions with if, elif, and else** |
+| 5 | **Lecture 5: Logical Operators and Nested Conditions** |
+| 6 | **Lecture 6: Repetition with while Loops** |
+| 7 | **Lecture 7: for Loops and the range() Function** |
+| 8 | **Lecture 8: Working with Strings in Python** |
+| 9 | **Lecture 9: Lists and Collections** |
+| 10 | **Lecture 10: Functions — Organizing Code into Reusable Parts** |
 
-### 2. IDE / Code Editor
-- Visual Studio Code (recommended)
+---
+
+## Lecture Overview
+
+### Lecture 1: Introduction to Python and Writing Your First Program
+Students are introduced to the idea of programming, what Python is, and why it is a good first language. They learn how to write and run a very simple Python program.
+
+### Lecture 2: Variables, Basic Data Types, and User Input
+Students learn how to store information in variables, use common data types such as integers, floats, and strings, and accept input from the user.
+
+### Lecture 3: Arithmetic Operations and Expressions in Python
+Students learn how to perform calculations using arithmetic operators and how to build expressions that combine values and operations.
+
+### Lecture 4: Making Decisions with if, elif, and else
+Students learn how programs can make decisions by checking conditions and choosing different actions.
+
+### Lecture 5: Logical Operators and Nested Conditions
+Students learn how to combine conditions using logical operators such as `and`, `or`, and `not`, and how to write conditions inside other conditions.
+
+### Lecture 6: Repetition with while Loops
+Students learn how to repeat actions using `while` loops and how repetition helps solve many programming tasks.
+
+### Lecture 7: for Loops and the range() Function
+Students learn how to repeat actions a specific number of times using `for` loops and `range()`.
+
+### Lecture 8: Working with Strings in Python
+Students learn how to work with text, access characters, combine strings, and apply useful string operations.
+
+### Lecture 9: Lists and Collections
+Students learn how to store multiple values in a list, access elements, modify items, and process collections of data.
+
+### Lecture 10: Functions — Organizing Code into Reusable Parts
+Students learn how to define and call functions, pass arguments, and use functions to make programs more organized and reusable.
+
+---
+
+## Teaching Approach
+
+This course is designed for beginner students and focuses on:
+
+- Clear explanations
+- Small examples
+- Step-by-step learning
+- Practice through coding
+- Gradual increase in difficulty
+- Strong focus on problem solving
+
+---
+
+## Recommended Software
+
+### Python 3
+Install Python 3 from the official Python website.
+
+### Code Editors / IDEs
+- Visual Studio Code
 - Thonny
 - PyCharm Community Edition
 
-Online Python tools:
-- [replit](https://replit.com)
-- [onlinegdb](https://www.onlinegdb.com)
-- [programiz](https://www.programiz.com/python-programming/online-compiler)
+### Online Python Tools
+- Replit
+- OnlineGDB
+- Programiz Python Compiler
 
 ---
 
-## 💡 Tips for Success and Study Strategies
+## Tips for Success
 
-1. Practice writing Python code every day  
-2. Type the code yourself instead of only reading it  
-3. Test small programs step by step  
-4. Learn from error messages  
-5. Attend labs regularly  
-6. Ask questions early  
-7. Focus on understanding, not memorizing  
-
----
-
-## 🔗 Resources
-
-### Documentation & References
-- [Python Official Documentation](https://docs.python.org/3/)
-- [W3Schools Python Tutorial](https://www.w3schools.com/python/)
-- [Programiz Python Tutorial](https://www.programiz.com/python-programming)
-- [Real Python](https://realpython.com/)
-
-### Video Tutorials
-- YouTube Python tutorials
-- Coursera Python courses
-- Udemy Python courses
+- Practice writing code regularly
+- Type programs yourself
+- Read error messages carefully
+- Test your code with different inputs
+- Focus on understanding each concept before moving on
+- Solve many small problems
+- Ask questions whenever something is unclear
 
 ---
 
-## 📜 Academic Integrity
+## Resources
 
-Students must:
-
-- Submit original work  
-- Cite sources properly  
-- Collaborate ethically  
-- Follow KU policies  
-
----
-
-## 📄 License
-
-This course material is for educational purposes at Kuwait University.  
-© Kuwait University - Computer Science Department  
+### Documentation and Tutorials
+- Python Official Documentation
+- W3Schools Python Tutorial
+- Programiz Python Tutorial
+- Real Python
 
 ---
 
-**Last Updated:** March 2026  
-**Semester:** Spring  
-**Academic Year:** 2025–2026
+## Academic Integrity
+
+Students are expected to submit their own work, use resources responsibly, and follow the academic integrity policies of their institution.
+
+---
+
+## License
+
+This material is intended for educational use.
