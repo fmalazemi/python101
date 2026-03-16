@@ -1,11 +1,10 @@
-**Kuwait University - Computer Science Department**
+# Kuwait University - Computer Science Department
 
-![C++ Programming](https://img.shields.io/badge/C++-Programming-blue.svg)
+![Python Programming](https://img.shields.io/badge/Python-Programming-blue.svg)
 ![License](https://img.shields.io/badge/License-Educational-green.svg)
-![Course](https://img.shields.io/badge/Course-CS143-red.svg)
+![Course](https://img.shields.io/badge/Course-CS101-red.svg)
 
 ---
-
 
 ## 🚀 Quick Links
 
@@ -15,37 +14,39 @@
 
 👉 [Moodle](https://moodle.ku.edu.kw)
 
-
 ---
 
 ## 🌟 Welcome to CS 101!
 
-You're about to learn one of the most powerful and important programming language in the world. 
-C++ is used in:
+You are about to begin learning one of the most popular and beginner-friendly programming languages in the world.  
+Python is widely used in:
 
-- 🎮 Video game engines (Unreal Engine, Unity core)
-- 🚗 Automotive software (Tesla, autonomous vehicles)
-- 🚀 Space programs (SpaceX, NASA)
-- 💰 Financial systems (high-frequency trading)
-- 🖥️ Operating systems (Windows, macOS, Linux)
-- 🤖 Robotics and embedded systems
+- 🌐 Web development
+- 🤖 Artificial intelligence and machine learning
+- 📊 Data analysis and visualization
+- 🔬 Scientific computing
+- 🛠️ Automation and scripting
+- 🎮 Game development
+- 🧠 Education and problem solving
 
-___
+Python is a great first programming language because it is simple to read, easy to write, and helps you focus on problem solving.
+
+---
 
 ## 📚 Course Information
 
-**Course Number:** CS 143  
-**Course Title:** Fundamentals of Computer Programming in C++  
+**Course Number:** CS 101  
+**Course Title:** Introduction to Python Programming  
 **Credits:** 3 Credits (42 Hours)  
-**Prerequisite:** CS 101 (Introduction to Computers)  
+**Prerequisite:** Introduction to Computers  
 **Platform:** [moodle.ku.edu.kw](https://moodle.ku.edu.kw)
 
 **Instructor:** Dr. Fawaz Alazemi  
 - Office: S02A2-150  
-- Office Hours: Monday and Wednesday 12:30PM - 1:50PM  
+- Office Hours: Monday and Wednesday 12:30 PM – 1:50 PM  
 
-**Teaching Assistant:** Mr. Assma AlOtaibi  
-- Office: N00B1-221  
+**Teaching Assistant:** TBA  
+- Office: TBA  
 - Office Hours: TBA  
 
 ---
@@ -63,16 +64,21 @@ ___
 ### Important Dates
 - **Midterm 1:**  
 - **Midterm 2:**  
-- **Final Exam:** Wed 20/05/2026, 12:00PM – 14:00PM  
+- **Final Exam:** Wed 20/05/2026, 12:00 PM – 2:00 PM  
 
 ---
 
 ## 📖 Required Textbook
 
-**Title:** [C++ How To Program](https://www.amazon.com/How-Program-10th-Paul-Deitel/dp/0134448235)  
-**Authors:** Paul Deitel and Harvey Deitel  
-**Publisher:** Pearson
+**Title:** Python Crash Course  
+**Author:** Eric Matthes  
+**Publisher:** No Starch Press  
 **Edition:** Latest Edition  
+
+Optional references:
+
+- Automate the Boring Stuff with Python — Al Sweigart  
+- Official Python Documentation — [python.org](https://www.python.org)
 
 ---
 
@@ -80,13 +86,14 @@ ___
 
 | Topic | Hours |
 |:-------:|:-------:|
-| Overview of programming, variables, basic types, conditionals, and loops | 6 |
-| Arrays, vectors, lists, multidimensional arrays, sets | 6 |
-| Library functions, programmer-defined functions, parameter passing, function overloading, auto keyword | 6 |
-| Recursive functions, simple recursive algorithms, comparison of recursive vs iterative methods | 6 |
-| I/O and file processing, text formatting, encoding modes | 3 |
-| Introduction to OOP: classes, objects, encapsulation, composition, inheritance, polymorphism, abstraction, exception handling | 9 |
-| Problem-solving techniques: searching and sorting algorithms | 6 |
+| Introduction to programming, Python basics, variables, input/output | 6 |
+| Data types, operators, expressions, and simple problem solving | 6 |
+| Conditional statements and logical expressions | 6 |
+| Loops: while loops and for loops | 6 |
+| Functions and modular programming | 6 |
+| Strings, lists, and basic collection processing | 6 |
+| Nested loops, problem solving, and simple algorithms | 3 |
+| Introduction to files and basic exception handling | 3 |
 | **Total** | **42** |
 
 ---
@@ -95,22 +102,20 @@ ___
 
 | Lecture | Topic | Slides | Exercises |
 |:-------:|:-----:|:------:|:---------:|
-| 1 | [Introduction to C++](Lecture_notes/lecture_1_introduction.md) | [pptx](Lecture_notes/lecture_1_introduction.pptx) | [🔗](lecture_1_introduction_exercises.md)|
-| 2 | [Variables and Data Types](Lecture_notes/lecture_2_variables.md) | [pptx](Lecture_notes/lecture_2_variables.pptx) | [🔗](Lecture_notes/lecture_2_variables_exercises.md)|
-| 3 | [If Statements and Conditionals](Lecture_notes/lecture_3_if_statement.md) | [pptx](Lecture_notes/lecture_3_if_statement.pptx) | [🔗](Lecture_notes/lecture_3_if_statements_additional_exercises.md)  |
-| 4 | [loops (for, while, do-while)](Lecture_notes/lecture_4_loops.md) | [pptx](Lecture_notes/lecture_4_loops.pptx) | 🔗 | 
-| 5 | [Advanced loops](Lecture_notes/lecture_5_advanced_loops.md) | [pptx](Lecture_notes/lecture_5_advanced_loops.pptx) |🔗| 
-| 6 | [Functions](Lecture_notes/lecture_6_functions.md) | [pptx](Lecture_notes/lecture_6_functions.pptx) |🔗|
-| 7 | [Advanced Functions](Lecture_notes/lecture_7_advanced_functions.md) | [pptx](Lecture_notes/lecture_7_advanced_functions.pptx) | 🔗 |
-| 8 | [Arrays (1D)](Lecture_notes/lecture_8_arrays.md) | [pptx](Lecture_notes/lecture_8_arrays.pptx) | 🔗 |
-| 9 | [Multidimensional Arrays](Lecture_notes/lecture_9_multidimensional_array.md) | [pptx](Lecture_notes/lecture_9_multidimensional_arrays.pptx) | 🔗 |
-| 10 | [Introduction to Strings](Lecture_notes/lecture_10_strings.md) | [pptx](Lecture_notes/lecture_10_strings.pptx) |🔗  | 
-| 11 | [Recursion](Lecture_notes/lecture_11_recursion.md) |  [pptx](Lecture_notes/lecture_11_recursion.pptx) | 🔗 |
-| 11 | [Scope](Lecture_notes/lecture_12_scope.md) |  [pptx](Lecture_notes/lecture_12_scope.pptx) | 🔗 |
+| 1 | Introduction to Python | [pptx](Lecture_notes/lecture_1_introduction.pptx) | [🔗](Lecture_notes/lecture_1_introduction_exercises.md) |
+| 2 | Variables and Basic Data Types | [pptx](Lecture_notes/lecture_2_variables.pptx) | [🔗](Lecture_notes/lecture_2_variables_exercises.md) |
+| 3 | Input, Output, and Expressions | [pptx](Lecture_notes/lecture_3_input_output.pptx) | [🔗](Lecture_notes/lecture_3_input_output_exercises.md) |
+| 4 | If Statements and Conditionals | [pptx](Lecture_notes/lecture_4_if_statements.pptx) | [🔗](Lecture_notes/lecture_4_if_statements_exercises.md) |
+| 5 | Loops with `while` | [pptx](Lecture_notes/lecture_5_while_loops.pptx) | [🔗](Lecture_notes/lecture_5_while_loops_exercises.md) |
+| 6 | Loops with `for` and `range()` | [pptx](Lecture_notes/lecture_6_for_loops.pptx) | [🔗](Lecture_notes/lecture_6_for_loops_exercises.md) |
+| 7 | Functions | [pptx](Lecture_notes/lecture_7_functions.pptx) | [🔗](Lecture_notes/lecture_7_functions_exercises.md) |
+| 8 | Lists | [pptx](Lecture_notes/lecture_8_lists.pptx) | [🔗](Lecture_notes/lecture_8_lists_exercises.md) |
+| 9 | Nested Loops and Patterns | [pptx](Lecture_notes/lecture_9_nested_loops.pptx) | [🔗](Lecture_notes/lecture_9_nested_loops_exercises.md) |
+| 10 | Strings | [pptx](Lecture_notes/lecture_10_strings.pptx) | [🔗](Lecture_notes/lecture_10_strings_exercises.md) |
+| 11 | File Input and Output | [pptx](Lecture_notes/lecture_11_files.pptx) | [🔗](Lecture_notes/lecture_11_files_exercises.md) |
+| 12 | Scope and Simple Exceptions | [pptx](Lecture_notes/lecture_12_scope_exceptions.pptx) | [🔗](Lecture_notes/lecture_12_scope_exceptions_exercises.md) |
 
 ---
-
-
 
 ## 📝 Grading
 
@@ -125,43 +130,45 @@ Course evaluation includes:
 
 ## Required Software
 
-### 1. C++17 Compiler
-- Windows: MinGW or Visual Studio  
-- macOS: Xcode Command Line Tools  
-- Linux: g++  
+### 1. Python 3
+- Install Python 3 from [python.org](https://www.python.org)
 
-### 2. IDE
-- Visual Studio Code (recommended)  
-- Code::Blocks  
+### 2. IDE / Code Editor
+- Visual Studio Code (recommended)
+- Thonny
+- PyCharm Community Edition
 
-Online IDE:
-- [onlinegdb](https://www.onlinegdb.com)
+Online Python tools:
 - [replit](https://replit.com)
+- [onlinegdb](https://www.onlinegdb.com)
+- [programiz](https://www.programiz.com/python-programming/online-compiler)
 
 ---
 
 ## 💡 Tips for Success and Study Strategies
 
-1. Practice daily — Code every day  
-2. Type code yourself  
-3. Debug errors carefully  
-4. Attend labs regularly  
-5. Ask questions early  
-6. Form study groups  
+1. Practice writing Python code every day  
+2. Type the code yourself instead of only reading it  
+3. Test small programs step by step  
+4. Learn from error messages  
+5. Attend labs regularly  
+6. Ask questions early  
+7. Focus on understanding, not memorizing  
 
 ---
 
 ## 🔗 Resources
 
 ### Documentation & References
-- [cppreference.com](https://en.cppreference.com/)
-- [learncpp.com](https://www.learncpp.com/)
-- [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/)
+- [Python Official Documentation](https://docs.python.org/3/)
+- [W3Schools Python Tutorial](https://www.w3schools.com/python/)
+- [Programiz Python Tutorial](https://www.programiz.com/python-programming)
+- [Real Python](https://realpython.com/)
 
 ### Video Tutorials
-- YouTube C++ tutorials  
-- Coursera courses  
-- Udemy courses  
+- YouTube Python tutorials
+- Coursera Python courses
+- Udemy Python courses
 
 ---
 
@@ -183,6 +190,6 @@ This course material is for educational purposes at Kuwait University.
 
 ---
 
-**Last Updated:** February 2025  
+**Last Updated:** March 2026  
 **Semester:** Spring  
-**Academic Year:** 2024-2025
+**Academic Year:** 2025–2026
