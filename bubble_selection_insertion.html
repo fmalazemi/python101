@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorting Visualizer — Bubble · Selection · Insertion</title>
+<style>
+/* ═══════════════════════════════════════════════════
+   THEME
+   ═══════════════════════════════════════════════════ */
+:root{
+  --bg:#080e17;--bg2:#0e1824;--bg3:#132030;--bg-stage:#060b12;
+  --tx1:#dfe8f0;--tx2:#7e98b0;--tx3:#4a6378;
+  --ac:#00f0d0;--ac2:#00c4aa;--acM:rgba(0,240,208,.10);
+  --cmp:#facc15;--cmpB:rgba(250,204,21,.16);
+  --swp:#f43f5e;--swpB:rgba(244,63,94,.16);
+  --done:#00f0d0;--doneB:rgba(0,240,208,.09);
+  --key:#c084fc;--keyB:rgba(192,132,252,.16);
+  --bar:#3578b2;
+  --bdr:#1a2e44;--bdr2:#254060;
+  --btn:#12243a;--btnH:#1a3350;
+  --rad:8px;--radS:5px;
+  --box-clr:#ffffff;             /* bracket / box color */
+  --box-bg:rgba(255,255,255,.05);
+}
+[data-theme="light"]{
+  --bg:#f0f3f8;--bg2:#fff;--bg3:#f5f7fb;--bg-stage:#e4eaf2;
+  --tx1:#141e2a;--tx2:#4e6680;--tx3:#7a94ad;
+  --ac:#009e87;--ac2:#007a6a;--acM:rgba(0,158,135,.09);
+  --cmp:#b45309;--cmpB:rgba(180,83,9,.10);
+  --swp:#be123c;--swpB:rgba(190,18,60,.10);
+  --done:#009e87;--doneB:rgba(0,158,135,.07);
+  --key:#7c3aed;--keyB:rgba(124,58,237,.10);
+  --bar:#5596ce;
+  --bdr:#cdd8e4;--bdr2:#b4c6d8;
+  --btn:#e0e8f2;--btnH:#d0dceb;
+  --box-clr:#1a1a1a;
+  --box-bg:rgba(0,0,0,.05);
+}
+
+/* ═══════════════════════════════════════════════════
+   RESET
+   ═══════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx1);line-height:1.5;min-height:100vh}
+
+/* ═══════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════ */
+.hdr{background:var(--bg2);border-bottom:1px solid var(--bdr);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:1.12rem;font-weight:800;color:var(--ac);display:flex;align-items:center;gap:8px}
+.logo svg{width:20px;height:20px;fill:var(--ac)}
+
+/* ═══════════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════════ */
+button{font-family:inherit;font-size:.78rem;font-weight:600;padding:6px 13px;border:1px solid var(--bdr);border-radius:var(--radS);background:var(--btn);color:var(--tx1);cursor:pointer;transition:.15s;white-space:nowrap;user-select:none}
+button:hover:not(:disabled){background:var(--btnH);border-color:var(--bdr2)}
+button:disabled{opacity:.32;cursor:not-allowed}
+button.pri{background:var(--ac);color:#080e17;border-color:var(--ac);font-weight:700}
+button.pri:hover:not(:disabled){background:var(--ac2);border-color:var(--ac2)}
+button.dan{border-color:var(--swp);color:var(--swp)}
+button.dan:hover:not(:disabled){background:var(--swpB)}
+.tbtn{background:none;border:1px solid var(--bdr);font-size:1rem;padding:5px 9px;border-radius:var(--radS)}
+
+/* ═══════════════════════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════════════════════ */
+.wrap{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 46px)}
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════════════ */
+.side{background:var(--bg2);border-right:1px solid var(--bdr);padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:13px}
+.pnl{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--rad);padding:12px}
+.pnl-t{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;color:var(--tx3);margin-bottom:8px}
+.asel{display:flex;flex-direction:column;gap:5px}
+.ab{text-align:left;padding:8px 11px;border-radius:var(--radS);font-size:.82rem;border:1px solid transparent}
+.ab.on{background:var(--acM);border-color:var(--ac);color:var(--ac)}
+
+.cg{display:flex;flex-direction:column;gap:7px}
+.cr{display:flex;gap:5px}.cr button{flex:1}
+label{font-size:.74rem;color:var(--tx2);font-weight:600;display:flex;justify-content:space-between}
+label b{color:var(--ac);font-weight:700}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;appearance:none;background:var(--bdr);border-radius:2px;outline:none;margin-top:3px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--ac);cursor:pointer;border:2px solid var(--bg)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--ac);cursor:pointer;border:2px solid var(--bg)}
+.ci{display:flex;gap:5px}
+.ci input[type=text]{flex:1;padding:6px 9px;background:var(--bg);border:1px solid var(--bdr);border-radius:var(--radS);color:var(--tx1);font-family:Consolas,'Courier New',monospace;font-size:.78rem;outline:none}
+.ci input[type=text]:focus{border-color:var(--ac)}
+
+/* code tabs */
+.code-tabs{display:flex;gap:0;margin-bottom:6px;border-bottom:1px solid var(--bdr)}
+.ctab{padding:5px 10px;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;border:none;border-bottom:2px solid transparent;background:none;color:var(--tx3);cursor:pointer;transition:.15s;border-radius:0}
+.ctab:hover{color:var(--tx2)}
+.ctab.on{color:var(--ac);border-bottom-color:var(--ac)}
+.code-body{display:none}
+.code-body.on{display:block}
+/* pseudocode & code */
+.psc{font-family:Consolas,'Courier New',monospace;font-size:.70rem;line-height:1.8;overflow-x:auto}
+.pl{padding:2px 7px;border-radius:3px;border-left:3px solid transparent;white-space:pre;color:var(--tx2);transition:.12s}
+.pl.on{background:var(--acM);border-left-color:var(--ac);color:var(--tx1);font-weight:700}
+/* syntax colors */
+.kw{color:#c084fc}.fn{color:#38bdf8}.cm{color:#4a6378;font-style:italic}.st{color:#34d399}.nu{color:#facc15}.tp{color:#f472b6}
+.ctx td{padding:3px 0;font-size:.74rem}
+.ctx td:first-child{color:var(--tx3);width:46%}
+.ctx td:last-child{color:var(--ac);font-family:Consolas,monospace;font-weight:600}
+
+/* ═══════════════════════════════════════════════════
+   MAIN
+   ═══════════════════════════════════════════════════ */
+.mn{display:flex;flex-direction:column;overflow:hidden}
+.tbar{background:var(--bg2);border-bottom:1px solid var(--bdr);padding:8px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.sts{display:flex;gap:18px;flex-wrap:wrap}
+.st{display:flex;flex-direction:column;align-items:center}
+.st-l{font-size:.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--tx3);font-weight:700}
+.st-v{font-size:1.08rem;font-weight:700;font-variant-numeric:tabular-nums}
+.smsg{flex:1;min-width:140px;text-align:center;font-size:.80rem;color:var(--tx2);padding:5px 12px;background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--radS)}
+
+/* ═══════════════════════════════════════════════════
+   BAR STAGE
+   ═══════════════════════════════════════════════════ */
+.viz{flex:1;display:flex;flex-direction:column;padding:16px 20px;gap:12px;overflow:hidden}
+.stage{
+  flex:1;min-height:340px;
+  background:var(--bg-stage);border:1px solid var(--bdr);border-radius:var(--rad);
+  padding:30px 14px 6px;
+  display:flex;align-items:flex-end;justify-content:center;
+  position:relative;overflow:hidden;
+}
+
+/* ── processing-range box overlay ── */
+.range-box{
+  position:absolute;
+  bottom:0;
+  border:2px solid var(--box-clr);
+  border-bottom:none;
+  border-radius:6px 6px 0 0;
+  background:var(--box-bg);
+  pointer-events:none;
+  transition:left .22s ease,width .22s ease,height .22s ease,opacity .22s ease;
+  z-index:10;
+}
+.range-box::before{
+  content:attr(data-label);
+  position:absolute;top:-18px;left:50%;transform:translateX(-50%);
+  font-size:.56rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--box-clr);white-space:nowrap;
+  background:var(--bg-stage);padding:0 6px;
+}
+
+.col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:1;min-width:0;max-width:56px;position:relative;height:100%;z-index:1}
+.bar{width:calc(100% - 3px);min-width:4px;border-radius:3px 3px 0 0;transition:height .18s ease-out,background .12s,box-shadow .12s;background:var(--bar);background-image:linear-gradient(90deg,rgba(255,255,255,.11) 0%,rgba(255,255,255,0) 58%)}
+.bv{font-size:.60rem;font-weight:700;color:var(--tx3);margin-top:3px;font-variant-numeric:tabular-nums;text-align:center;height:14px;line-height:14px}
+.bm{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:.54rem;font-weight:800;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;pointer-events:none}
+
+.bar.s-cmp{background:var(--cmp);background-image:linear-gradient(90deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 58%);box-shadow:0 0 14px var(--cmpB),0 0 28px var(--cmpB)}
+.bar.s-swp{background:var(--swp);background-image:linear-gradient(90deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 58%);box-shadow:0 0 14px var(--swpB),0 0 28px var(--swpB)}
+.bar.s-done{background:var(--done);background-image:linear-gradient(90deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,0) 58%);box-shadow:0 0 10px var(--doneB)}
+.bar.s-key{background:var(--key);background-image:linear-gradient(90deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 58%);box-shadow:0 0 14px var(--keyB),0 0 28px var(--keyB)}
+
+.s-cmp~.bm{color:var(--cmp)}.s-swp~.bm{color:var(--swp)}.s-done~.bm{color:var(--done)}.s-key~.bm{color:var(--key)}
+
+.legend{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:4px 0}
+.lg{display:flex;align-items:center;gap:5px;font-size:.68rem;color:var(--tx2);font-weight:600}
+.lsw{width:16px;height:11px;border-radius:2px}
+
+.desc{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--rad);padding:12px 16px}
+.desc h3{font-size:.86rem;color:var(--ac);margin-bottom:4px}
+.desc p{font-size:.76rem;color:var(--tx2);line-height:1.6}
+.desc .uc{margin-top:6px;padding-top:6px;border-top:1px solid var(--bdr);font-size:.70rem;color:var(--tx3);font-style:italic}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════ */
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr}
+  .side{border-right:none;border-bottom:1px solid var(--bdr);flex-direction:row;flex-wrap:wrap;overflow-y:visible;padding:10px;gap:10px}
+  .side .pnl{flex:1;min-width:200px}
+  .stage{min-height:220px}
+}
+@media(max-width:600px){
+  .hdr{padding:8px 10px}.logo{font-size:.92rem}
+  .tbar{padding:6px 10px}.viz{padding:10px}
+  button{font-size:.70rem;padding:5px 9px}
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<header class="hdr">
+  <div class="logo"><svg viewBox="0 0 24 24"><path d="M3 21V3h3v14h3V7h3v10h3V5h3v16z"/></svg>Sort Visualizer</div>
+  <div><button class="tbtn" id="thB" title="Toggle theme">&#9790;</button></div>
+</header>
+
+<div class="wrap">
+  <aside class="side">
+
+    <div class="pnl">
+      <div class="pnl-t">Algorithm</div>
+      <div class="asel" id="aSel">
+        <button class="ab on" data-a="bubble">Bubble Sort</button>
+        <button class="ab" data-a="selection">Selection Sort</button>
+        <button class="ab" data-a="insertion">Insertion Sort</button>
+      </div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-t">Controls</div>
+      <div class="cg">
+        <label>Size: <b id="szL">25</b></label>
+        <input type="range" id="szR" min="5" max="80" value="25">
+        <label>Speed: <b id="spL">Medium</b></label>
+        <input type="range" id="spR" min="1" max="10" value="5">
+        <div class="cr"><button id="bG" class="pri">Generate</button><button id="bSh">Shuffle</button></div>
+        <div class="cr"><button id="bSt" class="pri">Start</button><button id="bP" disabled>Pause</button></div>
+        <div class="cr"><button id="bStp">Step</button><button id="bR" class="dan">Reset</button></div>
+        <div class="pnl-t" style="margin-top:6px">Custom Array</div>
+        <div class="ci"><input type="text" id="cIn" placeholder="e.g. 34,12,78,5,45"><button id="bC">Set</button></div>
+      </div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-t">Code</div>
+      <div class="code-tabs" id="cTabs">
+        <button class="ctab on" data-tab="pseudo">Pseudocode</button>
+        <button class="ctab" data-tab="cpp">C++</button>
+        <button class="ctab" data-tab="python">Python</button>
+      </div>
+      <div class="code-body on" id="cbPseudo"><div class="psc" id="psc"></div></div>
+      <div class="code-body" id="cbCpp"><div class="psc" id="cppCode"></div></div>
+      <div class="code-body" id="cbPython"><div class="psc" id="pyCode"></div></div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-t">Complexity</div>
+      <table class="ctx" id="cxT" style="width:100%"></table>
+    </div>
+
+  </aside>
+
+  <div class="mn">
+    <div class="tbar">
+      <div class="sts">
+        <div class="st"><span class="st-l">Pass</span><span class="st-v" id="xP">0</span></div>
+        <div class="st"><span class="st-l">Comparisons</span><span class="st-v" id="xC">0</span></div>
+        <div class="st"><span class="st-l">Swaps</span><span class="st-v" id="xS">0</span></div>
+      </div>
+      <div class="smsg" id="xM">Generate an array, then press Start.</div>
+    </div>
+
+    <div class="viz">
+      <div class="stage" id="stage">
+        <!-- The animated range-box lives here -->
+        <div class="range-box" id="rBox" style="opacity:0" data-label=""></div>
+      </div>
+
+      <div class="legend">
+        <div class="lg"><div class="lsw" style="background:var(--bar)"></div>Normal</div>
+        <div class="lg"><div class="lsw" style="background:var(--cmp)"></div>Comparing</div>
+        <div class="lg"><div class="lsw" style="background:var(--swp)"></div>Swapping</div>
+        <div class="lg"><div class="lsw" style="background:var(--key)"></div>Min / Key</div>
+        <div class="lg"><div class="lsw" style="background:var(--done)"></div>Sorted</div>
+        <div class="lg"><div class="lsw" style="border:2px solid var(--box-clr);background:var(--box-bg)"></div>Processing range</div>
+      </div>
+
+      <div class="desc" id="dsc"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   ALGORITHM DATA
+   ══════════════════════════════════════════════════════ */
+const A={
+bubble:{
+  name:'Bubble Sort',
+  desc:'Bubble Sort repeatedly walks through the unsorted portion, compares adjacent elements, and swaps them if they\u2019re out of order. After each pass the largest unsorted element "bubbles" to its final position at the end.',
+  use:'Best for: educational demos, tiny arrays, or nearly-sorted data where simplicity beats speed.',
+  ps:['for i = 0 to n-2:','  for j = 0 to n-i-2:','    if arr[j] > arr[j+1]:','      swap(arr[j], arr[j+1])','  // pass i complete','// sorted!'],
+  cpp:[
+    '<span class="kw">void</span> <span class="fn">bubbleSort</span>(<span class="kw">int</span> arr[], <span class="kw">int</span> n) {',
+    '  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i &lt; n-<span class="nu">1</span>; i++) {',
+    '    <span class="kw">for</span> (<span class="kw">int</span> j = <span class="nu">0</span>; j &lt; n-i-<span class="nu">1</span>; j++) {',
+    '      <span class="kw">if</span> (arr[j] &gt; arr[j+<span class="nu">1</span>]) {',
+    '        <span class="fn">swap</span>(arr[j], arr[j+<span class="nu">1</span>]);',
+    '      }',
+    '    } <span class="cm">// pass i complete</span>',
+    '  }',
+    '} <span class="cm">// sorted!</span>'
+  ],
+  py:[
+    '<span class="kw">def</span> <span class="fn">bubble_sort</span>(arr):',
+    '    n = <span class="fn">len</span>(arr)',
+    '    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n - <span class="nu">1</span>):',
+    '        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n - i - <span class="nu">1</span>):',
+    '            <span class="kw">if</span> arr[j] &gt; arr[j+<span class="nu">1</span>]:',
+    '                arr[j], arr[j+<span class="nu">1</span>] = arr[j+<span class="nu">1</span>], arr[j]',
+    '        <span class="cm"># pass i complete</span>',
+    '    <span class="cm"># sorted!</span>'
+  ],
+  // maps pseudo line index -> [cpp lines], [py lines]
+  cppMap:{0:[1],1:[2],2:[3],3:[4],4:[6],5:[8]},
+  pyMap:{0:[2],1:[3],2:[4],3:[5],4:[6],5:[7]},
+  cx:{'Best':'O(n)','Average':'O(n\u00B2)','Worst':'O(n\u00B2)','Space':'O(1)','Stable':'Yes'}
+},
+selection:{
+  name:'Selection Sort',
+  desc:'Selection Sort scans the unsorted region for the minimum value, then swaps it into the first unsorted position. The sorted region grows by one element each pass. It always performs O(n\u00B2) comparisons regardless of input order.',
+  use:'Best for: small arrays or when minimizing the number of swaps matters (at most n swaps total).',
+  ps:['for i = 0 to n-2:','  minIdx = i','  for j = i+1 to n-1:','    if arr[j] < arr[minIdx]:','      minIdx = j','  swap(arr[i], arr[minIdx])','// sorted!'],
+  cpp:[
+    '<span class="kw">void</span> <span class="fn">selectionSort</span>(<span class="kw">int</span> arr[], <span class="kw">int</span> n) {',
+    '  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">0</span>; i &lt; n-<span class="nu">1</span>; i++) {',
+    '    <span class="kw">int</span> minIdx = i;',
+    '    <span class="kw">for</span> (<span class="kw">int</span> j = i+<span class="nu">1</span>; j &lt; n; j++) {',
+    '      <span class="kw">if</span> (arr[j] &lt; arr[minIdx]) {',
+    '        minIdx = j;',
+    '      }',
+    '    }',
+    '    <span class="fn">swap</span>(arr[i], arr[minIdx]);',
+    '  }',
+    '} <span class="cm">// sorted!</span>'
+  ],
+  py:[
+    '<span class="kw">def</span> <span class="fn">selection_sort</span>(arr):',
+    '    n = <span class="fn">len</span>(arr)',
+    '    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n - <span class="nu">1</span>):',
+    '        min_idx = i',
+    '        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i+<span class="nu">1</span>, n):',
+    '            <span class="kw">if</span> arr[j] &lt; arr[min_idx]:',
+    '                min_idx = j',
+    '        arr[i], arr[min_idx] = arr[min_idx], arr[i]',
+    '    <span class="cm"># sorted!</span>'
+  ],
+  cppMap:{0:[1],1:[2],2:[3],3:[4],4:[5],5:[8],6:[10]},
+  pyMap:{0:[2],1:[3],2:[4],3:[5],4:[6],5:[7],6:[8]},
+  cx:{'Best':'O(n\u00B2)','Average':'O(n\u00B2)','Worst':'O(n\u00B2)','Space':'O(1)','Stable':'No'}
+},
+insertion:{
+  name:'Insertion Sort',
+  desc:'Insertion Sort picks the next unsorted element (the "key") and shifts sorted elements rightward until the correct insertion point is found. It builds the sorted region from left to right, one element at a time.',
+  use:'Best for: small or nearly-sorted arrays, online sorting (data arriving one at a time), or as a base case in hybrid sorts like Timsort.',
+  ps:['for i = 1 to n-1:','  key = arr[i]','  j = i - 1','  while j >= 0 and arr[j] > key:','    arr[j+1] = arr[j]  // shift','    j = j - 1','  arr[j+1] = key       // insert','// sorted!'],
+  cpp:[
+    '<span class="kw">void</span> <span class="fn">insertionSort</span>(<span class="kw">int</span> arr[], <span class="kw">int</span> n) {',
+    '  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="nu">1</span>; i &lt; n; i++) {',
+    '    <span class="kw">int</span> key = arr[i];',
+    '    <span class="kw">int</span> j = i - <span class="nu">1</span>;',
+    '    <span class="kw">while</span> (j &gt;= <span class="nu">0</span> &amp;&amp; arr[j] &gt; key) {',
+    '      arr[j+<span class="nu">1</span>] = arr[j]; <span class="cm">// shift</span>',
+    '      j--;',
+    '    }',
+    '    arr[j+<span class="nu">1</span>] = key; <span class="cm">// insert</span>',
+    '  }',
+    '} <span class="cm">// sorted!</span>'
+  ],
+  py:[
+    '<span class="kw">def</span> <span class="fn">insertion_sort</span>(arr):',
+    '    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="fn">len</span>(arr)):',
+    '        key = arr[i]',
+    '        j = i - <span class="nu">1</span>',
+    '        <span class="kw">while</span> j &gt;= <span class="nu">0</span> <span class="kw">and</span> arr[j] &gt; key:',
+    '            arr[j+<span class="nu">1</span>] = arr[j]  <span class="cm"># shift</span>',
+    '            j -= <span class="nu">1</span>',
+    '        arr[j+<span class="nu">1</span>] = key  <span class="cm"># insert</span>',
+    '    <span class="cm"># sorted!</span>'
+  ],
+  cppMap:{0:[1],1:[2],2:[3],3:[4],4:[5],5:[6],6:[8],7:[10]},
+  pyMap:{0:[1],1:[2],2:[3],3:[4],4:[5],5:[6],6:[7],7:[8]},
+  cx:{'Best':'O(n)','Average':'O(n\u00B2)','Worst':'O(n\u00B2)','Space':'O(1)','Stable':'Yes'}
+}};
+
+/* ══════════════════════════════════════════════════════
+   STATE
+   ══════════════════════════════════════════════════════ */
+const S={arr:[],orig:[],algo:'bubble',run:false,pau:false,stp:false,fin:false,
+  cmp:0,swp:0,pass:0,spd:5,sz:25,sR:null,tok:{x:false}};
+
+/* ══════════════════════════════════════════════════════
+   DOM
+   ══════════════════════════════════════════════════════ */
+const $=id=>document.getElementById(id);
+const D={stage:$('stage'),rBox:$('rBox'),psc:$('psc'),cppCode:$('cppCode'),pyCode:$('pyCode'),cxT:$('cxT'),dsc:$('dsc'),
+  cTabs:$('cTabs'),cbPseudo:$('cbPseudo'),cbCpp:$('cbCpp'),cbPython:$('cbPython'),
+  xM:$('xM'),xP:$('xP'),xC:$('xC'),xS:$('xS'),
+  szR:$('szR'),szL:$('szL'),spR:$('spR'),spL:$('spL'),cIn:$('cIn'),
+  bG:$('bG'),bSh:$('bSh'),bSt:$('bSt'),bP:$('bP'),bStp:$('bStp'),bR:$('bR'),bC:$('bC'),
+  thB:$('thB'),aSel:$('aSel')};
+
+/* ══════════════════════════════════════════════════════
+   HELPERS
+   ══════════════════════════════════════════════════════ */
+function dly(t){
+  const ms=[900,700,500,360,240,160,100,55,28,10][S.spd-1]||240;
+  return new Promise((ok,no)=>{
+    if(t.x)return no('x');
+    if(S.stp&&!S.run){S.sR=()=>t.x?no('x'):ok();return}
+    if(S.pau){S.sR=()=>t.x?no('x'):ok();const id=setInterval(()=>{if(t.x){clearInterval(id);no('x')}if(!S.pau){clearInterval(id);S.sR=null;ok()}},40);return}
+    setTimeout(()=>t.x?no('x'):ok(),ms);
+  });
+}
+function gen(n){const a=[];for(let i=0;i<n;i++)a.push(5+Math.floor(Math.random()*95));return a}
+function shuf(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+function spN(v){return v<=2?'Very Slow':v<=4?'Slow':v<=6?'Medium':v<=8?'Fast':'Very Fast'}
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+
+/* ══════════════════════════════════════════════════════
+   BAR RENDERING
+   ══════════════════════════════════════════════════════ */
+function build(){
+  // Preserve the range-box element
+  const box=D.rBox;
+  D.stage.innerHTML='';
+  D.stage.appendChild(box);
+  const mx=Math.max(...S.arr,1),show=S.arr.length<=50;
+  S.arr.forEach(v=>{
+    const c=document.createElement('div');c.className='col';
+    const m=document.createElement('div');m.className='bm';
+    const b=document.createElement('div');b.className='bar';b.style.height=((v/mx)*100)+'%';
+    const l=document.createElement('div');l.className='bv';l.textContent=show?v:'';
+    c.appendChild(m);c.appendChild(b);c.appendChild(l);
+    D.stage.appendChild(c);
+  });
+  hideBox();
+}
+function uB(i){
+  // +1 because child[0] is the range-box div
+  const c=D.stage.children[i+1];if(!c)return;
+  const mx=Math.max(...S.arr,1);
+  c.querySelector('.bar').style.height=((S.arr[i]/mx)*100)+'%';
+  c.querySelector('.bv').textContent=S.arr.length<=50?S.arr[i]:'';
+}
+function bS(i,st,txt){
+  const c=D.stage.children[i+1];if(!c)return;
+  const bar=c.querySelector('.bar'),mk=c.querySelector('.bm');
+  bar.classList.remove('s-cmp','s-swp','s-done','s-key');
+  if(st)bar.classList.add('s-'+st);
+  mk.textContent=txt||'';
+}
+function clr(){for(let i=0;i<S.arr.length;i++)bS(i,null,'')}
+async function sweep(t){for(let i=0;i<S.arr.length;i++){if(t.x)return;bS(i,'done','');await new Promise(r=>setTimeout(r,12))}}
+
+/* ── RANGE BOX ──
+   Shows a highlighted bracket around the indices [lo..hi] */
+function showBox(lo,hi,label){
+  const box=D.rBox;
+  // bars are children[1..n] of stage
+  const first=D.stage.children[lo+1];
+  const last=D.stage.children[hi+1];
+  if(!first||!last){box.style.opacity='0';return}
+  const sRect=D.stage.getBoundingClientRect();
+  const fRect=first.getBoundingClientRect();
+  const lRect=last.getBoundingClientRect();
+  const pad=4;
+  box.style.left=(fRect.left-sRect.left-pad)+'px';
+  box.style.width=(lRect.right-fRect.left+pad*2)+'px';
+  box.style.height='calc(100% - 4px)';
+  box.style.opacity='1';
+  box.dataset.label=label||'';
+}
+function hideBox(){D.rBox.style.opacity='0';D.rBox.dataset.label=''}
+
+/* sidebar */
+let activeTab='pseudo';
+function rPs(){
+  const a=A[S.algo];
+  D.psc.innerHTML=a.ps.map((l,i)=>`<div class="pl" data-l="${i}">${esc(l)}</div>`).join('');
+  D.cppCode.innerHTML=a.cpp.map((l,i)=>`<div class="pl" data-l="${i}">${l}</div>`).join('');
+  D.pyCode.innerHTML=a.py.map((l,i)=>`<div class="pl" data-l="${i}">${l}</div>`).join('');
+}
+function hL(n){
+  // Highlight pseudocode line n
+  D.psc.querySelectorAll('.pl').forEach((e,i)=>e.classList.toggle('on',i===n));
+  // Highlight corresponding C++ lines
+  const a=A[S.algo];
+  const cppLines=a.cppMap[n]||[];
+  D.cppCode.querySelectorAll('.pl').forEach((e,i)=>e.classList.toggle('on',cppLines.includes(i)));
+  // Highlight corresponding Python lines
+  const pyLines=a.pyMap[n]||[];
+  D.pyCode.querySelectorAll('.pl').forEach((e,i)=>e.classList.toggle('on',pyLines.includes(i)));
+}
+function cHL(){
+  D.psc.querySelectorAll('.pl').forEach(e=>e.classList.remove('on'));
+  D.cppCode.querySelectorAll('.pl').forEach(e=>e.classList.remove('on'));
+  D.pyCode.querySelectorAll('.pl').forEach(e=>e.classList.remove('on'));
+}
+// Tab switching
+D.cTabs.addEventListener('click',e=>{
+  const t=e.target.closest('.ctab');if(!t)return;
+  activeTab=t.dataset.tab;
+  D.cTabs.querySelectorAll('.ctab').forEach(b=>b.classList.toggle('on',b===t));
+  D.cbPseudo.classList.toggle('on',activeTab==='pseudo');
+  D.cbCpp.classList.toggle('on',activeTab==='cpp');
+  D.cbPython.classList.toggle('on',activeTab==='python');
+});
+function rCx(){D.cxT.innerHTML=Object.entries(A[S.algo].cx).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}
+function rDsc(){const a=A[S.algo];D.dsc.innerHTML=`<h3>${esc(a.name)}</h3><p>${esc(a.desc)}</p><div class="uc">${esc(a.use)}</div>`}
+function uSt(){D.xP.textContent=S.pass;D.xC.textContent=S.cmp;D.xS.textContent=S.swp}
+function msg(t){D.xM.textContent=t}
+function uBtn(){
+  const r=S.run&&!S.pau;
+  D.bG.disabled=r;D.bSh.disabled=r;D.bC.disabled=r;D.szR.disabled=r||S.pau;
+  D.bSt.disabled=r||S.fin;D.bSt.textContent=S.pau?'Resume':'Start';
+  D.bP.disabled=!r;D.bStp.disabled=r||S.fin;D.bR.disabled=!S.orig.length||r;
+  D.aSel.querySelectorAll('.ab').forEach(b=>b.disabled=r);
+}
+
+/* ══════════════════════════════════════════════════════
+   BUBBLE SORT
+   ══════════════════════════════════════════════════════ */
+async function bubbleSort(t){
+  const n=S.arr.length;
+  for(let i=0;i<n-1;i++){
+    S.pass=i+1;uSt();hL(0);
+    // Box around the unsorted region [0 .. n-i-1]
+    showBox(0,n-i-1,'unsorted region');
+    msg(`Pass ${i+1}: scanning unsorted [0..${n-i-1}]`);
+    await dly(t);
+    let sw=false;
+
+    for(let j=0;j<n-i-1;j++){
+      hL(1);clr();
+      for(let s=n-i;s<n;s++)bS(s,'done','');
+      showBox(0,n-i-1,'unsorted region');
+      bS(j,'cmp','A');bS(j+1,'cmp','B');
+      msg(`Comparing arr[${j}]=${S.arr[j]} and arr[${j+1}]=${S.arr[j+1]}`);
+      S.cmp++;uSt();await dly(t);
+
+      hL(2);
+      if(S.arr[j]>S.arr[j+1]){
+        bS(j,'swp','swap');bS(j+1,'swp','swap');
+        msg(`${S.arr[j]} > ${S.arr[j+1]} \u2014 swapping`);
+        hL(3);await dly(t);
+        [S.arr[j],S.arr[j+1]]=[S.arr[j+1],S.arr[j]];
+        uB(j);uB(j+1);S.swp++;sw=true;uSt();await dly(t);
+      } else {
+        msg(`${S.arr[j]} \u2264 ${S.arr[j+1]} \u2014 ok`);await dly(t);
+      }
+    }
+    bS(n-i-1,'done','');hL(4);
+    msg(`Pass ${i+1} done \u2014 position ${n-i-1} finalized`);await dly(t);
+    if(!sw){msg('No swaps \u2014 sorted early!');break}
+  }
+  bS(0,'done','');hL(5);hideBox();msg('Bubble Sort complete!');
+}
+
+/* ══════════════════════════════════════════════════════
+   SELECTION SORT
+   ══════════════════════════════════════════════════════ */
+async function selectionSort(t){
+  const n=S.arr.length;
+  for(let i=0;i<n-1;i++){
+    S.pass=i+1;uSt();hL(0);
+    let mi=i;hL(1);
+    clr();for(let s=0;s<i;s++)bS(s,'done','');
+    // Box around unsorted region [i .. n-1]
+    showBox(i,n-1,'unsorted \u2014 finding min');
+    bS(i,'key','min');
+    msg(`Pass ${i+1}: find minimum in [${i}..${n-1}]`);await dly(t);
+
+    for(let j=i+1;j<n;j++){
+      hL(2);
+      for(let k=i;k<n;k++)if(k!==mi)bS(k,null,'');
+      bS(mi,'key','min');bS(j,'cmp','?');
+      msg(`Comparing arr[${j}]=${S.arr[j]} with min arr[${mi}]=${S.arr[mi]}`);
+      S.cmp++;uSt();await dly(t);
+      hL(3);
+      if(S.arr[j]<S.arr[mi]){bS(mi,null,'');mi=j;bS(mi,'key','min');hL(4);
+        msg(`New min: ${S.arr[mi]} at [${mi}]`);await dly(t)}
+    }
+
+    if(mi!==i){
+      clr();for(let s=0;s<i;s++)bS(s,'done','');
+      showBox(i,i,'swap target');
+      bS(i,'swp','swap');bS(mi,'swp','swap');hL(5);
+      msg(`Swap arr[${i}]=${S.arr[i]} with min arr[${mi}]=${S.arr[mi]}`);await dly(t);
+      [S.arr[i],S.arr[mi]]=[S.arr[mi],S.arr[i]];uB(i);uB(mi);S.swp++;uSt();await dly(t);
+    } else {msg(`Min already at [${i}]`);await dly(t)}
+    bS(i,'done','');msg(`Position ${i} sorted: ${S.arr[i]}`);await dly(t);
+  }
+  bS(S.arr.length-1,'done','');hL(6);hideBox();msg('Selection Sort complete!');
+}
+
+/* ══════════════════════════════════════════════════════
+   INSERTION SORT
+   ══════════════════════════════════════════════════════ */
+async function insertionSort(t){
+  const n=S.arr.length;
+  bS(0,'done','');
+
+  for(let i=1;i<n;i++){
+    S.pass=i;uSt();hL(0);
+    const key=S.arr[i];hL(1);
+    clr();for(let s=0;s<i;s++)bS(s,'done','');
+    // Box around sorted region [0..i-1] where we'll insert
+    showBox(0,i,'sorted + key');
+    bS(i,'key','key');
+    msg(`Pass ${i}: key=${key}, insert into sorted [0..${i-1}]`);await dly(t);
+
+    let j=i-1;hL(2);
+
+    while(j>=0&&S.arr[j]>key){
+      hL(3);bS(j,'cmp','?');
+      msg(`arr[${j}]=${S.arr[j]} > key=${key} \u2014 shift right`);
+      S.cmp++;uSt();await dly(t);
+      hL(4);S.arr[j+1]=S.arr[j];uB(j+1);bS(j+1,'swp','\u2192');
+      S.swp++;uSt();await dly(t);
+      bS(j,null,'');hL(5);j--;
+    }
+    if(j>=0){S.cmp++;uSt()}
+
+    S.arr[j+1]=key;uB(j+1);hL(6);
+    clr();for(let s=0;s<=i;s++)bS(s,'done','');
+    showBox(0,i,'sorted region');
+    bS(j+1,'key','key');
+    msg(`Inserted key=${key} at position ${j+1}`);await dly(t);
+  }
+  hL(7);hideBox();msg('Insertion Sort complete!');
+}
+
+/* ══════════════════════════════════════════════════════
+   ENGINE
+   ══════════════════════════════════════════════════════ */
+async function run(){
+  const t={x:false};S.tok=t;
+  S.run=true;S.pau=false;S.fin=false;S.cmp=0;S.swp=0;S.pass=0;
+  uSt();uBtn();
+  try{
+    if(S.algo==='bubble')await bubbleSort(t);
+    else if(S.algo==='selection')await selectionSort(t);
+    else await insertionSort(t);
+    if(!t.x){S.fin=true;hideBox();await sweep(t);cHL()}
+  }catch(e){if(e!=='x')console.error(e)}
+  S.run=false;S.pau=false;uBtn();
+}
+function stop(){S.tok.x=true;S.run=false;S.pau=false;S.stp=false;S.sR=null}
+function init(a){stop();S.arr=[...a];S.orig=[...a];S.fin=false;S.cmp=0;S.swp=0;S.pass=0;uSt();build();cHL();hideBox();msg(`Array (${a.length}). Press Start or Step.`);uBtn()}
+function sel(al){S.algo=al;D.aSel.querySelectorAll('.ab').forEach(b=>b.classList.toggle('on',b.dataset.a===al));rPs();rCx();rDsc();cHL()}
+
+/* ══════════════════════════════════════════════════════
+   EVENTS
+   ══════════════════════════════════════════════════════ */
+D.aSel.addEventListener('click',e=>{const b=e.target.closest('.ab');if(!b||b.disabled)return;sel(b.dataset.a);if(S.orig.length)init(S.orig)});
+D.bG.addEventListener('click',()=>init(gen(S.sz)));
+D.bSh.addEventListener('click',()=>{S.orig.length?init(shuf(S.orig)):init(gen(S.sz))});
+D.bSt.addEventListener('click',()=>{
+  if(S.pau){S.pau=false;S.stp=false;uBtn();msg('Resumed...');return}
+  if(!S.arr.length)init(gen(S.sz));if(S.fin)init(S.orig);S.stp=false;run();
+});
+D.bP.addEventListener('click',()=>{if(S.run&&!S.pau){S.pau=true;uBtn();msg('Paused.')}});
+D.bStp.addEventListener('click',()=>{
+  if(S.fin)return;
+  if(!S.run&&!S.pau){if(!S.arr.length)init(gen(S.sz));if(S.fin)init(S.orig);S.stp=true;S.pau=false;run();return}
+  if(S.sR){const f=S.sR;S.sR=null;S.stp=true;S.pau=false;S.run=true;uBtn();f();
+    setTimeout(()=>{if(S.run&&!S.fin){S.pau=true;uBtn()}},[900,700,500,360,240,160,100,55,28,10][S.spd-1]+30)}
+});
+D.bR.addEventListener('click',()=>{if(S.orig.length)init(S.orig)});
+D.bC.addEventListener('click',()=>{
+  const r=D.cIn.value.trim();if(!r)return;
+  const nums=r.split(/[\s,;]+/).map(Number).filter(n=>!isNaN(n)&&n>0&&n<1000);
+  if(nums.length<2){msg('Need at least 2 numbers (1-999).');return}
+  if(nums.length>80){msg('Max 80.');return}
+  S.sz=nums.length;D.szR.value=nums.length;D.szL.textContent=nums.length;init(nums);
+});
+D.szR.addEventListener('input',e=>{S.sz=+e.target.value;D.szL.textContent=S.sz});
+D.spR.addEventListener('input',e=>{S.spd=+e.target.value;D.spL.textContent=spN(S.spd)});
+D.thB.addEventListener('click',()=>{
+  const n=document.body.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.body.setAttribute('data-theme',n);D.thB.textContent=n==='dark'?'\u263E':'\u2600';
+});
+
+// Reposition box on resize
+window.addEventListener('resize',()=>{/* box repositions on next animation frame */});
+
+/* ══════════════════════════════════════════════════════
+   BOOT
+   ══════════════════════════════════════════════════════ */
+sel('bubble');init(gen(25));
+</script>
+</body>
+</html>
