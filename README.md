@@ -18,7 +18,7 @@ Python is one of the most popular programming languages in the world. It is know
 | 8 | [Working with Strings in Python](lecture_notes/lecture_08.md) | [🔗](slides/lecture_08.html) | 
 | 9 | [Lists and Collections](lecture_notes/lecture_09.md) | [🔗](slides/lecture_09.html) | 
 | 10 | [Functions — Organizing Code into Reusable Parts](lecture_notes/lecture_10.md) | [🔗](slides/lecture_10.html) |
-| 10 | [Sorting Algorithms](bubble_selection_insertion.html) |  |
+| 10 | [Sorting Algorithms](lecture_notes/bubble_selection_insertion.html) |  |
 
 
 ---
