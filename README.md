@@ -21,10 +21,13 @@ Python is one of the most popular programming languages in the world. It is know
 | 10 | [Sorting Algorithms](lecture_notes/bubble_selection_insertion.html) |  |
 
 ## Exercises
-|1|
+|:--:|:-:|
+| 1 | [Exercises 1 ](practice/exercises_expressions.md) |
+| 2 | [Exercises 2](practice/exercises1.md) |
 ## Cheat Sheets
-|1|  
-
+|:--:|:-:|
+| 1 | [Exercises 1 ](practice/exercises_expressions.md) |
+| 2 | [Exercises 2](practice/exercises1.md) |
 
 ---
 
