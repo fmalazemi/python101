@@ -22,12 +22,12 @@ Python is one of the most popular programming languages in the world. It is know
 
 ## Exercises
 |:--:|:-:|
-| 1 | [Exercises 1 ](practice/exercises_expressions.md) |
-| 2 | [Exercises 2](practice/exercises1.md) |
+| 1 | [Exercises 1 ](practice/exercise_expressions.md) |
+| 2 | [Exercises 2](practice/exercise1.md) |
 ## Cheat Sheets
 |:--:|:-:|
-| 1 | [Exercises 1 ](practice/exercises_expressions.md) |
-| 2 | [Exercises 2](practice/exercises1.md) |
+| 1 | [Math functions](practice/mathCheatSheet.md) |
+| 2 | [Strings](practice/stringCheatSheet.md) |
 
 ---
 
