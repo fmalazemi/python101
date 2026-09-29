@@ -20,6 +20,11 @@ Python is one of the most popular programming languages in the world. It is know
 | 10 | [Functions — Organizing Code into Reusable Parts](lecture_notes/lecture_10.md) | [🔗](slides/lecture_10.html) |
 | 10 | [Sorting Algorithms](lecture_notes/bubble_selection_insertion.html) |  |
 
+## Exercises
+|1|
+## Cheat Sheets
+|1|  
+
 
 ---
 
