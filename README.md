@@ -35,6 +35,7 @@ Python is one of the most popular programming languages in the world. It is know
 | 1 | [Math functions](practice/mathCheatSheet.md) |
 | 2 | [Strings](practice/stringCheatSheet.md) |
 | 3 | [Input()](practice/input_cheatSheet.md) |
+| 4 | [Lists](practice/list_cheatsheet.md) |
 
 ---
 
