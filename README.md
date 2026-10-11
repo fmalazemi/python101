@@ -26,6 +26,7 @@ Python is one of the most popular programming languages in the world. It is know
 |:--:|:-:|
 | 1 | [Exercises 1 ](practice/exercise_expressions.md) |
 | 2 | [Exercises 2](practice/exercise1.md) |
+| 3 | [List Slicing](practice/slicing.md) |
 
 ## Cheat Sheets
 
