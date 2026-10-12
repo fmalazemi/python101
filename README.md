@@ -16,9 +16,10 @@ Python is one of the most popular programming languages in the world. It is know
 | 6 | [Introduction to Strings](material/CS126_Strings_Intro_Notes.md) |  [🔗](material/CS126_Strings_Intro_Slides.html) |
 | 7 | [Introduction to Lists](material/CS126_Lists_Intro_Notes.md) | [🔗](material/CS126_Lists_Intro_Slides.html)| 
 | 8 | [Advanced Lists](material/CS126_List_Methods_Notes.md) |  [🔗](material/CS126_List_Methods_Slides.html)|
-| 9 | [Loops: the for loop](material/CS126_Loops_Notes.md) | [🔗](material/CS126_Loops_Slides.html) | 
-| 10 | [Loops: the While Loop](material/CS126_While_Loops_Notes.md) | [🔗](material/CS126_While_Loops_Slides.html) |
-| 11 | [List Comprehension](material/CS126_List_Comprehension_Notes.md) | [🔗](material/CS126_List_Comprehension_Slides.html)|
+| 9 | [Introduction to Tuples](material/CS126_Tuples_Notes.md) | [🔗](material/CS126_Tuples_Slides.html)|
+| 10 | [Loops: the for loop](material/CS126_Loops_Notes.md) | [🔗](material/CS126_Loops_Slides.html) | 
+| 11 | [Loops: the While Loop](material/CS126_While_Loops_Notes.md) | [🔗](material/CS126_While_Loops_Slides.html) |
+| 12 | [List Comprehension](material/CS126_List_Comprehension_Notes.md) | [🔗](material/CS126_List_Comprehension_Slides.html)|
 
 ## Animations
 | No.1 | Topic |
