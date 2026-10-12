@@ -47,12 +47,12 @@ Python is one of the most popular programming languages in the world. It is know
 
 | No.1 | Notes | Slides|
 |:--:|:-:|:-:|
-| 1 | [Repetition with `while` Loops](old/lecture_notes/lecture_06.md) | [🔗](old/slides/lecture_06.html) | 
-| 2 | [`for` Loops and the `range()` Function](old/lecture_notes/lecture_07.md) | [🔗](old/slides/lecture_07.html) |
-| 3 | [Working with Strings in Python](old/lecture_notes/lecture_08.md) | [🔗](old/slides/lecture_08.html) | 
-| 4 | [Lists and Collections](old/lecture_notes/lecture_09.md) | [🔗](old/slides/lecture_09.html) | 
-| 5 | [Functions — Organizing Code into Reusable Parts](old/lecture_notes/lecture_10.md) | [🔗](old/slides/lecture_10.html) |
-| 6 | [Sorting Algorithms](old/lecture_notes/bubble_selection_insertion.html) |  |
+| 1 | [Repetition with `while` Loops](lecture_notes/lecture_06.md) | [🔗](slides/lecture_06.html) | 
+| 2 | [`for` Loops and the `range()` Function](lecture_notes/lecture_07.md) | [🔗](slides/lecture_07.html) |
+| 3 | [Working with Strings in Python](lecture_notes/lecture_08.md) | [🔗](slides/lecture_08.html) | 
+| 4 | [Lists and Collections](lecture_notes/lecture_09.md) | [🔗](slides/lecture_09.html) | 
+| 5 | [Functions — Organizing Code into Reusable Parts](lecture_notes/lecture_10.md) | [🔗](slides/lecture_10.html) |
+| 6 | [Sorting Algorithms](lecture_notes/bubble_selection_insertion.html) |  |
 
 
 
