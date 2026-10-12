@@ -23,7 +23,7 @@ Python is one of the most popular programming languages in the world. It is know
 ## Animations
 | No.1 | Topic |
 |:--:|:--:|
-| 1 | [List Slicing](animation/list_slicing_animation.html)
+| 1 | [How Slicing Works](animation/list_slicing_animation.html)
 
 ## Exercises
 
