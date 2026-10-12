@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS126 – Sets</title>
+<style>
+/* ===================== THEME ===================== */
+:root {
+  --bg: #f4f6f8;
+  --slide-bg: #fbfbfc;
+  --text: #1f2933;
+  --muted: #5b6875;
+  --navy: #1b365d;
+  --teal: #0f7c74;
+  --teal-soft: #e3f2f0;
+  --line: #d5dbe1;
+  --code-bg: #f1f3f5;
+  --code-text: #1f2933;
+  --out-bg: #ffffff;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --good: #1a7f37;
+  --good-soft: #e8f5ec;
+  --amber: #a15c00;
+  --tok-kw: #7a2bb5;
+  --tok-str: #a5481a;
+  --tok-num: #0b6bcb;
+  --tok-fn: #0f7c74;
+  --tok-com: #6b7785;
+  --bar-bg: #ffffff;
+}
+html.dark {
+  --bg: #0b1120;
+  --slide-bg: #111827;
+  --text: #e8edf3;
+  --muted: #a3afbd;
+  --navy: #9cc4ff;
+  --teal: #34d1bf;
+  --teal-soft: #12302e;
+  --line: #334155;
+  --code-bg: #0b1220;
+  --code-text: #e8edf3;
+  --out-bg: #0f172a;
+  --bad: #ff8a80;
+  --bad-soft: #3a1717;
+  --good: #7ee2a0;
+  --good-soft: #13301f;
+  --amber: #ffc46b;
+  --tok-kw: #d7a8ff;
+  --tok-str: #ffb38a;
+  --tok-num: #8fc8ff;
+  --tok-fn: #5fe3d2;
+  --tok-com: #8b98a8;
+  --bar-bg: #0f172a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* ===================== STAGE ===================== */
+.viewport {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 56px;
+  overflow: hidden;
+}
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: center center;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--slide-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+.s-head {
+  height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--teal);
+  font-size: 16px; color: var(--muted);
+}
+.s-head .course { color: var(--navy); font-weight: 600; }
+.s-body {
+  flex: 1; min-height: 0;
+  padding: 22px 56px 10px;
+  display: flex; flex-direction: column;
+  font-size: 24px; line-height: 1.4;
+}
+.s-foot {
+  height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; font-size: 15px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+h1 { color: var(--navy); font-size: 56px; margin: 0 0 12px; line-height: 1.15; }
+h2 { color: var(--navy); font-size: 36px; margin: 0 0 16px; line-height: 1.2; }
+h3 { color: var(--teal); font-size: 24px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 30px; }
+li { margin-bottom: 6px; }
+.small { font-size: 20px; }
+.muted { color: var(--muted); }
+.teal { color: var(--teal); font-weight: 600; }
+.navy { color: var(--navy); font-weight: 600; }
+.mono, code.inl {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols.w60 { grid-template-columns: 1.25fr 1fr; }
+.cols.w40 { grid-template-columns: 1fr 1.25fr; }
+.cols.w70 { grid-template-columns: 1.6fr 1fr; }
+.tight pre { font-size: 18px; line-height: 1.38; margin-bottom: 8px; }
+.tight p { margin-bottom: 6px; }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.col { min-width: 0; }
+
+/* ===================== CODE ===================== */
+pre {
+  margin: 0 0 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 20px; line-height: 1.45;
+  white-space: pre; overflow: hidden;
+  border-radius: 6px;
+}
+pre.code {
+  background: var(--code-bg); color: var(--code-text);
+  border: 1px solid var(--line); border-left: 5px solid var(--teal);
+  padding: 10px 16px;
+}
+pre.code.bad  { border-left-color: var(--bad); }
+pre.code.good { border-left-color: var(--good); }
+pre.out {
+  background: var(--out-bg); color: var(--text);
+  border: 1px dashed var(--line); border-left: 5px solid var(--navy);
+  padding: 8px 16px;
+}
+.lbl {
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.tk-kw { color: var(--tok-kw); font-weight: 600; }
+.tk-str { color: var(--tok-str); }
+.tk-num { color: var(--tok-num); }
+.tk-fn { color: var(--tok-fn); }
+.tk-com { color: var(--tok-com); font-style: italic; }
+
+/* ===================== BOXES ===================== */
+.note {
+  border-left: 5px solid var(--teal); background: var(--teal-soft);
+  padding: 10px 16px; border-radius: 4px; margin: 0 0 12px; font-size: 21px;
+}
+.warn {
+  border-left: 5px solid var(--amber); padding: 10px 16px; margin: 0 0 12px;
+  font-size: 21px; background: transparent; border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+}
+.tag-bad, .tag-good {
+  display: inline-block; font-weight: 700; font-size: 17px;
+  padding: 2px 10px; border-radius: 4px; margin-bottom: 4px;
+}
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-good { color: var(--good); background: var(--good-soft); }
+.why { font-size: 19px; margin: 0 0 10px; }
+
+table.t {
+  border-collapse: collapse; font-size: 20px; width: 100%;
+}
+table.t th, table.t td {
+  border: 1px solid var(--line); padding: 6px 12px; text-align: left;
+}
+table.t th { background: var(--teal-soft); color: var(--navy); }
+table.t td.c, table.t th.c { text-align: center; }
+table.t code { font-family: Consolas, Monaco, monospace; }
+
+/* ===================== Q & A ===================== */
+.qa { margin: 0 0 10px; }
+.reveal {
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--teal); background: transparent;
+  border: 1.5px solid var(--teal); border-radius: 4px;
+  padding: 3px 12px; cursor: pointer; margin: 0 0 6px;
+}
+.reveal:hover { background: var(--teal-soft); }
+.answer { visibility: hidden; }
+.answer.shown { visibility: visible; }
+.q { font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+
+/* ===================== TITLE / SECTION ===================== */
+.title-body { justify-content: center; padding-left: 90px; }
+.title-body .sub { font-size: 30px; color: var(--teal); margin-bottom: 36px; }
+.title-body .meta { font-size: 24px; color: var(--muted); line-height: 1.6; }
+.title-rule { width: 120px; height: 5px; background: var(--teal); margin: 0 0 28px; }
+.section-body { justify-content: center; align-items: center; text-align: center; }
+
+/* ===================== DIAGRAMS ===================== */
+.anat {
+  font-family: Consolas, Monaco, monospace; font-size: 40px;
+  background: var(--code-bg); border: 1px solid var(--line);
+  border-left: 5px solid var(--teal); border-radius: 6px;
+  padding: 18px 28px; margin: 0 0 16px; line-height: 1.6;
+}
+.anat .a1 { color: var(--tok-kw); font-weight: 700; }
+.anat .a2 { color: var(--tok-num); font-weight: 700; }
+.anat .a3 { color: var(--tok-str); font-weight: 700; }
+.anat .a4 { color: var(--bad); font-weight: 700; }
+.anat .a5 { color: var(--tok-fn); font-weight: 700; }
+.anat .ind { background: var(--teal-soft); outline: 1px dashed var(--teal); }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 36px; font-size: 21px; }
+.legend b { font-family: Consolas, Monaco, monospace; }
+
+.boxes { display: flex; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap; }
+.box {
+  min-width: 64px; text-align: center;
+  font-family: Consolas, Monaco, monospace; font-size: 22px;
+}
+.box .v {
+  border: 2px solid var(--navy); border-radius: 4px; padding: 6px 10px;
+  background: var(--slide-bg);
+}
+.box .i { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.box .n { font-size: 16px; color: var(--tok-num); margin-bottom: 3px; font-weight: 600; }
+.box.off .v { border-style: dashed; border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.box.hi .v { background: var(--teal-soft); border-color: var(--teal); }
+
+svg text { font-family: "Segoe UI", Arial, sans-serif; }
+.sv-box { fill: var(--slide-bg); stroke: var(--navy); stroke-width: 2; }
+.sv-dec { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.sv-t { fill: var(--text); font-size: 19px; }
+.sv-m { fill: var(--muted); font-size: 16px; font-weight: 600; }
+.sv-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.sv-arrow { fill: var(--muted); }
+
+.ex-num {
+  display: inline-block; min-width: 38px; font-weight: 700; color: var(--teal);
+}
+.level {
+  display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--teal); border: 1.5px solid var(--teal);
+  border-radius: 4px; padding: 1px 10px; margin-left: 12px; vertical-align: middle;
+}
+.ex { margin-bottom: 10px; }
+.ex p { margin: 0 0 6px; }
+
+/* ===================== CONTROLS ===================== */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: var(--bar-bg); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  font-size: 15px;
+}
+.controls button {
+  font: inherit; font-size: 15px; color: var(--navy);
+  background: transparent; border: 1px solid var(--line); border-radius: 4px;
+  padding: 6px 14px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--teal); color: var(--teal); }
+.controls .counter { color: var(--muted); min-width: 64px; text-align: center; }
+.progress {
+  flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.progress div { height: 100%; width: 0; background: var(--teal); }
+.spacer { width: 8px; }
+
+/* Code size for this deck */
+pre { font-size: 19px; }
+.tight pre { font-size: 17px; }
+
+/* ===================== PRINT ===================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  :root, html.dark {
+    --bg: #ffffff; --slide-bg: #ffffff; --text: #1f2933; --muted: #5b6875;
+    --navy: #1b365d; --teal: #0f7c74; --teal-soft: #e3f2f0; --line: #d5dbe1;
+    --code-bg: #f1f3f5; --code-text: #1f2933; --out-bg: #ffffff;
+    --bad: #b42318; --bad-soft: #fdecea; --good: #1a7f37; --good-soft: #e8f5ec;
+    --amber: #a15c00; --tok-kw: #7a2bb5; --tok-str: #a5481a; --tok-num: #0b6bcb;
+    --tok-fn: #0f7c74; --tok-com: #6b7785;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .controls, .reveal { display: none !important; }
+  .answer { visibility: visible !important; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; inset: auto;
+    width: 1280px; height: 720px; zoom: 0.82;
+    margin: 0 auto; border: none; transform: translateY(120px);
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- ============ 1. TITLE ============ -->
+<section class="slide">
+  <div class="s-body title-body">
+    <div class="muted" style="font-size:22px;margin-bottom:10px">CS126 – Introduction to Python</div>
+    <h1>Sets</h1>
+    <div class="sub">Collections of unique items — and how they differ from lists and tuples</div>
+    <div class="title-rule"></div>
+    <div class="meta">Dr. Fawaz Alazemi</div>
+  </div>
+</section>
+
+<!-- ============ 2. OBJECTIVES ============ -->
+<section class="slide">
+  <h2>Learning Objectives</h2>
+  <p>By the end of this lecture, you will be able to:</p>
+  <ol>
+    <li>Explain what a <b>set</b> is: <b>unordered</b>, with <b>no duplicates</b>.</li>
+    <li>Create sets, including the empty set <code class="inl">set()</code>, and convert lists, tuples, and strings into sets.</li>
+    <li>Use <code class="inl">len()</code>, <code class="inl">in</code>, and <code class="inl">==</code> with sets, and explain why sets have no indexes.</li>
+    <li>Change a set with <code class="inl">add()</code>, <code class="inl">update()</code>, <code class="inl">remove()</code>, and <code class="inl">discard()</code>.</li>
+    <li>Combine sets with <b>union</b>, <b>intersection</b>, <b>difference</b>, and <b>symmetric difference</b>.</li>
+    <li>Check <b>subsets</b> with <code class="inl">&lt;=</code>.</li>
+    <li>Choose between a <b>list</b>, a <b>tuple</b>, and a <b>set</b> for a task.</li>
+  </ol>
+</section>
+
+<!-- ============ 3. MOTIVATION ============ -->
+<section class="slide">
+  <h2>Why Do We Need Sets?</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Problem 1: repeated values</h3>
+      <p class="small">A shop records each visit. How many <b>different</b> customers came?</p>
+      <pre class="code"><code>visits = ["Ali", "Sara", "Ali", "Mona", "Ali"]
+print(len(visits))         # visits
+print(len(set(visits)))    # different people</code></pre>
+      <pre class="out">5
+3</pre>
+    </div>
+    <div class="col">
+      <h3>Problem 2: comparing groups</h3>
+      <p class="small">Which courses do Sara and Ali <b>both</b> take?</p>
+      <pre class="code"><code>sara = {"CS126", "MATH101", "ENG110"}
+ali = {"CS126", "PHYS101", "ENG110"}
+print(len(sara &amp; ali))</code></pre>
+      <pre class="out">2</pre>
+      <div class="note small">Sets remove duplicates <b>automatically</b> and compare groups in <b>one step</b> — like the sets you studied in math.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. WHAT IS A SET ============ -->
+<section class="slide">
+  <h2>What Is a Set?</h2>
+  <p>A <b>set</b> is a collection of <b>unique</b> items with <b>no order</b>.</p>
+  <div class="anat" style="font-size:34px">gcc = <span class="a4">{</span><span class="a3">"Kuwait"</span><span class="a4">,</span> <span class="a3">"Qatar"</span><span class="a4">,</span> <span class="a3">"Oman"</span><span class="a4">}</span></div>
+  <div class="cols">
+    <div class="col">
+      <ul class="small">
+        <li><b>Curly brackets</b> <code class="inl">{ }</code> and commas.</li>
+        <li><b>Unique:</b> each value appears at most once.</li>
+        <li><b>Unordered:</b> items have <b>no positions</b>, so there are <b>no indexes</b>.</li>
+        <li><b>Mutable:</b> you can add and remove items.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <svg viewBox="0 0 420 170" width="100%" height="170" role="img" aria-label="A set drawn as a bag of items without positions">
+        <ellipse cx="210" cy="85" rx="190" ry="72" class="sv-dec"/>
+        <text x="120" y="70" text-anchor="middle" class="sv-t">"Kuwait"</text>
+        <text x="280" y="62" text-anchor="middle" class="sv-t">"Oman"</text>
+        <text x="215" y="120" text-anchor="middle" class="sv-t">"Qatar"</text>
+        <text x="210" y="165" text-anchor="middle" class="sv-m">no index numbers — just "in" or "not in"</text>
+      </svg>
+    </div>
+  </div>
+  <div class="note">Think of a set as a <b>bag</b>: you can ask "is it in the bag?", but not "what is in position 1?"</div>
+</section>
+
+<!-- ============ 5. CREATING ============ -->
+<section class="slide">
+  <h2>Creating Sets</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>nums = {3, 1, 2}
+from_list = set([4, 4, 5, 6, 5])
+from_tuple = set((7, 7, 8))
+empty = set()
+print(nums)
+print(from_list)
+print(from_tuple)
+print(empty)
+print(type(nums))</code></pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Output</div>
+      <pre class="out">{1, 2, 3}
+{4, 5, 6}
+{8, 7}
+set()
+&lt;class 'set'&gt;</pre>
+      <ul class="small">
+        <li><code class="inl">set(...)</code> converts a list, tuple, or string into a set — removing duplicates.</li>
+        <li>The <b>empty set</b> is written <code class="inl">set()</code>.</li>
+      </ul>
+      <div class="warn"><code class="inl">{}</code> is <b>not</b> an empty set. It makes a different type (a <b>dictionary</b>), which you will learn later.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. DUPLICATES ============ -->
+<section class="slide">
+  <h2>Duplicates Disappear Automatically</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>grades = [90, 85, 90, 70, 85, 90]
+unique = set(grades)
+print(len(grades))
+print(len(unique))
+print(set([1, 1, 1]))
+print(len(set("banana")))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">6
+3
+{1}
+3</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li>A set keeps <b>one copy</b> of each value.</li>
+        <li><code class="inl">len(set(x))</code> = the number of <b>different</b> values.</li>
+        <li>From a string, each <b>character</b> becomes an item: <code class="inl">"banana"</code> → b, a, n.</li>
+      </ul>
+      <div class="q">How many items are in <code class="inl">{"Doha", "doha", "Doha"}</code>?</div>
+      <button class="reveal">Show Answer</button>
+      <div class="answer small"><b>2.</b> <code class="inl">"Doha"</code> and <code class="inl">"doha"</code> are different strings (case matters).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. NO ORDER ============ -->
+<section class="slide">
+  <h2>Sets Have No Order and No Indexes</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Error</span>
+      <pre class="code bad" data-skip><code>gcc = {"Kuwait", "Qatar", "Oman"}
+print(gcc[0])</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: 'set' object is not subscriptable</pre>
+      <p class="why">"Not subscriptable" means: you cannot use <code class="inl">[ ]</code> with it. No indexes, no slices.</p>
+      <div class="lbl">Printing a set of strings</div>
+      <pre class="code"><code>gcc = {"Kuwait", "Qatar", "Oman"}
+print(gcc)</code></pre>
+      <div class="lbl">One possible output (order may differ)</div>
+      <pre class="out">{'Oman', 'Kuwait', 'Qatar'}</pre>
+    </div>
+    <div class="col">
+      <div class="note">The printed order is <b>not guaranteed</b>. It may change between runs. <b>Never</b> depend on the order of a set.</div>
+      <h3>Need a fixed order? Use <code class="inl">sorted()</code></h3>
+      <pre class="code"><code>gcc = {"Kuwait", "Qatar", "Oman"}
+print(sorted(gcc))</code></pre>
+      <pre class="out">['Kuwait', 'Oman', 'Qatar']</pre>
+      <p class="small"><code class="inl">sorted()</code> gives a new <b>sorted list</b>. The set itself does not change.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. IN, LEN, == ============ -->
+<section class="slide">
+  <h2>What You <b>Can</b> Do: <code class="inl">in</code>, <code class="inl">len</code>, <code class="inl">==</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>allowed = {"sara", "ali", "mona"}
+user = "ali"
+if user in allowed:
+    print("Welcome,", user)
+print("fahad" not in allowed)
+print(len(allowed))
+print({1, 2, 3} == {3, 2, 1})
+print([1, 2, 3] == [3, 2, 1])</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Welcome, ali
+True
+3
+True
+False</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">in</code> / <code class="inl">not in</code> — the main job of a set. Sets answer "is it in?" <b>very fast</b>, even with millions of items.</li>
+        <li><code class="inl">len()</code> — the number of (unique) items.</li>
+        <li><code class="inl">==</code> — same items, <b>order does not matter</b>. For lists and tuples, order matters.</li>
+        <li><code class="inl">min()</code>, <code class="inl">max()</code>, <code class="inl">sum()</code> also work.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. ADD AND UPDATE ============ -->
+<section class="slide">
+  <h2>Adding Items: <code class="inl">add()</code> and <code class="inl">update()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>ids = {101, 102}
+ids.add(103)
+ids.add(101)          # already there
+print(ids)
+ids.update([104, 105, 102])
+print(ids)
+print(len(ids))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">{101, 102, 103}
+{101, 102, 103, 104, 105}
+5</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">s.add(x)</code> adds <b>one</b> item. If it is already there, nothing happens — <b>no error</b>, no duplicate.</li>
+        <li><code class="inl">s.update(other)</code> adds <b>every</b> item of a list, tuple, or set.</li>
+        <li>Both <b>change</b> the set and return <code class="inl">None</code>, like list methods.</li>
+      </ul>
+      <div class="note">There is no <code class="inl">append()</code> or <code class="inl">insert()</code> — a set has no "end" and no positions.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. REMOVE AND DISCARD ============ -->
+<section class="slide">
+  <h2>Removing Items: <code class="inl">remove()</code> and <code class="inl">discard()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>ids = {101, 102, 103}
+ids.remove(102)
+print(ids)
+ids.discard(999)      # not there: no error
+print(ids)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">{101, 103}
+{101, 103}</pre>
+      <span class="tag-bad">Error</span>
+      <pre class="code bad" data-skip><code>ids = {101, 103}
+ids.remove(999)</code></pre>
+      <pre class="out">KeyError: 999</pre>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:19px">
+        <tr><th>Method</th><th>If the item is missing</th></tr>
+        <tr><td><code>remove(x)</code></td><td><b>KeyError</b></td></tr>
+        <tr><td><code>discard(x)</code></td><td>does nothing</td></tr>
+        <tr><td><code>clear()</code></td><td>removes <b>all</b> items</td></tr>
+      </table>
+      <div class="note small" style="margin-top:14px">Use <code class="inl">remove()</code> when the item <b>must</b> be there (an error helps you find bugs). Use <code class="inl">discard()</code> when it may or may not be there.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. VENN OVERVIEW ============ -->
+<section class="slide">
+  <h2>Set Operations: Combining Two Sets</h2>
+  <div class="cols" style="grid-template-columns:0.8fr 1.2fr">
+    <div class="col">
+      <svg viewBox="0 0 460 300" width="100%" height="300" role="img" aria-label="Venn diagram of sets A and B">
+        <circle cx="170" cy="150" r="115" class="sv-dec" style="fill-opacity:.55"/>
+        <circle cx="290" cy="150" r="115" class="sv-dec" style="fill-opacity:.55"/>
+        <text x="100" y="40" class="sv-t" style="font-weight:700">A</text>
+        <text x="350" y="40" class="sv-t" style="font-weight:700">B</text>
+        <text x="110" y="145" text-anchor="middle" class="sv-t">1, 2</text>
+        <text x="110" y="170" text-anchor="middle" class="sv-m">only A</text>
+        <text x="230" y="145" text-anchor="middle" class="sv-t">3, 4</text>
+        <text x="230" y="170" text-anchor="middle" class="sv-m">both</text>
+        <text x="350" y="145" text-anchor="middle" class="sv-t">5, 6</text>
+        <text x="350" y="170" text-anchor="middle" class="sv-m">only B</text>
+      </svg>
+      <pre class="code"><code>A = {1, 2, 3, 4}
+B = {3, 4, 5, 6}</code></pre>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:18px">
+        <tr><th>Operation</th><th>Operator</th><th>Meaning</th><th>Result</th></tr>
+        <tr><td>Union</td><td><code>A | B</code></td><td>in A <b>or</b> B</td><td><code>{1, 2, 3, 4, 5, 6}</code></td></tr>
+        <tr><td>Intersection</td><td><code>A &amp; B</code></td><td>in A <b>and</b> B</td><td><code>{3, 4}</code></td></tr>
+        <tr><td>Difference</td><td><code>A - B</code></td><td>in A, <b>not</b> in B</td><td><code>{1, 2}</code></td></tr>
+        <tr><td>Symmetric difference</td><td><code>A ^ B</code></td><td>in <b>exactly one</b></td><td><code>{1, 2, 5, 6}</code></td></tr>
+      </table>
+      <div class="note small" style="margin-top:14px">Each operation gives a <b>new set</b>. <code class="inl">A</code> and <code class="inl">B</code> do not change.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. UNION & INTERSECTION ============ -->
+<section class="slide">
+  <h2>Union and Intersection</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — two students' courses</div>
+      <pre class="code"><code>sara = {"CS126", "MATH101", "ENG110"}
+ali = {"CS126", "PHYS101", "ENG110"}
+both = sara &amp; ali
+either = sara | ali
+print(sorted(both))
+print(sorted(either))
+print(len(either))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">['CS126', 'ENG110']
+['CS126', 'ENG110', 'MATH101', 'PHYS101']
+4</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><b>Intersection</b> <code class="inl">&amp;</code>: courses they <b>both</b> take.</li>
+        <li><b>Union</b> <code class="inl">|</code>: every course taken by <b>at least one</b> of them — each listed once.</li>
+        <li>Method versions do the same: <code class="inl">sara.intersection(ali)</code>, <code class="inl">sara.union(ali)</code>.</li>
+      </ul>
+      <div class="q">What does <code class="inl">{1, 2} &amp; {3, 4}</code> give?</div>
+      <button class="reveal">Show Answer</button>
+      <div class="answer small"><code class="inl">set()</code> — the empty set. They have nothing in common.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13. DIFFERENCE ============ -->
+<section class="slide">
+  <h2>Difference and Symmetric Difference</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>sara = {"CS126", "MATH101", "ENG110"}
+ali = {"CS126", "PHYS101", "ENG110"}
+print(sara - ali)
+print(ali - sara)
+print(sorted(sara ^ ali))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">{'MATH101'}
+{'PHYS101'}
+['MATH101', 'PHYS101']</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><b>Difference</b> <code class="inl">A - B</code>: in A but <b>not</b> in B. Courses only Sara takes.</li>
+        <li><b>Order matters</b> for difference: <code class="inl">sara - ali</code> ≠ <code class="inl">ali - sara</code>.</li>
+        <li><b>Symmetric difference</b> <code class="inl">A ^ B</code>: in <b>one</b> set but not both.</li>
+        <li>Methods: <code class="inl">difference()</code>, <code class="inl">symmetric_difference()</code>.</li>
+      </ul>
+      <div class="q">Is <code class="inl">A ^ B</code> the same as <code class="inl">(A | B) - (A &amp; B)</code>?</div>
+      <button class="reveal">Show Answer</button>
+      <div class="answer small"><b>Yes.</b> "Everything" minus "the shared part" = items in exactly one set.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. SUBSET ============ -->
+<section class="slide">
+  <h2>Subsets: Is One Set Inside Another?</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — graduation requirements</div>
+      <pre class="code"><code>required = {"CS126", "MATH101"}
+taken = {"CS126", "ENG110", "MATH101"}
+print(required &lt;= taken)
+print(required.issubset(taken))
+print(taken &gt;= required)
+missing = required - taken
+print(len(missing))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">True
+True
+True
+0</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">A &lt;= B</code>: every item of A is also in B (A is a <b>subset</b> of B).</li>
+        <li><code class="inl">A &gt;= B</code>: A contains all of B (A is a <b>superset</b>).</li>
+        <li>Method: <code class="inl">A.issubset(B)</code>.</li>
+        <li><code class="inl">required - taken</code> shows <b>which</b> requirements are missing.</li>
+      </ul>
+      <div class="q">Is <code class="inl">{1, 2} &lt;= {1, 2}</code> True?</div>
+      <button class="reveal">Show Answer</button>
+      <div class="answer small"><b>True.</b> Every set is a subset of itself.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15. WHAT CAN GO IN ============ -->
+<section class="slide">
+  <h2>What Can Be Stored in a Set?</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-good">Allowed: immutable values</span>
+      <pre class="code good"><code>s = {5, 2.5, "Kuwait", (29, 47), True}
+print(len(s))
+print((29, 47) in s)</code></pre>
+      <pre class="out">5
+True</pre>
+      <p class="small">Numbers, strings, and <b>tuples</b> can be set items.</p>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Not allowed: mutable values</span>
+      <pre class="code bad" data-skip><code>s = {[29, 47]}</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: unhashable type: 'list'</pre>
+      <p class="small">A list (or a set) <b>cannot</b> be an item in a set, because it could change after being stored.</p>
+      <div class="note small">"Unhashable" means "cannot be stored in a set". A good reason to use a <b>tuple</b> for a location!</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16. CONVERTING ============ -->
+<section class="slide">
+  <h2>Converting Between Lists, Tuples, and Sets</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — remove duplicates from a list</div>
+      <pre class="code"><code>nums = [5, 3, 5, 1, 3, 9]
+unique = list(set(nums))
+unique.sort()
+print(unique)
+print(sorted(set(nums)))
+print(tuple(sorted({3, 1, 2})))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">[1, 3, 5, 9]
+[1, 3, 5, 9]
+(1, 2, 3)</pre>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:19px">
+        <tr><th>To get…</th><th>Use</th></tr>
+        <tr><td>a set</td><td><code>set(x)</code></td></tr>
+        <tr><td>a list</td><td><code>list(x)</code></td></tr>
+        <tr><td>a tuple</td><td><code>tuple(x)</code></td></tr>
+        <tr><td>a sorted list</td><td><code>sorted(x)</code></td></tr>
+      </table>
+      <div class="warn" style="margin-top:12px"><code class="inl">list(set(x))</code> removes duplicates but <b>loses the original order</b>. Sort it if you need a fixed order.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17. LIST TUPLE SET TABLE ============ -->
+<section class="slide">
+  <h2>List vs Tuple vs Set</h2>
+  <table class="t" style="font-size:19px">
+    <tr><th style="width:24%"></th><th>List</th><th>Tuple</th><th>Set</th></tr>
+    <tr><td><b>Written as</b></td><td><code>[1, 2, 3]</code></td><td><code>(1, 2, 3)</code></td><td><code>{1, 2, 3}</code></td></tr>
+    <tr><td><b>Empty</b></td><td><code>[]</code></td><td><code>()</code></td><td><code>set()</code></td></tr>
+    <tr><td><b>Ordered?</b></td><td>Yes</td><td>Yes</td><td><b>No</b></td></tr>
+    <tr><td><b>Duplicates?</b></td><td>Allowed</td><td>Allowed</td><td><b>Removed</b></td></tr>
+    <tr><td><b>Indexes / slices</b></td><td>✔</td><td>✔</td><td>✘</td></tr>
+    <tr><td><b>Can change?</b></td><td>Yes</td><td>No</td><td>Yes (add/remove)</td></tr>
+    <tr><td><b>Add items</b></td><td><code>append</code>, <code>insert</code></td><td>✘</td><td><code>add</code>, <code>update</code></td></tr>
+    <tr><td><b><code>len</code>, <code>in</code>, <code>min</code>, <code>max</code>, <code>sum</code></b></td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td><b><code>==</code> cares about order?</b></td><td>Yes</td><td>Yes</td><td>No</td></tr>
+    <tr><td><b>Union, intersection, …</b></td><td>✘</td><td>✘</td><td>✔</td></tr>
+  </table>
+</section>
+
+<!-- ============ 18. WHICH TO USE ============ -->
+<section class="slide">
+  <h2>Which One Should I Use?</h2>
+  <div class="cols3">
+    <div class="col">
+      <h3>List</h3>
+      <ul class="small">
+        <li>Order matters.</li>
+        <li>Duplicates are meaningful.</li>
+        <li>Data changes.</li>
+      </ul>
+      <p class="small muted">A queue at the bank; daily temperatures.</p>
+    </div>
+    <div class="col">
+      <h3>Tuple</h3>
+      <ul class="small">
+        <li>Order matters.</li>
+        <li>Data must <b>not</b> change.</li>
+        <li>One fixed record.</li>
+      </ul>
+      <p class="small muted">A date (12, 10, 2026); a GPS location.</p>
+    </div>
+    <div class="col">
+      <h3>Set</h3>
+      <ul class="small">
+        <li>Each item only <b>once</b>.</li>
+        <li>Order does not matter.</li>
+        <li>Fast "is it in?" checks; comparing groups.</li>
+      </ul>
+      <p class="small muted">Unique visitors; courses in common.</p>
+    </div>
+  </div>
+  <div class="q" style="margin-top:12px">Which one for: the countries a traveler has visited (no repeats needed)?</div>
+  <button class="reveal">Show Answer</button>
+  <div class="answer small"><b>Set</b> — visiting Doha twice still counts as one country, and order does not matter.</div>
+</section>
+
+<!-- ============ 19. QUICK REFERENCE ============ -->
+<section class="slide">
+  <h2>Quick Reference</h2>
+  <div class="cols" style="gap:24px">
+    <div class="col">
+      <table class="t" style="font-size:17px">
+        <tr><th>Task</th><th>Code</th></tr>
+        <tr><td>Create</td><td><code>s = {1, 2, 3}</code></td></tr>
+        <tr><td>Empty set</td><td><code>s = set()</code></td></tr>
+        <tr><td>From list / string</td><td><code>set(lst)</code>, <code>set("abc")</code></td></tr>
+        <tr><td>Size / search</td><td><code>len(s)</code>, <code>x in s</code></td></tr>
+        <tr><td>Add one / many</td><td><code>s.add(x)</code>, <code>s.update(lst)</code></td></tr>
+        <tr><td>Remove</td><td><code>s.remove(x)</code> (KeyError if missing)</td></tr>
+        <tr><td>Remove safely</td><td><code>s.discard(x)</code></td></tr>
+        <tr><td>Sorted list</td><td><code>sorted(s)</code></td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:17px">
+        <tr><th>Operation</th><th>Operator</th><th>Method</th></tr>
+        <tr><td>Union</td><td><code>A | B</code></td><td><code>A.union(B)</code></td></tr>
+        <tr><td>Intersection</td><td><code>A &amp; B</code></td><td><code>A.intersection(B)</code></td></tr>
+        <tr><td>Difference</td><td><code>A - B</code></td><td><code>A.difference(B)</code></td></tr>
+        <tr><td>Sym. difference</td><td><code>A ^ B</code></td><td><code>A.symmetric_difference(B)</code></td></tr>
+        <tr><td>Subset</td><td><code>A &lt;= B</code></td><td><code>A.issubset(B)</code></td></tr>
+        <tr><td>Same items</td><td><code>A == B</code></td><td>—</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20. MISTAKES 1 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (1): Empty Sets and Indexes</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>visitors = {}
+visitors.add("Ali")</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">AttributeError: 'dict' object has no attribute 'add'</pre>
+      <p class="why"><b>Why?</b> <code class="inl">{}</code> is an empty <b>dictionary</b>, not a set.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>visitors = set()
+visitors.add("Ali")
+print(visitors)</code></pre>
+      <pre class="out">{'Ali'}</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>ids = {101, 102, 103}
+print(ids[0])</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: 'set' object is not subscriptable</pre>
+      <p class="why"><b>Why?</b> Sets have no positions. If you need "the first" item, you need an <b>order</b> — use a list.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>ids = {101, 102, 103}
+ordered = sorted(ids)
+print(ordered[0])</code></pre>
+      <pre class="out">101</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21. MISTAKES 2 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (2): Removing and Adding</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>cart = {"rice", "tea"}
+cart.remove("milk")</code></pre>
+      <pre class="out">KeyError: 'milk'</pre>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>cart = {"rice", "tea"}
+cart.discard("milk")
+print(len(cart))</code></pre>
+      <pre class="out">2</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>tags = {"python"}
+tags.add(["loops", "sets"])</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: unhashable type: 'list'</pre>
+      <p class="why"><b>Why?</b> <code class="inl">add()</code> tries to store the <b>list itself</b> as one item, and lists are not allowed in sets.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>tags = {"python"}
+tags.update(["loops", "sets"])
+print(sorted(tags))</code></pre>
+      <pre class="out">['loops', 'python', 'sets']</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22. MISTAKES 3 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (3): Strings and Sets</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code># goal: a set with one city
+cities = set("Kuwait")
+print(len(cities))</code></pre>
+      <pre class="out">6</pre>
+      <p class="why"><b>Why?</b> <code class="inl">set("Kuwait")</code> makes a set of <b>characters</b>: K, u, w, a, i, t.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>cities = {"Kuwait"}
+print(len(cities))</code></pre>
+      <pre class="out">1</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code># goal: keep the visit order
+visits = ["Ali", "Sara", "Ali", "Mona"]
+unique = set(visits)
+# then expect unique[0] to be "Ali" ...</code></pre>
+      <p class="why"><b>Why?</b> A set <b>forgets</b> the order. If order matters, a set is the wrong choice — keep the list.</p>
+      <div class="note small">Rule: use a set only when you do <b>not</b> care about order or how many times an item appears.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23. WORKED EXAMPLE 1 ============ -->
+<section class="slide">
+  <h2>Worked Example 1: Unique Visitors</h2>
+  <div class="cols tight">
+    <div class="col">
+      <div class="lbl">Code — visits to a café this week</div>
+      <pre class="code"><code>visits = ["Ali", "Sara", "Ali", "Mona",
+          "Sara", "Ali", "Fahad"]
+people = set(visits)
+print("Visits:", len(visits))
+print("Different people:", len(people))
+print("Ali came", visits.count("Ali"), "times")
+if "Noor" not in people:
+    print("Noor did not visit")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Visits: 7
+Different people: 4
+Ali came 3 times
+Noor did not visit</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li>The <b>list</b> keeps every visit, including repeats.</li>
+        <li><code class="inl">set(visits)</code> keeps each person once: 4 people.</li>
+        <li>To count repeats, use the <b>list</b>: <code class="inl">visits.count("Ali")</code>.</li>
+        <li>To check membership, use the <b>set</b>.</li>
+      </ol>
+      <div class="note">Each type does the job it is best at.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24. WORKED EXAMPLE 2 ============ -->
+<section class="slide">
+  <h2>Worked Example 2: Comparing Course Schedules</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>sara = {"CS126", "MATH101", "ENG110", "ARAB101"}
+ali = {"CS126", "PHYS101", "ENG110"}
+common = sara &amp; ali
+print("Study together:", sorted(common))
+print("Only Sara:", sorted(sara - ali))
+print("Only Ali:", sorted(ali - sara))
+print("All courses:", len(sara | ali))
+if len(common) &gt;= 2:
+    print("Good study partners!")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Study together: ['CS126', 'ENG110']
+Only Sara: ['ARAB101', 'MATH101']
+Only Ali: ['PHYS101']
+All courses: 5
+Good study partners!</pre>
+    </div>
+    <div class="col small">
+      <ol>
+        <li><code class="inl">&amp;</code> finds the shared courses.</li>
+        <li><code class="inl">-</code> in both directions finds each student's own courses.</li>
+        <li><code class="inl">|</code> joins both schedules, each course once: 4 + 3 − 2 shared = 5.</li>
+        <li><code class="inl">sorted()</code> prints in a fixed, readable order.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25. WORKED EXAMPLE 3 ============ -->
+<section class="slide">
+  <h2>Worked Example 3: Food Allergy Check</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — a restaurant dish</div>
+      <pre class="code"><code>dish = {"rice", "chicken", "nuts", "milk"}
+allergies = {"nuts", "eggs"}
+problem = dish &amp; allergies
+if len(problem) &gt; 0:
+    print("Not safe:", sorted(problem))
+else:
+    print("Safe to eat")
+allergies.discard("nuts")
+print(len(dish &amp; allergies))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Not safe: ['nuts']
+0</pre>
+    </div>
+    <div class="col small">
+      <h3>Why sets?</h3>
+      <ul>
+        <li>An ingredient is either in the dish or not — order and repeats do not matter.</li>
+        <li>One <code class="inl">&amp;</code> compares the whole dish with all allergies at once.</li>
+        <li>An empty intersection (<code class="inl">len == 0</code>) means "nothing in common" — safe.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26. THINK ABOUT IT ============ -->
+<section class="slide">
+  <h2>Think About It</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="qa">
+        <div class="q">1. Why can't sets have indexes?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small">Sets are <b>unordered</b>: there is no "first" or "second" item, so a position number has no meaning.</div>
+      </div>
+      <div class="qa">
+        <div class="q">2. Why can a tuple be stored in a set, but a list cannot?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small">Set items must be <b>immutable</b>. A tuple cannot change; a list can.</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="qa">
+        <div class="q">3. What does this print?</div>
+        <pre class="code"><code>s = {1, 2, 3}
+s.add(2)
+s.add(4)
+s.discard(1)
+print(len(s), 1 in s, sum(s))</code></pre>
+        <button class="reveal">Show Answer</button>
+        <div class="answer"><pre class="out">3 False 9</pre><p class="small">The set is {2, 3, 4}: adding 2 again changes nothing.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27. PRACTICE ============ -->
+<section class="slide">
+  <h2>Practice in Class (3 minutes)</h2>
+  <p>Two football clubs share some players:</p>
+  <pre class="code" data-skip><code>club_a = {"Ali", "Fahad", "Omar", "Yousef"}
+club_b = {"Omar", "Khaled", "Yousef", "Hamad"}</code></pre>
+  <ol class="small">
+    <li>Print the players in <b>both</b> clubs (sorted).</li>
+    <li>Print how many <b>different</b> players there are in total.</li>
+    <li>Print the players who play for <b>only one</b> club (sorted).</li>
+  </ol>
+  <button class="reveal">Show Answer</button>
+  <div class="answer">
+    <div class="cols" style="flex:none;grid-template-columns:1.25fr 1fr">
+      <pre class="code"><code>club_a = {"Ali", "Fahad", "Omar", "Yousef"}
+club_b = {"Omar", "Khaled", "Yousef", "Hamad"}
+print(sorted(club_a &amp; club_b))
+print(len(club_a | club_b))
+print(sorted(club_a ^ club_b))</code></pre>
+      <pre class="out" style="white-space:pre-wrap">['Omar', 'Yousef']
+6
+['Ali', 'Fahad', 'Hamad', 'Khaled']</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 28. REMEMBER ============ -->
+<section class="slide">
+  <h2>What You Should Remember</h2>
+  <ol>
+    <li>A set holds <b>unique</b> items with <b>no order</b>: <code class="inl">{1, 2, 3}</code>. Empty set: <code class="inl">set()</code>, not <code class="inl">{}</code>.</li>
+    <li><code class="inl">set(x)</code> removes duplicates from a list, tuple, or string.</li>
+    <li>No indexes or slices. Use <code class="inl">in</code>, <code class="inl">len</code>, and <code class="inl">sorted()</code> when you need an order.</li>
+    <li><code class="inl">add</code>/<code class="inl">update</code> to add; <code class="inl">remove</code> (error if missing) or <code class="inl">discard</code> (no error) to delete.</li>
+    <li><code class="inl">|</code> union, <code class="inl">&amp;</code> intersection, <code class="inl">-</code> difference, <code class="inl">^</code> symmetric difference — each gives a <b>new</b> set.</li>
+    <li>Only immutable values (numbers, strings, tuples) can be set items.</li>
+    <li>List: ordered, changeable. Tuple: ordered, fixed. Set: unique, unordered.</li>
+  </ol>
+</section>
+
+<!-- ============ 29. EXERCISES L1 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 1 — Basic</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">1.</span>Predict the output.</p>
+        <pre class="code"><code>s = {3, 1, 3, 2, 1}
+print(len(s))
+print(2 in s, 5 in s)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">2.</span>Predict the output.</p>
+        <pre class="code"><code>a = {1, 2, 3, 4}
+b = {3, 4, 5}
+print(a &amp; b)
+print(a | b)
+print(a - b)</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">3.</span>Find and fix the error.</p>
+        <pre class="code" data-skip><code>empty = {}
+empty.add(5)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">4.</span>Predict the output.</p>
+        <pre class="code"><code>print(len(set("banana")))
+print(len("banana"))
+print({1, 2} == {2, 1})</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 30. EXERCISES L2 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 2 — Apply</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">5.</span>For the list below, print the number of visits, the number of different visitors, and whether <code class="inl">"Fahad"</code> visited.</p>
+        <pre class="code" data-skip><code>visitors = ["Ali", "Sara", "Ali",
+            "Mona", "Sara", "Ali"]</code></pre></div>
+      <div class="ex"><p><span class="ex-num">6.</span>Print the courses both students take (sorted), the number of different courses, and the courses only Sara takes (sorted).</p>
+        <pre class="code" data-skip><code>sara = {"CS126", "MATH101", "ENG110"}
+ali = {"CS126", "PHYS101", "ENG110"}</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">7.</span>Start with <code class="inl">tags = {"python", "beginner"}</code>. Add <code class="inl">"loops"</code>, remove <code class="inl">"beginner"</code>, then remove <code class="inl">"java"</code> <b>without an error</b>. Print the sorted tags.</p></div>
+      <div class="ex"><p><span class="ex-num">8.</span>Explain each result and give the output.</p>
+        <pre class="code"><code>print({1, 2, 3} == {3, 2, 1})
+print([1, 2, 3] == [3, 2, 1])
+print((1, 2) == (2, 1))</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 31. EXERCISES L3 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 3 — Challenge</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">9.</span>Remove the duplicates from <code class="inl">nums = [5, 3, 5, 1, 3, 9]</code>. The result must be a <b>sorted list</b>: <code class="inl">[1, 3, 5, 9]</code>.</p></div>
+      <div class="ex"><p><span class="ex-num">10.</span>A dish contains <code class="inl">{"rice", "nuts", "chicken", "milk"}</code>. A customer is allergic to <code class="inl">{"milk", "eggs"}</code>. Print <code class="inl">Not safe:</code> and the problem ingredients (sorted), or <code class="inl">Safe</code>.</p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">11.</span>Predict the output.</p>
+        <pre class="code"><code>s = {1, 2}
+s.add(2)
+s.add(3)
+s.discard(7)
+s.update([4, 1])
+print(s, len(s))</code></pre></div>
+      <div class="ex"><p><span class="ex-num">12.</span>List, tuple, or set? Choose and give a reason:</p>
+        <ol class="small" type="a" style="margin:0">
+          <li>The different words used in an essay</li>
+          <li>The GPS location of Kuwait Towers</li>
+          <li>Customers waiting in line at a bank</li>
+          <li>The GCC countries a traveler has visited</li>
+        </ol></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 32. SOLUTIONS DIVIDER ============ -->
+<section class="slide">
+  <div class="s-body section-body" style="padding:0">
+    <div class="title-rule" style="margin:0 auto 24px"></div>
+    <h1>Exercise Solutions</h1>
+    <p class="muted" style="font-size:26px">Try every exercise first. Then compare your answers.</p>
+  </div>
+</section>
+
+<!-- ============ 33. SOLUTIONS 1-4 ============ -->
+<section class="slide">
+  <h2>Solutions 1 – 4 <span class="level">Level 1</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">1.</span>Duplicates are removed: {1, 2, 3}.</p>
+      <pre class="out">3
+True False</pre>
+      <p><span class="ex-num">2.</span>Both / either / only in <code class="inl">a</code>.</p>
+      <pre class="out">{3, 4}
+{1, 2, 3, 4, 5}
+{1, 2}</pre>
+      <p><span class="ex-num">4.</span><code class="inl">set("banana")</code> is {b, a, n}; order does not matter for <code class="inl">==</code>.</p>
+      <pre class="out">3
+6
+True</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">3.</span><code class="inl">{}</code> is an empty <b>dictionary</b>, which has no <code class="inl">add()</code> (AttributeError). Use <code class="inl">set()</code>:</p>
+      <pre class="code"><code>empty = set()
+empty.add(5)
+print(empty)</code></pre>
+      <pre class="out">{5}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 34. SOLUTIONS 5-8 ============ -->
+<section class="slide">
+  <h2>Solutions 5 – 8 <span class="level">Level 2</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">5.</span></p>
+      <pre class="code"><code>visitors = ["Ali", "Sara", "Ali",
+            "Mona", "Sara", "Ali"]
+people = set(visitors)
+print(len(visitors), len(people))
+print("Fahad" in people)</code></pre>
+      <pre class="out">6 3
+False</pre>
+      <p><span class="ex-num">6.</span></p>
+      <pre class="code"><code>sara = {"CS126", "MATH101", "ENG110"}
+ali = {"CS126", "PHYS101", "ENG110"}
+print(sorted(sara &amp; ali))
+print(len(sara | ali))
+print(sorted(sara - ali))</code></pre>
+      <pre class="out">['CS126', 'ENG110']
+4
+['MATH101']</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">7.</span><code class="inl">discard()</code> does not fail when the item is missing.</p>
+      <pre class="code"><code>tags = {"python", "beginner"}
+tags.add("loops")
+tags.remove("beginner")
+tags.discard("java")
+print(sorted(tags))</code></pre>
+      <pre class="out">['loops', 'python']</pre>
+      <p><span class="ex-num">8.</span>Sets ignore order, so they are equal. Lists and tuples are ordered, so a different order means not equal.</p>
+      <pre class="out">True
+False
+False</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 35. SOLUTIONS 9-10 ============ -->
+<section class="slide">
+  <h2>Solutions 9 – 10 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">9.</span>The set removes duplicates; <code class="inl">sorted()</code> gives a sorted list.</p>
+      <pre class="code"><code>nums = [5, 3, 5, 1, 3, 9]
+result = sorted(set(nums))
+print(result)</code></pre>
+      <pre class="out">[1, 3, 5, 9]</pre>
+      <p class="small">Also correct: <code class="inl">result = list(set(nums))</code> followed by <code class="inl">result.sort()</code>.</p>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">10.</span>The intersection is the shared ingredients.</p>
+      <pre class="code"><code>dish = {"rice", "nuts", "chicken", "milk"}
+allergies = {"milk", "eggs"}
+problem = dish &amp; allergies
+if len(problem) &gt; 0:
+    print("Not safe:", sorted(problem))
+else:
+    print("Safe")</code></pre>
+      <pre class="out">Not safe: ['milk']</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 36. SOLUTIONS 11-12 ============ -->
+<section class="slide">
+  <h2>Solutions 11 – 12 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">11.</span>Adding 2 again and discarding 7 change nothing. <code class="inl">update</code> adds 4 (1 is already there).</p>
+      <pre class="out">{1, 2, 3, 4} 4</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">12.</span></p>
+      <table class="t" style="font-size:18px">
+        <tr><th></th><th>Choice</th><th>Reason</th></tr>
+        <tr><td>a</td><td><b>Set</b></td><td>each word once; order not needed</td></tr>
+        <tr><td>b</td><td><b>Tuple</b></td><td>two fixed numbers, order matters</td></tr>
+        <tr><td>c</td><td><b>List</b></td><td>order matters and it changes</td></tr>
+        <tr><td>d</td><td><b>Set</b></td><td>no repeats; order not needed</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="btnPrev" title="Previous (Left Arrow)">◀ Previous</button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button id="btnNext" title="Next (Right Arrow)">Next ▶</button>
+  <div class="spacer"></div>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="spacer"></div>
+  <button id="btnFull">Full Screen</button>
+  <button id="btnTheme">Dark Mode</button>
+  <button id="btnPdf">Export PDF</button>
+</div>
+
+<script>
+(function () {
+  var COURSE = "CS126 – Introduction to Python";
+  var TOPIC = "Sets";
+
+  /* ---------- Theme (restore before anything paints) ---------- */
+  var root = document.documentElement;
+  try { if (localStorage.getItem("cs126-theme") === "dark") root.classList.add("dark"); } catch (e) {}
+
+  /* ---------- Build slide chrome ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length;
+  slides.forEach(function (s, i) {
+    if (!s.querySelector(".s-body")) {
+      var body = document.createElement("div");
+      body.className = "s-body";
+      while (s.firstChild) body.appendChild(s.firstChild);
+      s.appendChild(body);
+    }
+    var head = document.createElement("div");
+    head.className = "s-head";
+    head.innerHTML = '<span class="course">' + COURSE + '</span><span>' + TOPIC + '</span>';
+    var foot = document.createElement("div");
+    foot.className = "s-foot";
+    foot.innerHTML = '<span>Dr. Fawaz Alazemi</span><span>Slide ' + (i + 1) + ' of ' + N + '</span>';
+    s.insertBefore(head, s.firstChild);
+    s.appendChild(foot);
+  });
+
+  /* ---------- Python syntax highlighting (no libraries) ---------- */
+  var KW = "for|in|if|elif|else|and|or|not|True|False|None|while|def|return|import";
+  var FN = "print|range|len|list|str|int|float|sum|max|min|round|append|input|type|tuple|set|sorted";
+  var re = new RegExp(
+    "(#[^\\n]*)|(\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(" + FN + ")(?=\\()|\\b(\\d+(?:\\.\\d+)?)\\b",
+    "g");
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code code").forEach(function (el) {
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "tk-com" : m[2] ? "tk-str" : m[3] ? "tk-kw" : m[4] ? "tk-fn" : "tk-num";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = re.lastIndex;
+    }
+    out += esc(src.slice(last));
+    el.innerHTML = out;
+  });
+
+  /* ---------- Show Answer buttons ---------- */
+  document.querySelectorAll(".reveal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.nextElementSibling;
+      var shown = a.classList.toggle("shown");
+      b.textContent = shown ? "Hide Answer" : "Show Answer";
+      b.blur();
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  var cur = 0;
+  var counter = document.getElementById("counter");
+  var bar = document.getElementById("bar");
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    counter.textContent = (cur + 1) + " / " + N;
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+  function btn(id, fn) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () { fn(); b.blur(); });
+    return b;
+  }
+  btn("btnPrev", function () { go(cur - 1); });
+  btn("btnNext", function () { go(cur + 1); });
+
+  /* ---------- Full screen ---------- */
+  var fullBtn = btn("btnFull", function () {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el);
+    }
+  });
+  function onFs() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fullBtn.textContent = on ? "Exit Full Screen" : "Full Screen";
+    fit();
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+
+  /* ---------- Dark / light ---------- */
+  var themeBtn = btn("btnTheme", function () {
+    var dark = root.classList.toggle("dark");
+    try { localStorage.setItem("cs126-theme", dark ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  });
+  function themeLabel() { themeBtn.textContent = root.classList.contains("dark") ? "Light Mode" : "Dark Mode"; }
+  themeLabel();
+
+  /* ---------- Export PDF ---------- */
+  btn("btnPdf", function () { window.print(); });
+
+  /* ---------- Scale the 1280x720 canvas to fit ---------- */
+  var stage = document.getElementById("stage");
+  var vp = document.getElementById("viewport");
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight;
+    var s = Math.min(w / 1280, h / 720) * 0.98;
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>
