@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS126 – List Comprehension</title>
+<style>
+/* ===================== THEME ===================== */
+:root {
+  --bg: #f4f6f8;
+  --slide-bg: #fbfbfc;
+  --text: #1f2933;
+  --muted: #5b6875;
+  --navy: #1b365d;
+  --teal: #0f7c74;
+  --teal-soft: #e3f2f0;
+  --line: #d5dbe1;
+  --code-bg: #f1f3f5;
+  --code-text: #1f2933;
+  --out-bg: #ffffff;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --good: #1a7f37;
+  --good-soft: #e8f5ec;
+  --amber: #a15c00;
+  --tok-kw: #7a2bb5;
+  --tok-str: #a5481a;
+  --tok-num: #0b6bcb;
+  --tok-fn: #0f7c74;
+  --tok-com: #6b7785;
+  --bar-bg: #ffffff;
+}
+html.dark {
+  --bg: #0b1120;
+  --slide-bg: #111827;
+  --text: #e8edf3;
+  --muted: #a3afbd;
+  --navy: #9cc4ff;
+  --teal: #34d1bf;
+  --teal-soft: #12302e;
+  --line: #334155;
+  --code-bg: #0b1220;
+  --code-text: #e8edf3;
+  --out-bg: #0f172a;
+  --bad: #ff8a80;
+  --bad-soft: #3a1717;
+  --good: #7ee2a0;
+  --good-soft: #13301f;
+  --amber: #ffc46b;
+  --tok-kw: #d7a8ff;
+  --tok-str: #ffb38a;
+  --tok-num: #8fc8ff;
+  --tok-fn: #5fe3d2;
+  --tok-com: #8b98a8;
+  --bar-bg: #0f172a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* ===================== STAGE ===================== */
+.viewport {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 56px;
+  overflow: hidden;
+}
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: center center;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--slide-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+.s-head {
+  height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--teal);
+  font-size: 16px; color: var(--muted);
+}
+.s-head .course { color: var(--navy); font-weight: 600; }
+.s-body {
+  flex: 1; min-height: 0;
+  padding: 22px 56px 10px;
+  display: flex; flex-direction: column;
+  font-size: 24px; line-height: 1.4;
+}
+.s-foot {
+  height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; font-size: 15px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+h1 { color: var(--navy); font-size: 56px; margin: 0 0 12px; line-height: 1.15; }
+h2 { color: var(--navy); font-size: 36px; margin: 0 0 16px; line-height: 1.2; }
+h3 { color: var(--teal); font-size: 24px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 30px; }
+li { margin-bottom: 6px; }
+.small { font-size: 20px; }
+.muted { color: var(--muted); }
+.teal { color: var(--teal); font-weight: 600; }
+.navy { color: var(--navy); font-weight: 600; }
+.mono, code.inl {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols.w60 { grid-template-columns: 1.25fr 1fr; }
+.cols.w40 { grid-template-columns: 1fr 1.25fr; }
+.cols.w70 { grid-template-columns: 1.6fr 1fr; }
+.tight pre { font-size: 18px; line-height: 1.38; margin-bottom: 8px; }
+.tight p { margin-bottom: 6px; }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.col { min-width: 0; }
+
+/* ===================== CODE ===================== */
+pre {
+  margin: 0 0 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 20px; line-height: 1.45;
+  white-space: pre; overflow: hidden;
+  border-radius: 6px;
+}
+pre.code {
+  background: var(--code-bg); color: var(--code-text);
+  border: 1px solid var(--line); border-left: 5px solid var(--teal);
+  padding: 10px 16px;
+}
+pre.code.bad  { border-left-color: var(--bad); }
+pre.code.good { border-left-color: var(--good); }
+pre.out {
+  background: var(--out-bg); color: var(--text);
+  border: 1px dashed var(--line); border-left: 5px solid var(--navy);
+  padding: 8px 16px;
+}
+.lbl {
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.tk-kw { color: var(--tok-kw); font-weight: 600; }
+.tk-str { color: var(--tok-str); }
+.tk-num { color: var(--tok-num); }
+.tk-fn { color: var(--tok-fn); }
+.tk-com { color: var(--tok-com); font-style: italic; }
+
+/* ===================== BOXES ===================== */
+.note {
+  border-left: 5px solid var(--teal); background: var(--teal-soft);
+  padding: 10px 16px; border-radius: 4px; margin: 0 0 12px; font-size: 21px;
+}
+.warn {
+  border-left: 5px solid var(--amber); padding: 10px 16px; margin: 0 0 12px;
+  font-size: 21px; background: transparent; border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+}
+.tag-bad, .tag-good {
+  display: inline-block; font-weight: 700; font-size: 17px;
+  padding: 2px 10px; border-radius: 4px; margin-bottom: 4px;
+}
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-good { color: var(--good); background: var(--good-soft); }
+.why { font-size: 19px; margin: 0 0 10px; }
+
+table.t {
+  border-collapse: collapse; font-size: 20px; width: 100%;
+}
+table.t th, table.t td {
+  border: 1px solid var(--line); padding: 6px 12px; text-align: left;
+}
+table.t th { background: var(--teal-soft); color: var(--navy); }
+table.t td.c, table.t th.c { text-align: center; }
+table.t code { font-family: Consolas, Monaco, monospace; }
+
+/* ===================== Q & A ===================== */
+.qa { margin: 0 0 10px; }
+.reveal {
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--teal); background: transparent;
+  border: 1.5px solid var(--teal); border-radius: 4px;
+  padding: 3px 12px; cursor: pointer; margin: 0 0 6px;
+}
+.reveal:hover { background: var(--teal-soft); }
+.answer { visibility: hidden; }
+.answer.shown { visibility: visible; }
+.q { font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+
+/* ===================== TITLE / SECTION ===================== */
+.title-body { justify-content: center; padding-left: 90px; }
+.title-body .sub { font-size: 30px; color: var(--teal); margin-bottom: 36px; }
+.title-body .meta { font-size: 24px; color: var(--muted); line-height: 1.6; }
+.title-rule { width: 120px; height: 5px; background: var(--teal); margin: 0 0 28px; }
+.section-body { justify-content: center; align-items: center; text-align: center; }
+
+/* ===================== DIAGRAMS ===================== */
+.anat {
+  font-family: Consolas, Monaco, monospace; font-size: 40px;
+  background: var(--code-bg); border: 1px solid var(--line);
+  border-left: 5px solid var(--teal); border-radius: 6px;
+  padding: 18px 28px; margin: 0 0 16px; line-height: 1.6;
+}
+.anat .a1 { color: var(--tok-kw); font-weight: 700; }
+.anat .a2 { color: var(--tok-num); font-weight: 700; }
+.anat .a3 { color: var(--tok-str); font-weight: 700; }
+.anat .a4 { color: var(--bad); font-weight: 700; }
+.anat .a5 { color: var(--tok-fn); font-weight: 700; }
+.anat .ind { background: var(--teal-soft); outline: 1px dashed var(--teal); }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 36px; font-size: 21px; }
+.legend b { font-family: Consolas, Monaco, monospace; }
+
+.boxes { display: flex; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap; }
+.box {
+  min-width: 64px; text-align: center;
+  font-family: Consolas, Monaco, monospace; font-size: 22px;
+}
+.box .v {
+  border: 2px solid var(--navy); border-radius: 4px; padding: 6px 10px;
+  background: var(--slide-bg);
+}
+.box .i { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.box.off .v { border-style: dashed; border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.box.hi .v { background: var(--teal-soft); border-color: var(--teal); }
+
+svg text { font-family: "Segoe UI", Arial, sans-serif; }
+.sv-box { fill: var(--slide-bg); stroke: var(--navy); stroke-width: 2; }
+.sv-dec { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.sv-t { fill: var(--text); font-size: 19px; }
+.sv-m { fill: var(--muted); font-size: 16px; font-weight: 600; }
+.sv-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.sv-arrow { fill: var(--muted); }
+
+.ex-num {
+  display: inline-block; min-width: 38px; font-weight: 700; color: var(--teal);
+}
+.level {
+  display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--teal); border: 1.5px solid var(--teal);
+  border-radius: 4px; padding: 1px 10px; margin-left: 12px; vertical-align: middle;
+}
+.ex { margin-bottom: 10px; }
+.ex p { margin: 0 0 6px; }
+
+/* ===================== CONTROLS ===================== */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: var(--bar-bg); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  font-size: 15px;
+}
+.controls button {
+  font: inherit; font-size: 15px; color: var(--navy);
+  background: transparent; border: 1px solid var(--line); border-radius: 4px;
+  padding: 6px 14px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--teal); color: var(--teal); }
+.controls .counter { color: var(--muted); min-width: 64px; text-align: center; }
+.progress {
+  flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.progress div { height: 100%; width: 0; background: var(--teal); }
+.spacer { width: 8px; }
+
+/* Code size for this deck (comprehensions are long lines) */
+pre { font-size: 18px; }
+.tight pre { font-size: 17px; }
+
+/* ===================== PRINT ===================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  :root, html.dark {
+    --bg: #ffffff; --slide-bg: #ffffff; --text: #1f2933; --muted: #5b6875;
+    --navy: #1b365d; --teal: #0f7c74; --teal-soft: #e3f2f0; --line: #d5dbe1;
+    --code-bg: #f1f3f5; --code-text: #1f2933; --out-bg: #ffffff;
+    --bad: #b42318; --bad-soft: #fdecea; --good: #1a7f37; --good-soft: #e8f5ec;
+    --amber: #a15c00; --tok-kw: #7a2bb5; --tok-str: #a5481a; --tok-num: #0b6bcb;
+    --tok-fn: #0f7c74; --tok-com: #6b7785;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .controls, .reveal { display: none !important; }
+  .answer { visibility: visible !important; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; inset: auto;
+    width: 1280px; height: 720px; zoom: 0.82;
+    margin: 0 auto; border: none; transform: translateY(120px);
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- ============ 1. TITLE ============ -->
+<section class="slide">
+  <div class="s-body title-body">
+    <div class="muted" style="font-size:22px;margin-bottom:10px">CS126 – Introduction to Python</div>
+    <h1>List Comprehension</h1>
+    <div class="sub">Building new lists in one clear line</div>
+    <div class="title-rule"></div>
+    <div class="meta">Dr. Fawaz Alazemi</div>
+  </div>
+</section>
+
+<!-- ============ 2. OBJECTIVES ============ -->
+<section class="slide">
+  <h2>Learning Objectives</h2>
+  <p>By the end of this lecture, you will be able to:</p>
+  <ol>
+    <li>Explain what a <b>list comprehension</b> is and why it is useful.</li>
+    <li>Write the basic form <code class="inl">[expression for item in sequence]</code>.</li>
+    <li>Convert a <code class="inl">for</code> loop with <code class="inl">append()</code> into a list comprehension, and back.</li>
+    <li>Use a comprehension with lists, strings, and <code class="inl">range()</code>.</li>
+    <li><b>Filter</b> items with <code class="inl">if</code>, and <b>choose</b> values with <code class="inl">if … else</code>.</li>
+    <li>Combine comprehensions with <code class="inl">len()</code> and <code class="inl">sum()</code>.</li>
+    <li>Decide when a normal loop is clearer, and fix common mistakes.</li>
+  </ol>
+</section>
+
+<!-- ============ 3. MOTIVATION ============ -->
+<section class="slide">
+  <h2>Why Learn List Comprehension?</h2>
+  <p>You already know how to build a new list with a loop:</p>
+  <div class="cols">
+    <div class="col">
+      <h3>With a for loop (4 lines)</h3>
+      <pre class="code"><code>nums = [1, 2, 3, 4]
+squares = []
+for n in nums:
+    squares.append(n * n)
+print(squares)</code></pre>
+      <pre class="out">[1, 4, 9, 16]</pre>
+    </div>
+    <div class="col">
+      <h3>With a list comprehension (1 line)</h3>
+      <pre class="code"><code>nums = [1, 2, 3, 4]
+squares = [n * n for n in nums]
+print(squares)</code></pre>
+      <pre class="out">[1, 4, 9, 16]</pre>
+      <div class="note">Same result. Shorter, and it reads like English: <i>"n times n, for each n in nums."</i></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. WHAT IS IT ============ -->
+<section class="slide">
+  <h2>What Is a List Comprehension?</h2>
+  <p>A <b>list comprehension</b> is a short way to <b>build a new list</b> from another sequence. It is written inside square brackets <code class="inl">[ ]</code>.</p>
+  <table class="t" style="margin-top:6px">
+    <tr><th style="width:28%">Part</th><th>Meaning</th></tr>
+    <tr><td><b>Expression</b></td><td>The value to put in the new list for each item</td></tr>
+    <tr><td><b>Loop variable</b></td><td>Holds the current item, as in a <code>for</code> loop</td></tr>
+    <tr><td><b>Sequence</b></td><td>Where the items come from: a list, a string, or a <code>range</code></td></tr>
+    <tr><td><b>Condition</b> (optional)</td><td>Keeps only the items that pass a test</td></tr>
+  </table>
+  <div class="note" style="margin-top:16px">A list comprehension always gives a <b>new list</b>. The original sequence does <b>not</b> change.</div>
+</section>
+
+<!-- ============ 5. SYNTAX ============ -->
+<section class="slide">
+  <h2>The Basic Syntax</h2>
+  <div class="anat"><span class="a4">[</span><span class="a5">expression</span> <span class="a1">for</span> <span class="a2">item</span> <span class="a1">in</span> <span class="a3">sequence</span><span class="a4">]</span></div>
+  <div class="legend">
+    <div><b style="color:var(--bad)">[ ]</b> — square brackets: the result is a list</div>
+    <div><b style="color:var(--tok-fn)">expression</b> — what goes into the new list</div>
+    <div><b style="color:var(--tok-kw)">for … in</b> — the same keywords as a <code class="inl">for</code> loop</div>
+    <div><b style="color:var(--tok-num)">item</b> — loop variable; you choose the name</div>
+    <div><b style="color:var(--tok-str)">sequence</b> — list, string, or <code class="inl">range()</code></div>
+    <div><b>No colon</b> and <b>no indentation</b> inside</div>
+  </div>
+  <div class="note" style="margin-top:18px">Read it as: <i>"Give me <b>expression</b>, for each <b>item</b> in <b>sequence</b>."</i></div>
+</section>
+
+<!-- ============ 6. LOOP TO COMPREHENSION ============ -->
+<section class="slide">
+  <h2>From a Loop to a Comprehension</h2>
+  <div class="cols" style="flex:none;margin-bottom:12px">
+    <div class="col">
+      <h3>Loop with append()</h3>
+      <div class="anat" style="font-size:26px;line-height:1.7">result = <span class="a4">[]</span><br><span class="a1">for</span> <span class="a2">x</span> <span class="a1">in</span> <span class="a3">nums</span>:<br>&nbsp;&nbsp;&nbsp;&nbsp;result.append(<span class="a5">x * 2</span>)</div>
+    </div>
+    <div class="col">
+      <h3>Comprehension</h3>
+      <div class="anat" style="font-size:26px;line-height:1.7">result = <span class="a4">[</span><span class="a5">x * 2</span> <span class="a1">for</span> <span class="a2">x</span> <span class="a1">in</span> <span class="a3">nums</span><span class="a4">]</span></div>
+    </div>
+  </div>
+  <h3 style="margin-top:4px">Three steps</h3>
+  <ol class="small">
+    <li>Write the square brackets <code class="inl">[ ]</code> — they replace <code class="inl">result = []</code>.</li>
+    <li>Put the expression from <code class="inl">append(...)</code> <b>first</b>.</li>
+    <li>Copy the <code class="inl">for x in nums</code> part <b>after</b> it, with <b>no colon</b>.</li>
+  </ol>
+</section>
+
+<!-- ============ 7. FIRST EXAMPLE ============ -->
+<section class="slide">
+  <h2>First Example: Prices in Fils</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code — 1 KD = 1000 fils</div>
+      <pre class="code"><code>prices_kd = [2, 5, 1, 3]
+prices_fils = [p * 1000 for p in prices_kd]
+print(prices_fils)
+print(prices_kd)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">[2000, 5000, 1000, 3000]
+[2, 5, 1, 3]</pre>
+    </div>
+    <div class="col">
+      <h3>Step by step</h3>
+      <table class="t">
+        <tr><th class="c"><code>p</code></th><th class="c"><code>p * 1000</code></th><th>New list so far</th></tr>
+        <tr><td class="c">2</td><td class="c">2000</td><td><code>[2000]</code></td></tr>
+        <tr><td class="c">5</td><td class="c">5000</td><td><code>[2000, 5000]</code></td></tr>
+        <tr><td class="c">1</td><td class="c">1000</td><td><code>[2000, 5000, 1000]</code></td></tr>
+        <tr><td class="c">3</td><td class="c">3000</td><td><code>[…, 3000]</code></td></tr>
+      </table>
+      <p class="small" style="margin-top:10px">The new list has the <b>same number of items</b> as <code class="inl">prices_kd</code>, and <code class="inl">prices_kd</code> is unchanged.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. EXPRESSION OPTIONS ============ -->
+<section class="slide">
+  <h2>The Expression Can Be Almost Anything</h2>
+  <table class="t">
+    <tr><th>Expression type</th><th>Comprehension</th><th>Result</th></tr>
+    <tr><td>Arithmetic</td><td><code>[n + 1 for n in [5, 6, 7]]</code></td><td><code>[6, 7, 8]</code></td></tr>
+    <tr><td>A function call</td><td><code>[len(c) for c in ["UAE", "Oman"]]</code></td><td><code>[3, 4]</code></td></tr>
+    <tr><td>String joining</td><td><code>["Dr. " + n for n in ["Ali", "Mona"]]</code></td><td><code>['Dr. Ali', 'Dr. Mona']</code></td></tr>
+    <tr><td>Indexing</td><td><code>[w[0] for w in ["Kuwait", "Qatar"]]</code></td><td><code>['K', 'Q']</code></td></tr>
+    <tr><td>A comparison</td><td><code>[t &gt;= 45 for t in [46, 40]]</code></td><td><code>[True, False]</code></td></tr>
+    <tr><td>The item itself</td><td><code>[x for x in "abc"]</code></td><td><code>['a', 'b', 'c']</code></td></tr>
+  </table>
+  <div class="note" style="margin-top:16px">Rule: the expression is evaluated <b>once for each item</b>, and each result goes into the new list <b>in order</b>.</div>
+</section>
+
+<!-- ============ 9. RANGE ============ -->
+<section class="slide">
+  <h2>Comprehensions with <code class="inl">range()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>squares = [i * i for i in range(1, 6)]
+print(squares)
+
+table7 = [7 * i for i in range(1, 11)]
+print(table7)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">[1, 4, 9, 16, 25]
+[7, 14, 21, 28, 35, 42, 49, 56, 63, 70]</pre>
+      <p class="small">You do not need an existing list — <code class="inl">range()</code> provides the numbers.</p>
+    </div>
+    <div class="col">
+      <div class="q">What will this code print?</div>
+      <pre class="code"><code>evens = [2 * i for i in range(5)]
+print(evens)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer">
+        <pre class="out">[0, 2, 4, 6, 8]</pre>
+        <p class="small"><code class="inl">range(5)</code> gives 0 to 4. Each is doubled.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. STRINGS ============ -->
+<section class="slide">
+  <h2>Comprehensions with Strings</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Over the characters of a string</h3>
+      <pre class="code"><code>letters = [ch for ch in "Oman"]
+print(letters)</code></pre>
+      <pre class="out">['O', 'm', 'a', 'n']</pre>
+      <h3>Over a list of strings</h3>
+      <pre class="code"><code>cities = ["Kuwait", "Doha", "Muscat"]
+sizes = [len(c) for c in cities]
+print(sizes)</code></pre>
+      <pre class="out">[6, 4, 6]</pre>
+    </div>
+    <div class="col">
+      <div class="q">What will this code print?</div>
+      <pre class="code"><code>codes = ["KW", "SA", "QA"]
+flags = [c + "-GCC" for c in codes]
+print(flags)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer">
+        <pre class="out">['KW-GCC', 'SA-GCC', 'QA-GCC']</pre>
+        <p class="small">The result is always a <b>list</b>, even when the input is a string.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. FILTER SYNTAX ============ -->
+<section class="slide">
+  <h2>Filtering: Adding an <code class="inl">if</code></h2>
+  <div class="anat" style="font-size:34px"><span class="a4">[</span><span class="a5">expression</span> <span class="a1">for</span> <span class="a2">item</span> <span class="a1">in</span> <span class="a3">sequence</span> <span class="a1">if</span> <span class="a4">condition</span><span class="a4">]</span></div>
+  <p>Only items where the <b>condition is True</b> go into the new list. The <code class="inl">if</code> comes at the <b>end</b>.</p>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Loop version</div>
+      <pre class="code"><code>grades = [85, 92, 58, 74, 49]
+passed = []
+for g in grades:
+    if g &gt;= 60:
+        passed.append(g)
+print(passed)</code></pre>
+      <pre class="out">[85, 92, 74]</pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Comprehension version</div>
+      <pre class="code"><code>grades = [85, 92, 58, 74, 49]
+passed = [g for g in grades if g &gt;= 60]
+print(passed)</code></pre>
+      <pre class="out">[85, 92, 74]</pre>
+      <p class="small">The new list can be <b>shorter</b> than the original.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. FILTER EXAMPLES ============ -->
+<section class="slide">
+  <h2>More Filtering Examples</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Very hot days in Kuwait (°C)</h3>
+      <pre class="code"><code>temps = [46, 48, 44, 50, 47, 43, 49]
+hot = [t for t in temps if t &gt;= 48]
+print(hot)</code></pre>
+      <pre class="out">[48, 50, 49]</pre>
+      <h3>Filter and change at the same time</h3>
+      <pre class="code"><code>prices = [3, 12, 7, 20]
+sale = [p / 2 for p in prices if p &gt; 10]
+print(sale)</code></pre>
+      <pre class="out">[6.0, 10.0]</pre>
+    </div>
+    <div class="col">
+      <div class="q">What will this code print?</div>
+      <pre class="code"><code>word = "Kuwait City"
+vowels = [ch for ch in word if ch in "aeiou"]
+print(vowels)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer">
+        <pre class="out">['u', 'a', 'i', 'i']</pre>
+        <p class="small">Any logical expression can be the condition, including <code class="inl">in</code>, <code class="inl">and</code>, <code class="inl">or</code>, <code class="inl">not</code>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13. CONDITIONAL EXPRESSION ============ -->
+<section class="slide">
+  <h2>A New Tool: The Conditional Expression</h2>
+  <p>A <b>conditional expression</b> chooses one of two values in a single line:</p>
+  <div class="anat" style="font-size:32px"><span class="a5">value_if_true</span> <span class="a1">if</span> <span class="a4">condition</span> <span class="a1">else</span> <span class="a3">value_if_false</span></div>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">if statement (you know this)</div>
+      <pre class="code"><code>mark = 72
+if mark &gt;= 60:
+    result = "Pass"
+else:
+    result = "Fail"
+print(result)</code></pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Conditional expression (same result)</div>
+      <pre class="code"><code>mark = 72
+result = "Pass" if mark &gt;= 60 else "Fail"
+print(result)</code></pre>
+      <pre class="out">Pass</pre>
+      <p class="small">It always needs <b>both</b> <code class="inl">if</code> and <code class="inl">else</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. IF-ELSE IN COMPREHENSION ============ -->
+<section class="slide">
+  <h2>Choosing a Value: <code class="inl">if … else</code> in the Expression</h2>
+  <div class="anat" style="font-size:28px"><span class="a4">[</span><span class="a5">A</span> <span class="a1">if</span> <span class="a4">condition</span> <span class="a1">else</span> <span class="a5">B</span> <span class="a1">for</span> <span class="a2">item</span> <span class="a1">in</span> <span class="a3">sequence</span><span class="a4">]</span></div>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>marks = [72, 55, 60, 91]
+results = ["Pass" if m &gt;= 60 else "Fail" for m in marks]
+print(results)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">['Pass', 'Fail', 'Pass', 'Pass']</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li>The <code class="inl">if … else</code> is part of the <b>expression</b>, so it comes <b>before</b> <code class="inl">for</code>.</li>
+        <li><b>Every</b> item produces a value, so the new list has the <b>same length</b> as the original.</li>
+      </ul>
+      <div class="warn">Filter <code class="inl">if</code> → at the <b>end</b>, no <code class="inl">else</code>, removes items.<br>Choose <code class="inl">if … else</code> → at the <b>front</b>, keeps every item.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15. QUICK REFERENCE ============ -->
+<section class="slide">
+  <h2>Quick Reference: Three Forms</h2>
+  <table class="t">
+    <tr><th>Goal</th><th>Form</th><th>Length of new list</th></tr>
+    <tr><td><b>Change</b> every item</td><td><code>[expr for x in seq]</code></td><td>same as <code>seq</code></td></tr>
+    <tr><td><b>Keep</b> some items</td><td><code>[expr for x in seq if cond]</code></td><td>same or shorter</td></tr>
+    <tr><td><b>Choose</b> a value for every item</td><td><code>[A if cond else B for x in seq]</code></td><td>same as <code>seq</code></td></tr>
+  </table>
+  <h3 style="margin-top:18px">The same data, three ways</h3>
+  <pre class="code"><code>nums = [4, -2, 7, -5]
+print([n * 10 for n in nums])
+print([n for n in nums if n &gt; 0])
+print([n if n &gt; 0 else 0 for n in nums])</code></pre>
+  <pre class="out">[40, -20, 70, -50]
+[4, 7]
+[4, 0, 7, 0]</pre>
+</section>
+
+<!-- ============ 16. LEN AND SUM ============ -->
+<section class="slide">
+  <h2>Using Comprehensions with <code class="inl">len()</code> and <code class="inl">sum()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Count items that pass a test</h3>
+      <pre class="code"><code>temps = [46, 48, 44, 50, 47, 43, 49]
+hot_days = len([t for t in temps if t &gt;= 48])
+print("Very hot days:", hot_days)</code></pre>
+      <pre class="out">Very hot days: 3</pre>
+      <h3>Add up items that pass a test</h3>
+      <pre class="code"><code>bills = [12, 45, 8, 30]   # KD
+big_total = sum([b for b in bills if b &gt; 10])
+print("Total of big bills:", big_total)</code></pre>
+      <pre class="out">Total of big bills: 87</pre>
+    </div>
+    <div class="col">
+      <div class="note">The comprehension builds a list; <code class="inl">len()</code> counts it and <code class="inl">sum()</code> adds it up.</div>
+      <div class="q">What will this code print?</div>
+      <pre class="code"><code>nums = [1, 2, 3, 4, 5, 6]
+print(sum([n * n for n in nums if n % 2 == 0]))</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer">
+        <pre class="out">56</pre>
+        <p class="small">Even numbers 2, 4, 6 → squares 4, 16, 36 → sum 56.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17. INDEX-BASED ============ -->
+<section class="slide">
+  <h2>Two Lists Together: Using <code class="inl">range(len(...))</code></h2>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code — a shopping basket</div>
+      <pre class="code"><code>prices = [1.5, 4, 2.25]    # KD per item
+qty = [2, 1, 4]            # quantity
+line = [prices[i] * qty[i] for i in range(len(prices))]
+print(line)
+print("Total:", sum(line), "KD")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">[3.0, 4, 9.0]
+Total: 16.0 KD</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">i</code> takes the indexes 0, 1, 2.</li>
+        <li>The same <code class="inl">i</code> reads both lists, so matching items are multiplied.</li>
+        <li>Both lists must have the <b>same length</b>.</li>
+      </ul>
+      <div class="note">Use this when items in two lists are related by <b>position</b>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18. IMPORTANT NOTES ============ -->
+<section class="slide">
+  <h2>Important Facts</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>1. The original list does not change</h3>
+      <pre class="code"><code>nums = [1, 2, 3]
+doubled = [n * 2 for n in nums]
+print(nums)
+print(doubled)</code></pre>
+      <pre class="out">[1, 2, 3]
+[2, 4, 6]</pre>
+      <p class="small">To replace the old list, assign back: <code class="inl">nums = [n * 2 for n in nums]</code></p>
+    </div>
+    <div class="col">
+      <h3>2. The loop variable stays inside</h3>
+      <pre class="code" data-skip><code>squares = [k * k for k in range(3)]
+print(k)</code></pre>
+      <pre class="out">NameError: name 'k' is not defined</pre>
+      <p class="small">A <code class="inl">for</code> loop keeps its variable after it ends. A comprehension does <b>not</b>.</p>
+      <h3>3. An empty sequence gives <code class="inl">[]</code></h3>
+      <p class="small"><code class="inl">[x * 2 for x in []]</code> → <code class="inl">[]</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19. WHEN TO USE A LOOP ============ -->
+<section class="slide">
+  <h2>When Should You Use a Normal Loop?</h2>
+  <div class="cols">
+    <div class="col">
+      <h3 style="color:var(--good)">Good for a comprehension</h3>
+      <ul class="small">
+        <li>You want a <b>new list</b>.</li>
+        <li>Each new item comes from <b>one simple expression</b>.</li>
+        <li>The whole idea fits easily on <b>one line</b>.</li>
+      </ul>
+      <pre class="code good"><code>temps_c = [20, 30, 45]
+temps_f = [c * 9 / 5 + 32 for c in temps_c]</code></pre>
+    </div>
+    <div class="col">
+      <h3 style="color:var(--bad)">Better as a normal loop</h3>
+      <ul class="small">
+        <li>You want to <b>print</b> or do actions, not build a list.</li>
+        <li>Each item needs <b>several steps</b> or <code class="inl">elif</code>.</li>
+        <li>The one-liner becomes <b>hard to read</b>.</li>
+      </ul>
+      <pre class="code"><code>temps_c = [20, 30, 45]
+for c in temps_c:
+    print(c, "C")</code></pre>
+    </div>
+  </div>
+  <div class="note">Comprehensions are a <b>shortcut</b>, not a replacement. If a loop is clearer, use the loop.</div>
+</section>
+
+<!-- ============ 20. MISTAKES 1 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (1): Syntax</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>nums = [1, 2, 3]
+doubled = [for n in nums: n * 2]</code></pre>
+      <p class="why"><b>Why?</b> The expression must come <b>first</b>, and there is <b>no colon</b>. This is a <b>SyntaxError</b>.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>nums = [1, 2, 3]
+doubled = [n * 2 for n in nums]</code></pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>nums = [1, 2, 3]
+doubled = (n * 2 for n in nums)
+print(doubled)</code></pre>
+      <pre class="out">&lt;generator object &lt;genexpr&gt; at 0x...&gt;</pre>
+      <p class="why"><b>Why?</b> Round brackets <code class="inl">( )</code> do <b>not</b> make a list. Use square brackets.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>nums = [1, 2, 3]
+doubled = [n * 2 for n in nums]
+print(doubled)</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21. MISTAKES 2 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (2): Where Does the <code class="inl">if</code> Go?</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>nums = [4, -2, 7]
+pos = [n for n in nums if n &gt; 0 else 0]</code></pre>
+      <p class="why"><b>Why?</b> A filter <code class="inl">if</code> at the end <b>cannot</b> have <code class="inl">else</code>. <b>SyntaxError</b>.</p>
+      <span class="tag-good">Correct (keep positives)</span>
+      <pre class="code good"><code>nums = [4, -2, 7]
+pos = [n for n in nums if n &gt; 0]
+print(pos)</code></pre>
+      <pre class="out">[4, 7]</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>nums = [4, -2, 7]
+pos = [n if n &gt; 0 for n in nums]</code></pre>
+      <p class="why"><b>Why?</b> An <code class="inl">if</code> at the front must have an <code class="inl">else</code>. <b>SyntaxError</b>.</p>
+      <span class="tag-good">Correct (replace negatives)</span>
+      <pre class="code good"><code>nums = [4, -2, 7]
+pos = [n if n &gt; 0 else 0 for n in nums]
+print(pos)</code></pre>
+      <pre class="out">[4, 0, 7]</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22. MISTAKES 3 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (3): Using the Result</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code># goal: double every price
+prices = [1, 2, 3]
+[p * 2 for p in prices]
+print(prices)</code></pre>
+      <pre class="out">[1, 2, 3]</pre>
+      <p class="why"><b>Why?</b> The new list is created and then <b>lost</b>. It is not stored, and <code class="inl">prices</code> does not change.</p>
+    </div>
+    <div class="col">
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code># goal: double every price
+prices = [1, 2, 3]
+prices = [p * 2 for p in prices]
+print(prices)</code></pre>
+      <pre class="out">[2, 4, 6]</pre>
+      <p class="why">Store the new list in a variable — here we replace the old list.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23. WORKED EXAMPLE 1 ============ -->
+<section class="slide">
+  <h2>Worked Example 1: Temperature Report</h2>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code — Kuwait temperatures (°C)</div>
+      <pre class="code"><code>temps_c = [20, 30, 45, 50]
+temps_f = [c * 9 / 5 + 32 for c in temps_c]
+labels = ["Hot" if c &gt;= 40 else "OK" for c in temps_c]
+hot_count = len([c for c in temps_c if c &gt;= 40])
+print(temps_f)
+print(labels)
+print("Hot days:", hot_count)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">[68.0, 86.0, 113.0, 122.0]
+['OK', 'OK', 'Hot', 'Hot']
+Hot days: 2</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li><b>Change:</b> each Celsius value becomes Fahrenheit. <code class="inl">/</code> gives floats.</li>
+        <li><b>Choose:</b> each day gets <code class="inl">"Hot"</code> or <code class="inl">"OK"</code> — same length as the input.</li>
+        <li><b>Keep + count:</b> keep days ≥ 40, then <code class="inl">len()</code> counts them.</li>
+      </ol>
+      <div class="note">One line per idea — each line is easy to read.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24. WORKED EXAMPLE 2 ============ -->
+<section class="slide">
+  <h2>Worked Example 2: Student IDs</h2>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code — the year is in characters 1 to 4</div>
+      <pre class="code"><code>ids = ["S2023014", "S2024102", "S2023077", "S2025003"]
+years = [s[1:5] for s in ids]
+class_2023 = [s for s in ids if s[1:5] == "2023"]
+print(years)
+print(class_2023)
+print("Students from 2023:", len(class_2023))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">['2023', '2024', '2023', '2025']
+['S2023014', 'S2023077']
+Students from 2023: 2</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <div class="boxes" style="gap:3px">
+        <div class="box" style="min-width:34px"><div class="v" style="padding:4px 6px">S</div><div class="i">0</div></div>
+        <div class="box hi" style="min-width:34px"><div class="v" style="padding:4px 6px">2</div><div class="i">1</div></div>
+        <div class="box hi" style="min-width:34px"><div class="v" style="padding:4px 6px">0</div><div class="i">2</div></div>
+        <div class="box hi" style="min-width:34px"><div class="v" style="padding:4px 6px">2</div><div class="i">3</div></div>
+        <div class="box hi" style="min-width:34px"><div class="v" style="padding:4px 6px">3</div><div class="i">4</div></div>
+        <div class="box" style="min-width:34px"><div class="v" style="padding:4px 6px">0</div><div class="i">5</div></div>
+      </div>
+      <ol>
+        <li><code class="inl">s[1:5]</code> slices characters 1–4: the year.</li>
+        <li>The first comprehension <b>changes</b> each ID into its year.</li>
+        <li>The second <b>keeps</b> whole IDs whose year is <code class="inl">"2023"</code>.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25. WORKED EXAMPLE 3 ============ -->
+<section class="slide">
+  <h2>Worked Example 3: Curving Grades</h2>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code — add 5 marks, but never above 100</div>
+      <pre class="code"><code>grades = [97, 80, 57, 100, 52]
+curved = [g + 5 if g + 5 &lt;= 100 else 100 for g in grades]
+passed = [g for g in curved if g &gt;= 60]
+print(curved)
+print(passed)
+print("Average:", sum(curved) / len(curved))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">[100, 85, 62, 100, 57]
+[100, 85, 62, 100]
+Average: 80.8</pre>
+    </div>
+    <div class="col small">
+      <h3>Trace of the curve</h3>
+      <table class="t">
+        <tr><th class="c"><code>g</code></th><th class="c"><code>g + 5 &lt;= 100</code>?</th><th class="c">New value</th></tr>
+        <tr><td class="c">97</td><td class="c">False</td><td class="c">100</td></tr>
+        <tr><td class="c">80</td><td class="c">True</td><td class="c">85</td></tr>
+        <tr><td class="c">57</td><td class="c">True</td><td class="c">62</td></tr>
+        <tr><td class="c">100</td><td class="c">False</td><td class="c">100</td></tr>
+        <tr><td class="c">52</td><td class="c">True</td><td class="c">57</td></tr>
+      </table>
+      <p style="margin-top:8px">The curve helped one student pass (57 → 62).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26. THINK ABOUT IT ============ -->
+<section class="slide">
+  <h2>Think About It</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="qa">
+        <div class="q">1. Can the result of a comprehension be <b>longer</b> than the original list?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small"><b>No</b> (with one <code class="inl">for</code>). Each item gives at most one value: the same length, or shorter with a filter.</div>
+      </div>
+      <div class="qa">
+        <div class="q">2. Which form keeps the length the same: filter <code class="inl">if</code> or <code class="inl">if … else</code>?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small"><code class="inl">if … else</code> — every item produces a value. A filter may remove items.</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="qa">
+        <div class="q">3. What does this print?</div>
+        <pre class="code"><code>words = ["Kuwait", "UAE", "Oman"]
+print([w for w in words if len(w) &gt; 3])</code></pre>
+        <button class="reveal">Show Answer</button>
+        <div class="answer"><pre class="out">['Kuwait', 'Oman']</pre><p class="small"><code class="inl">"UAE"</code> has 3 characters, and <code class="inl">3 &gt; 3</code> is False.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27. PRACTICE ============ -->
+<section class="slide">
+  <h2>Practice in Class (3 minutes)</h2>
+  <p>Rewrite each loop as a <b>one-line</b> list comprehension.</p>
+  <div class="cols">
+    <div class="col">
+      <h3>A</h3>
+      <pre class="code"><code>names = ["sara", "ali", "noor"]
+greet = []
+for n in names:
+    greet.append("Hi " + n)</code></pre>
+      <h3>B</h3>
+      <pre class="code"><code>nums = [3, 8, 11, 6, 15]
+big = []
+for n in nums:
+    if n &gt; 7:
+        big.append(n)</code></pre>
+    </div>
+    <div class="col">
+      <button class="reveal">Show Answer</button>
+      <div class="answer">
+        <pre class="code"><code>greet = ["Hi " + n for n in names]
+big = [n for n in nums if n &gt; 7]</code></pre>
+        <pre class="out">['Hi sara', 'Hi ali', 'Hi noor']
+[8, 11, 15]</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 28. REMEMBER ============ -->
+<section class="slide">
+  <h2>What You Should Remember</h2>
+  <ol>
+    <li>A list comprehension builds a <b>new list</b> in one line: <code class="inl">[expression for item in sequence]</code>.</li>
+    <li>It replaces the pattern: empty list → <code class="inl">for</code> loop → <code class="inl">append()</code>.</li>
+    <li>The sequence can be a <b>list</b>, a <b>string</b>, or a <b>range</b>.</li>
+    <li><b>Filter</b> with <code class="inl">if</code> at the <b>end</b> (no <code class="inl">else</code>) — the list may get shorter.</li>
+    <li><b>Choose</b> with <code class="inl">A if cond else B</code> at the <b>front</b> — the length stays the same.</li>
+    <li>The original list does not change. Store the result in a variable.</li>
+    <li>If a comprehension is hard to read, use a normal loop.</li>
+  </ol>
+</section>
+
+<!-- ============ 29. EXERCISES L1 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 1 — Basic</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">1.</span>Predict the output.</p>
+        <pre class="code"><code>print([n * 10 for n in [1, 2, 3]])</code></pre></div>
+      <div class="ex"><p><span class="ex-num">2.</span>Predict the output.</p>
+        <pre class="code"><code>print([c for c in "Doha" if c != "o"])</code></pre></div>
+      <div class="ex"><p><span class="ex-num">3.</span>This line should keep the numbers greater than 3 and double them. Find and fix the error.</p>
+        <pre class="code" data-skip><code>result = [x * 2 for x in nums if x &gt; 3 else x]</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">4.</span>Rewrite this loop as a list comprehension.</p>
+        <pre class="code"><code>cities = ["Kuwait", "Riyadh", "Manama"]
+lengths = []
+for city in cities:
+    lengths.append(len(city))</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 30. EXERCISES L2 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 2 — Apply</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">5.</span>Use a list comprehension to make a list of the first 6 multiples of 5, starting from 5: <code class="inl">[5, 10, 15, 20, 25, 30]</code>.</p></div>
+      <div class="ex"><p><span class="ex-num">6.</span>From <code class="inl">marks = [55, 72, 90, 48, 60, 81]</code>, build a list of the <b>failing</b> marks (below 60). Then print how many there are.</p></div>
+      <div class="ex"><p><span class="ex-num">7.</span>From <code class="inl">temps = [46, 38, 50, 41]</code>, build a list that has <code class="inl">"Hot"</code> for 45 or more, and <code class="inl">"Warm"</code> otherwise.</p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">8.</span>Explain what this code does and give its output.</p>
+        <pre class="code"><code>gcc = ["Kuwait", "Saudi Arabia", "UAE",
+       "Qatar", "Bahrain", "Oman"]
+long_names = [g for g in gcc if len(g) &gt; 5]
+print(long_names)</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 31. EXERCISES L3 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 3 — Challenge</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">9.</span>Use one comprehension to build the list of names of students who <b>passed</b> (60 or more).</p>
+        <pre class="code"><code>names = ["Noor", "Ali", "Mona", "Fahad"]
+marks = [88, 59, 74, 45]</code></pre></div>
+      <div class="ex"><p><span class="ex-num">10.</span>Rewrite this comprehension as a normal <code class="inl">for</code> loop. What does it print?</p>
+        <pre class="code"><code>odd_sq = [x * x for x in range(1, 8)
+          if x % 2 == 1]
+print(odd_sq)</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">11.</span>Use a comprehension and <code class="inl">len()</code> to count the vowels (upper or lower case) in <code class="inl">"Kuwait University"</code>.</p></div>
+      <div class="ex"><p><span class="ex-num">12.</span>Electricity readings (kWh) for 5 homes are below. Readings above 3000 kWh are charged at double. Build a list where each reading <b>more than 3000</b> is <b>doubled</b> and the others stay the same, then print the list and its sum.</p>
+        <pre class="code"><code>kwh = [2500, 3200, 1800, 4100, 3000]</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 32. SOLUTIONS DIVIDER ============ -->
+<section class="slide">
+  <div class="s-body section-body" style="padding:0">
+    <div class="title-rule" style="margin:0 auto 24px"></div>
+    <h1>Exercise Solutions</h1>
+    <p class="muted" style="font-size:26px">Try every exercise first. Then compare your answers.</p>
+  </div>
+</section>
+
+<!-- ============ 33. SOLUTIONS 1-4 ============ -->
+<section class="slide">
+  <h2>Solutions 1 – 4 <span class="level">Level 1</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">1.</span>Each number is multiplied by 10.</p>
+      <pre class="out">[10, 20, 30]</pre>
+      <p><span class="ex-num">2.</span>Every character except <code class="inl">"o"</code> is kept.</p>
+      <pre class="out">['D', 'h', 'a']</pre>
+      <p><span class="ex-num">3.</span>A filter <code class="inl">if</code> at the end cannot have <code class="inl">else</code>. Remove <code class="inl">else x</code>:</p>
+      <pre class="code"><code>nums = [2, 5, 1, 8]
+result = [x * 2 for x in nums if x &gt; 3]
+print(result)</code></pre>
+      <pre class="out">[10, 16]</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">4.</span>The <code class="inl">append()</code> expression goes first.</p>
+      <pre class="code"><code>cities = ["Kuwait", "Riyadh", "Manama"]
+lengths = [len(city) for city in cities]
+print(lengths)</code></pre>
+      <pre class="out">[6, 6, 6]</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 34. SOLUTIONS 5-8 ============ -->
+<section class="slide">
+  <h2>Solutions 5 – 8 <span class="level">Level 2</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">5.</span><code class="inl">range(1, 7)</code> gives 1 to 6.</p>
+      <pre class="code"><code>multiples = [5 * i for i in range(1, 7)]
+print(multiples)</code></pre>
+      <pre class="out">[5, 10, 15, 20, 25, 30]</pre>
+      <p><span class="ex-num">6.</span>Filter, then count with <code class="inl">len()</code>.</p>
+      <pre class="code"><code>marks = [55, 72, 90, 48, 60, 81]
+failing = [m for m in marks if m &lt; 60]
+print(failing)
+print("Failing:", len(failing))</code></pre>
+      <pre class="out">[55, 48]
+Failing: 2</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">7.</span>Choose a value with <code class="inl">if … else</code> at the front.</p>
+      <pre class="code"><code>temps = [46, 38, 50, 41]
+labels = ["Hot" if t &gt;= 45 else "Warm"
+          for t in temps]
+print(labels)</code></pre>
+      <pre class="out">['Hot', 'Warm', 'Hot', 'Warm']</pre>
+      <p><span class="ex-num">8.</span>It keeps only the country names with more than 5 characters.</p>
+      <pre class="out">['Kuwait', 'Saudi Arabia', 'Bahrain']</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 35. SOLUTIONS 9-10 ============ -->
+<section class="slide">
+  <h2>Solutions 9 – 10 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">9.</span>Loop over indexes; test <code class="inl">marks[i]</code>, keep <code class="inl">names[i]</code>.</p>
+      <pre class="code"><code>names = ["Noor", "Ali", "Mona", "Fahad"]
+marks = [88, 59, 74, 45]
+passed = [names[i] for i in range(len(names))
+          if marks[i] &gt;= 60]
+print(passed)</code></pre>
+      <pre class="out">['Noor', 'Mona']</pre>
+      <p class="small">A long comprehension may be split across lines inside the brackets.</p>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">10.</span>Empty list → loop → <code class="inl">if</code> → <code class="inl">append()</code>.</p>
+      <pre class="code"><code>odd_sq = []
+for x in range(1, 8):
+    if x % 2 == 1:
+        odd_sq.append(x * x)
+print(odd_sq)</code></pre>
+      <pre class="out">[1, 9, 25, 49]</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 36. SOLUTIONS 11-12 ============ -->
+<section class="slide">
+  <h2>Solutions 11 – 12 <span class="level">Level 3</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">11.</span>Keep the vowels, then count them.</p>
+      <pre class="code"><code>text = "Kuwait University"
+vowels = [ch for ch in text if ch in "aeiouAEIOU"]
+print("Vowels:", len(vowels))</code></pre>
+      <pre class="out">Vowels: 7</pre>
+      <p class="small">u, a, i, U, i, e, i → 7.</p>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">12.</span>Every reading gives a value, so use <code class="inl">if … else</code>.</p>
+      <pre class="code"><code>kwh = [2500, 3200, 1800, 4100, 3000]
+charged = [k * 2 if k &gt; 3000 else k for k in kwh]
+print(charged)
+print("Total:", sum(charged))</code></pre>
+      <pre class="out">[2500, 6400, 1800, 8200, 3000]
+Total: 21900</pre>
+      <p class="small">3000 is not <b>more than</b> 3000, so it is not doubled.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="btnPrev" title="Previous (Left Arrow)">◀ Previous</button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button id="btnNext" title="Next (Right Arrow)">Next ▶</button>
+  <div class="spacer"></div>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="spacer"></div>
+  <button id="btnFull">Full Screen</button>
+  <button id="btnTheme">Dark Mode</button>
+  <button id="btnPdf">Export PDF</button>
+</div>
+
+<script>
+(function () {
+  var COURSE = "CS126 – Introduction to Python";
+  var TOPIC = "List Comprehension";
+
+  /* ---------- Theme (restore before anything paints) ---------- */
+  var root = document.documentElement;
+  try { if (localStorage.getItem("cs126-theme") === "dark") root.classList.add("dark"); } catch (e) {}
+
+  /* ---------- Build slide chrome ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length;
+  slides.forEach(function (s, i) {
+    if (!s.querySelector(".s-body")) {
+      var body = document.createElement("div");
+      body.className = "s-body";
+      while (s.firstChild) body.appendChild(s.firstChild);
+      s.appendChild(body);
+    }
+    var head = document.createElement("div");
+    head.className = "s-head";
+    head.innerHTML = '<span class="course">' + COURSE + '</span><span>' + TOPIC + '</span>';
+    var foot = document.createElement("div");
+    foot.className = "s-foot";
+    foot.innerHTML = '<span>Dr. Fawaz Alazemi</span><span>Slide ' + (i + 1) + ' of ' + N + '</span>';
+    s.insertBefore(head, s.firstChild);
+    s.appendChild(foot);
+  });
+
+  /* ---------- Python syntax highlighting (no libraries) ---------- */
+  var KW = "for|in|if|elif|else|and|or|not|True|False|None|while|def|return|import";
+  var FN = "print|range|len|list|str|int|float|sum|max|min|round|append|input";
+  var re = new RegExp(
+    "(#[^\\n]*)|(\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(" + FN + ")(?=\\()|\\b(\\d+(?:\\.\\d+)?)\\b",
+    "g");
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code code").forEach(function (el) {
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "tk-com" : m[2] ? "tk-str" : m[3] ? "tk-kw" : m[4] ? "tk-fn" : "tk-num";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = re.lastIndex;
+    }
+    out += esc(src.slice(last));
+    el.innerHTML = out;
+  });
+
+  /* ---------- Show Answer buttons ---------- */
+  document.querySelectorAll(".reveal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.nextElementSibling;
+      var shown = a.classList.toggle("shown");
+      b.textContent = shown ? "Hide Answer" : "Show Answer";
+      b.blur();
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  var cur = 0;
+  var counter = document.getElementById("counter");
+  var bar = document.getElementById("bar");
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    counter.textContent = (cur + 1) + " / " + N;
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+  function btn(id, fn) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () { fn(); b.blur(); });
+    return b;
+  }
+  btn("btnPrev", function () { go(cur - 1); });
+  btn("btnNext", function () { go(cur + 1); });
+
+  /* ---------- Full screen ---------- */
+  var fullBtn = btn("btnFull", function () {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el);
+    }
+  });
+  function onFs() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fullBtn.textContent = on ? "Exit Full Screen" : "Full Screen";
+    fit();
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+
+  /* ---------- Dark / light ---------- */
+  var themeBtn = btn("btnTheme", function () {
+    var dark = root.classList.toggle("dark");
+    try { localStorage.setItem("cs126-theme", dark ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  });
+  function themeLabel() { themeBtn.textContent = root.classList.contains("dark") ? "Light Mode" : "Dark Mode"; }
+  themeLabel();
+
+  /* ---------- Export PDF ---------- */
+  btn("btnPdf", function () { window.print(); });
+
+  /* ---------- Scale the 1280x720 canvas to fit ---------- */
+  var stage = document.getElementById("stage");
+  var vp = document.getElementById("viewport");
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight;
+    var s = Math.min(w / 1280, h / 720) * 0.98;
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>

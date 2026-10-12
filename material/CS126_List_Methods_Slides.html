@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS126 – Advanced Methods for Lists</title>
+<style>
+/* ===================== THEME ===================== */
+:root {
+  --bg: #f4f6f8;
+  --slide-bg: #fbfbfc;
+  --text: #1f2933;
+  --muted: #5b6875;
+  --navy: #1b365d;
+  --teal: #0f7c74;
+  --teal-soft: #e3f2f0;
+  --line: #d5dbe1;
+  --code-bg: #f1f3f5;
+  --code-text: #1f2933;
+  --out-bg: #ffffff;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --good: #1a7f37;
+  --good-soft: #e8f5ec;
+  --amber: #a15c00;
+  --tok-kw: #7a2bb5;
+  --tok-str: #a5481a;
+  --tok-num: #0b6bcb;
+  --tok-fn: #0f7c74;
+  --tok-com: #6b7785;
+  --bar-bg: #ffffff;
+}
+html.dark {
+  --bg: #0b1120;
+  --slide-bg: #111827;
+  --text: #e8edf3;
+  --muted: #a3afbd;
+  --navy: #9cc4ff;
+  --teal: #34d1bf;
+  --teal-soft: #12302e;
+  --line: #334155;
+  --code-bg: #0b1220;
+  --code-text: #e8edf3;
+  --out-bg: #0f172a;
+  --bad: #ff8a80;
+  --bad-soft: #3a1717;
+  --good: #7ee2a0;
+  --good-soft: #13301f;
+  --amber: #ffc46b;
+  --tok-kw: #d7a8ff;
+  --tok-str: #ffb38a;
+  --tok-num: #8fc8ff;
+  --tok-fn: #5fe3d2;
+  --tok-com: #8b98a8;
+  --bar-bg: #0f172a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* ===================== STAGE ===================== */
+.viewport {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 56px;
+  overflow: hidden;
+}
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: center center;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--slide-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+.s-head {
+  height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--teal);
+  font-size: 16px; color: var(--muted);
+}
+.s-head .course { color: var(--navy); font-weight: 600; }
+.s-body {
+  flex: 1; min-height: 0;
+  padding: 22px 56px 10px;
+  display: flex; flex-direction: column;
+  font-size: 24px; line-height: 1.4;
+}
+.s-foot {
+  height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; font-size: 15px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+h1 { color: var(--navy); font-size: 56px; margin: 0 0 12px; line-height: 1.15; }
+h2 { color: var(--navy); font-size: 36px; margin: 0 0 16px; line-height: 1.2; }
+h3 { color: var(--teal); font-size: 24px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 30px; }
+li { margin-bottom: 6px; }
+.small { font-size: 20px; }
+.muted { color: var(--muted); }
+.teal { color: var(--teal); font-weight: 600; }
+.navy { color: var(--navy); font-weight: 600; }
+.mono, code.inl {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols.w60 { grid-template-columns: 1.25fr 1fr; }
+.cols.w40 { grid-template-columns: 1fr 1.25fr; }
+.cols.w70 { grid-template-columns: 1.6fr 1fr; }
+.tight pre { font-size: 18px; line-height: 1.38; margin-bottom: 8px; }
+.tight p { margin-bottom: 6px; }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.col { min-width: 0; }
+
+/* ===================== CODE ===================== */
+pre {
+  margin: 0 0 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 20px; line-height: 1.45;
+  white-space: pre; overflow: hidden;
+  border-radius: 6px;
+}
+pre.code {
+  background: var(--code-bg); color: var(--code-text);
+  border: 1px solid var(--line); border-left: 5px solid var(--teal);
+  padding: 10px 16px;
+}
+pre.code.bad  { border-left-color: var(--bad); }
+pre.code.good { border-left-color: var(--good); }
+pre.out {
+  background: var(--out-bg); color: var(--text);
+  border: 1px dashed var(--line); border-left: 5px solid var(--navy);
+  padding: 8px 16px;
+}
+.lbl {
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.tk-kw { color: var(--tok-kw); font-weight: 600; }
+.tk-str { color: var(--tok-str); }
+.tk-num { color: var(--tok-num); }
+.tk-fn { color: var(--tok-fn); }
+.tk-com { color: var(--tok-com); font-style: italic; }
+
+/* ===================== BOXES ===================== */
+.note {
+  border-left: 5px solid var(--teal); background: var(--teal-soft);
+  padding: 10px 16px; border-radius: 4px; margin: 0 0 12px; font-size: 21px;
+}
+.warn {
+  border-left: 5px solid var(--amber); padding: 10px 16px; margin: 0 0 12px;
+  font-size: 21px; background: transparent; border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+}
+.tag-bad, .tag-good {
+  display: inline-block; font-weight: 700; font-size: 17px;
+  padding: 2px 10px; border-radius: 4px; margin-bottom: 4px;
+}
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-good { color: var(--good); background: var(--good-soft); }
+.why { font-size: 19px; margin: 0 0 10px; }
+
+table.t {
+  border-collapse: collapse; font-size: 20px; width: 100%;
+}
+table.t th, table.t td {
+  border: 1px solid var(--line); padding: 6px 12px; text-align: left;
+}
+table.t th { background: var(--teal-soft); color: var(--navy); }
+table.t td.c, table.t th.c { text-align: center; }
+table.t code { font-family: Consolas, Monaco, monospace; }
+
+/* ===================== Q & A ===================== */
+.qa { margin: 0 0 10px; }
+.reveal {
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--teal); background: transparent;
+  border: 1.5px solid var(--teal); border-radius: 4px;
+  padding: 3px 12px; cursor: pointer; margin: 0 0 6px;
+}
+.reveal:hover { background: var(--teal-soft); }
+.answer { visibility: hidden; }
+.answer.shown { visibility: visible; }
+.q { font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+
+/* ===================== TITLE / SECTION ===================== */
+.title-body { justify-content: center; padding-left: 90px; }
+.title-body .sub { font-size: 30px; color: var(--teal); margin-bottom: 36px; }
+.title-body .meta { font-size: 24px; color: var(--muted); line-height: 1.6; }
+.title-rule { width: 120px; height: 5px; background: var(--teal); margin: 0 0 28px; }
+.section-body { justify-content: center; align-items: center; text-align: center; }
+
+/* ===================== DIAGRAMS ===================== */
+.anat {
+  font-family: Consolas, Monaco, monospace; font-size: 40px;
+  background: var(--code-bg); border: 1px solid var(--line);
+  border-left: 5px solid var(--teal); border-radius: 6px;
+  padding: 18px 28px; margin: 0 0 16px; line-height: 1.6;
+}
+.anat .a1 { color: var(--tok-kw); font-weight: 700; }
+.anat .a2 { color: var(--tok-num); font-weight: 700; }
+.anat .a3 { color: var(--tok-str); font-weight: 700; }
+.anat .a4 { color: var(--bad); font-weight: 700; }
+.anat .a5 { color: var(--tok-fn); font-weight: 700; }
+.anat .ind { background: var(--teal-soft); outline: 1px dashed var(--teal); }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 36px; font-size: 21px; }
+.legend b { font-family: Consolas, Monaco, monospace; }
+
+.boxes { display: flex; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap; }
+.box {
+  min-width: 64px; text-align: center;
+  font-family: Consolas, Monaco, monospace; font-size: 22px;
+}
+.box .v {
+  border: 2px solid var(--navy); border-radius: 4px; padding: 6px 10px;
+  background: var(--slide-bg);
+}
+.box .i { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.box .n { font-size: 16px; color: var(--tok-num); margin-bottom: 3px; font-weight: 600; }
+.box.off .v { border-style: dashed; border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.box.hi .v { background: var(--teal-soft); border-color: var(--teal); }
+
+svg text { font-family: "Segoe UI", Arial, sans-serif; }
+.sv-box { fill: var(--slide-bg); stroke: var(--navy); stroke-width: 2; }
+.sv-dec { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.sv-t { fill: var(--text); font-size: 19px; }
+.sv-m { fill: var(--muted); font-size: 16px; font-weight: 600; }
+.sv-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.sv-arrow { fill: var(--muted); }
+
+.ex-num {
+  display: inline-block; min-width: 38px; font-weight: 700; color: var(--teal);
+}
+.level {
+  display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--teal); border: 1.5px solid var(--teal);
+  border-radius: 4px; padding: 1px 10px; margin-left: 12px; vertical-align: middle;
+}
+.ex { margin-bottom: 10px; }
+.ex p { margin: 0 0 6px; }
+
+/* ===================== CONTROLS ===================== */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: var(--bar-bg); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  font-size: 15px;
+}
+.controls button {
+  font: inherit; font-size: 15px; color: var(--navy);
+  background: transparent; border: 1px solid var(--line); border-radius: 4px;
+  padding: 6px 14px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--teal); color: var(--teal); }
+.controls .counter { color: var(--muted); min-width: 64px; text-align: center; }
+.progress {
+  flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.progress div { height: 100%; width: 0; background: var(--teal); }
+.spacer { width: 8px; }
+
+/* ===================== PRINT ===================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  :root, html.dark {
+    --bg: #ffffff; --slide-bg: #ffffff; --text: #1f2933; --muted: #5b6875;
+    --navy: #1b365d; --teal: #0f7c74; --teal-soft: #e3f2f0; --line: #d5dbe1;
+    --code-bg: #f1f3f5; --code-text: #1f2933; --out-bg: #ffffff;
+    --bad: #b42318; --bad-soft: #fdecea; --good: #1a7f37; --good-soft: #e8f5ec;
+    --amber: #a15c00; --tok-kw: #7a2bb5; --tok-str: #a5481a; --tok-num: #0b6bcb;
+    --tok-fn: #0f7c74; --tok-com: #6b7785;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .controls, .reveal { display: none !important; }
+  .answer { visibility: visible !important; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; inset: auto;
+    width: 1280px; height: 720px; zoom: 0.82;
+    margin: 0 auto; border: none; transform: translateY(120px);
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- ============ 1. TITLE ============ -->
+<section class="slide">
+  <div class="s-body title-body">
+    <div class="muted" style="font-size:22px;margin-bottom:10px">CS126 – Introduction to Python</div>
+    <h1>Advanced Methods for Lists</h1>
+    <div class="sub">Slicing, built-in functions, list methods, and join</div>
+    <div class="title-rule"></div>
+    <div class="meta">Dr. Fawaz Alazemi</div>
+  </div>
+</section>
+
+<!-- ============ 2. OBJECTIVES ============ -->
+<section class="slide">
+  <h2>Learning Objectives</h2>
+  <p>By the end of this lecture, you will be able to:</p>
+  <ol>
+    <li>Take parts of a list with <b>slicing</b>: <code class="inl">lst[start:stop:step]</code>.</li>
+    <li>Use the functions <code class="inl">len()</code>, <code class="inl">sum()</code>, <code class="inl">min()</code>, and <code class="inl">max()</code>.</li>
+    <li>Add items with <code class="inl">append()</code>, <code class="inl">insert()</code>, <code class="inl">extend()</code>, and <code class="inl">+</code>.</li>
+    <li>Remove items with <code class="inl">remove()</code>, safely.</li>
+    <li>Reorder a list with <code class="inl">sort()</code> and <code class="inl">reverse()</code>.</li>
+    <li>Build a string from a list with <code class="inl">join()</code>.</li>
+    <li>Know which tools <b>change</b> the list and which give a <b>new value</b>.</li>
+  </ol>
+</section>
+
+<!-- ============ 3. FUNCTIONS VS METHODS ============ -->
+<section class="slide">
+  <h2>Two Kinds of Tools: Functions and Methods</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Function: <code class="inl">name(list)</code></h3>
+      <pre class="code"><code>grades = [85, 92, 78]
+print(len(grades))
+print(max(grades))</code></pre>
+      <pre class="out">3
+92</pre>
+      <p class="small">The list goes <b>inside</b> the brackets. The function <b>gives back</b> an answer. The list does <b>not</b> change.</p>
+    </div>
+    <div class="col">
+      <h3>Method: <code class="inl">list.name()</code></h3>
+      <pre class="code"><code>grades = [85, 92, 78]
+grades.append(60)
+print(grades)</code></pre>
+      <pre class="out">[85, 92, 78, 60]</pre>
+      <p class="small">A <b>method</b> belongs to the list. Write the list, a <b>dot</b>, then the method name. Most list methods <b>change</b> the list.</p>
+    </div>
+  </div>
+  <div class="note">Today: <b>slicing</b> and <b>functions</b> first (they never change the list), then <b>methods</b> (they do), then <code class="inl">join()</code>.</div>
+</section>
+
+<!-- ============ 4. INDEX REVIEW ============ -->
+<section class="slide">
+  <h2>Quick Review: Positive and Negative Indexes</h2>
+  <pre class="code"><code>nums = [10, 20, 30, 40, 50, 60]</code></pre>
+  <div class="boxes" style="margin:10px 0 18px">
+    <div class="box"><div class="n">-6</div><div class="v">10</div><div class="i">0</div></div>
+    <div class="box"><div class="n">-5</div><div class="v">20</div><div class="i">1</div></div>
+    <div class="box"><div class="n">-4</div><div class="v">30</div><div class="i">2</div></div>
+    <div class="box"><div class="n">-3</div><div class="v">40</div><div class="i">3</div></div>
+    <div class="box"><div class="n">-2</div><div class="v">50</div><div class="i">4</div></div>
+    <div class="box"><div class="n">-1</div><div class="v">60</div><div class="i">5</div></div>
+    <div style="align-self:center;font-size:19px;margin-left:16px;line-height:1.7"><span style="color:var(--tok-num)">top: negative index</span><br><span class="muted">bottom: positive index</span></div>
+  </div>
+  <div class="cols">
+    <div class="col">
+      <pre class="code"><code>nums = [10, 20, 30, 40, 50, 60]
+print(nums[0], nums[3])
+print(nums[-1], nums[-2])</code></pre>
+      <pre class="out">10 40
+60 50</pre>
+    </div>
+    <div class="col">
+      <div class="note">An <b>index</b> gives <b>one item</b>.<br>A <b>slice</b> gives a <b>new list</b> of several items. That is next.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. SLICING BASICS ============ -->
+<section class="slide">
+  <h2>Slicing: <code class="inl">lst[start:stop]</code></h2>
+  <p>A slice takes the items from <b>start</b> up to, but <b>not including</b>, <b>stop</b>.</p>
+  <div class="boxes" style="margin:6px 0 16px">
+    <div class="box"><div class="v">10</div><div class="i">0</div></div>
+    <div class="box hi"><div class="v">20</div><div class="i">1 ← start</div></div>
+    <div class="box hi"><div class="v">30</div><div class="i">2</div></div>
+    <div class="box hi"><div class="v">40</div><div class="i">3</div></div>
+    <div class="box"><div class="v">50</div><div class="i">4 ← stop</div></div>
+    <div class="box"><div class="v">60</div><div class="i">5</div></div>
+    <div style="align-self:center;font-size:20px;margin-left:16px" class="muted"><code class="inl">nums[1:4]</code></div>
+  </div>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>nums = [10, 20, 30, 40, 50, 60]
+print(nums[1:4])
+print(nums[0:2])</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">[20, 30, 40]
+[10, 20]</pre>
+    </div>
+    <div class="col">
+      <div class="note">Number of items in the slice = <b>stop − start</b>.<br><code class="inl">nums[1:4]</code> → 4 − 1 = <b>3</b> items.</div>
+      <p class="small">This is the same "stop is not included" rule you will see again later with other Python tools.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. OMITTING AND NEGATIVE ============ -->
+<section class="slide">
+  <h2>Leaving Out Start or Stop, and Negative Indexes</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Kuwait temperatures, Sunday to Saturday</div>
+      <pre class="code"><code>temps = [44, 46, 48, 45, 47, 49, 43]
+print(temps[:3])     # first three
+print(temps[4:])     # index 4 to end
+print(temps[-2:])    # last two
+print(temps[:])      # a full copy</code></pre>
+      <pre class="out">[44, 46, 48]
+[47, 49, 43]
+[49, 43]
+[44, 46, 48, 45, 47, 49, 43]</pre>
+    </div>
+    <div class="col">
+      <table class="t">
+        <tr><th>Slice</th><th>Meaning</th></tr>
+        <tr><td><code>lst[:n]</code></td><td>the first <code>n</code> items</td></tr>
+        <tr><td><code>lst[n:]</code></td><td>from index <code>n</code> to the end</td></tr>
+        <tr><td><code>lst[-n:]</code></td><td>the last <code>n</code> items</td></tr>
+        <tr><td><code>lst[:]</code></td><td>a copy of the whole list</td></tr>
+      </table>
+      <div class="q" style="margin-top:14px">What does <code class="inl">temps[-3:-1]</code> give?</div>
+      <button class="reveal">Show Answer</button>
+      <div class="answer small"><code class="inl">[47, 49]</code> — from index −3 up to, but not including, −1.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. STEP ============ -->
+<section class="slide">
+  <h2>Slicing with a Step: <code class="inl">lst[start:stop:step]</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>nums = [10, 20, 30, 40, 50, 60]
+print(nums[::2])     # every 2nd item
+print(nums[1::2])    # every 2nd from 1
+print(nums[::-1])    # backwards</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">[10, 30, 50]
+[20, 40, 60]
+[60, 50, 40, 30, 20, 10]</pre>
+      <div class="note small">The <b>step</b> says how far to jump. A <b>negative</b> step walks backwards. <code class="inl">[::-1]</code> is a reversed copy.</div>
+    </div>
+    <div class="col">
+      <div class="q">What will this code print?</div>
+      <pre class="code"><code>nums = [10, 20, 30, 40, 50, 60]
+print(nums[4:1:-1])</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer">
+        <pre class="out">[50, 40, 30]</pre>
+        <p class="small">Start at index 4 and walk backwards, stopping <b>before</b> index 1.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. SLICING FACTS ============ -->
+<section class="slide">
+  <h2>Useful Facts About Slicing</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>1. The original list does not change</h3>
+      <pre class="code"><code>nums = [10, 20, 30, 40]
+part = nums[1:3]
+print(part)
+print(nums)</code></pre>
+      <pre class="out">[20, 30]
+[10, 20, 30, 40]</pre>
+      <h3>2. No error if you go past the end</h3>
+      <pre class="code"><code>nums = [10, 20, 30, 40]
+print(nums[2:100])
+print(nums[10:])</code></pre>
+      <pre class="out">[30, 40]
+[]</pre>
+    </div>
+    <div class="col">
+      <h3>3. Slicing works on strings and tuples too</h3>
+      <pre class="code"><code>city = "Kuwait City"
+print(city[:6])
+point = (5, 8, 2, 9)
+print(point[1:3])</code></pre>
+      <pre class="out">Kuwait
+(8, 2)</pre>
+      <p class="small">A string slice gives a <b>string</b>; a tuple slice gives a <b>tuple</b>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. LEN AND SUM ============ -->
+<section class="slide">
+  <h2>Counting and Adding: <code class="inl">len()</code> and <code class="inl">sum()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — shopping prices in KD</div>
+      <pre class="code"><code>prices = [1.25, 0.75, 2.5, 0.5]
+print(len(prices))
+print(sum(prices))
+print(len([]), sum([]))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">4
+5.0
+0 0</pre>
+    </div>
+    <div class="col">
+      <table class="t">
+        <tr><th>Function</th><th>Gives</th><th>Works with</th></tr>
+        <tr><td><code>len(x)</code></td><td>number of items</td><td>lists, strings, tuples</td></tr>
+        <tr><td><code>sum(x)</code></td><td>total of the items</td><td>lists and tuples of <b>numbers only</b></td></tr>
+      </table>
+      <div class="warn" style="margin-top:14px"><code class="inl">sum(["a", "b"])</code> → <b>TypeError</b>. You cannot <code class="inl">sum()</code> strings. To combine strings, use <code class="inl">join()</code> (later today).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. MIN AND MAX ============ -->
+<section class="slide">
+  <h2>Smallest and Largest: <code class="inl">min()</code> and <code class="inl">max()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <h3>With numbers</h3>
+      <pre class="code"><code>temps = [44, 46, 48, 45, 47, 49, 43]
+print(max(temps))
+print(min(temps))</code></pre>
+      <pre class="out">49
+43</pre>
+      <h3>With strings: alphabetical order</h3>
+      <pre class="code"><code>cities = ["Muscat", "Doha", "Kuwait"]
+print(min(cities))
+print(max(cities))</code></pre>
+      <pre class="out">Doha
+Muscat</pre>
+    </div>
+    <div class="col">
+      <div class="warn"><b>Rules</b>
+        <ul style="margin:6px 0 0">
+          <li>All items must be the <b>same kind</b>: all numbers or all strings. Mixed → <b>TypeError</b>.</li>
+          <li>An <b>empty</b> list → <b>ValueError</b>.</li>
+          <li>For strings, <b>uppercase</b> letters come before lowercase: <code class="inl">min(["oman", "Qatar"])</code> is <code class="inl">'Qatar'</code>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. COMBINING FUNCTIONS ============ -->
+<section class="slide">
+  <h2>Combining Functions: Average and Range</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — class grades</div>
+      <pre class="code"><code>grades = [85, 92, 78, 95, 70]
+average = sum(grades) / len(grades)
+spread = max(grades) - min(grades)
+print("Average:", average)
+print("Spread:", spread)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Average: 84.0
+Spread: 25</pre>
+      <p class="small"><code class="inl">sum()</code> is 420 and <code class="inl">len()</code> is 5, so the average is <code class="inl">420 / 5 = 84.0</code>.</p>
+    </div>
+    <div class="col">
+      <div class="q">What will this code print?</div>
+      <pre class="code"><code>data = [5, 3, 8]
+print(sum(data[1:]))
+print(max(data) - min(data))</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer">
+        <pre class="out">11
+5</pre>
+        <p class="small"><code class="inl">data[1:]</code> is <code class="inl">[3, 8]</code>, so the sum is 11. Then 8 − 3 = 5.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. APPEND ============ -->
+<section class="slide">
+  <h2>Adding One Item at the End: <code class="inl">append()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>cart = ["milk", "bread"]
+cart.append("dates")
+print(cart)
+print(len(cart))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">['milk', 'bread', 'dates']
+3</pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Before</div>
+      <div class="boxes"><div class="box"><div class="v">milk</div></div><div class="box"><div class="v">bread</div></div></div>
+      <div class="lbl">After <code class="inl">cart.append("dates")</code></div>
+      <div class="boxes"><div class="box"><div class="v">milk</div></div><div class="box"><div class="v">bread</div></div><div class="box hi"><div class="v">dates</div></div></div>
+      <ul class="small">
+        <li>Adds <b>exactly one</b> item, at the <b>end</b>.</li>
+        <li><b>Changes</b> the list. Nothing is printed.</li>
+        <li>Only for <b>lists</b>: strings and tuples cannot change.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13. INSERT ============ -->
+<section class="slide">
+  <h2>Adding at a Position: <code class="inl">insert(index, item)</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — a queue at the bank</div>
+      <pre class="code"><code>queue = ["Ali", "Sara", "Fahad"]
+queue.insert(1, "Mona")
+print(queue)
+queue.insert(0, "Noor")
+print(queue)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">['Ali', 'Mona', 'Sara', 'Fahad']
+['Noor', 'Ali', 'Mona', 'Sara', 'Fahad']</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li>The new item goes <b>at</b> the given index.</li>
+        <li>Items from that position move one place <b>right</b>.</li>
+        <li><code class="inl">insert(0, x)</code> puts <code class="inl">x</code> at the <b>front</b>.</li>
+      </ul>
+      <div class="q">What will this code print?</div>
+      <pre class="code"><code>x = [1, 2, 3]
+x.insert(10, 99)
+print(x)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">[1, 2, 3, 99]</pre><p class="small">An index past the end simply adds at the end. No error.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. EXTEND VS APPEND ============ -->
+<section class="slide">
+  <h2>Adding Many Items: <code class="inl">extend()</code> vs <code class="inl">append()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <h3>extend() adds each item</h3>
+      <pre class="code"><code>a = ["Kuwait", "Qatar"]
+a.extend(["Oman", "UAE"])
+print(a)
+print(len(a))</code></pre>
+      <pre class="out">['Kuwait', 'Qatar', 'Oman', 'UAE']
+4</pre>
+      <div class="boxes"><div class="box"><div class="v">Kuwait</div></div><div class="box"><div class="v">Qatar</div></div><div class="box hi"><div class="v">Oman</div></div><div class="box hi"><div class="v">UAE</div></div></div>
+    </div>
+    <div class="col">
+      <h3>append() adds one item — the whole list</h3>
+      <pre class="code"><code>b = ["Kuwait", "Qatar"]
+b.append(["Oman", "UAE"])
+print(b)
+print(len(b))</code></pre>
+      <pre class="out">['Kuwait', 'Qatar', ['Oman', 'UAE']]
+3</pre>
+      <div class="boxes"><div class="box"><div class="v">Kuwait</div></div><div class="box"><div class="v">Qatar</div></div><div class="box hi"><div class="v">[Oman, UAE]</div></div></div>
+    </div>
+  </div>
+  <div class="note">A list inside a list is called a <b>nested list</b>. Usually you want <code class="inl">extend()</code>.</div>
+</section>
+
+<!-- ============ 15. CONCATENATION ============ -->
+<section class="slide">
+  <h2>Joining Two Lists with <code class="inl">+</code> (Concatenation)</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>first = [1, 2]
+second = [3, 4]
+both = first + second
+print(both)
+print(first)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">[1, 2, 3, 4]
+[1, 2]</pre>
+      <p class="small">Both sides of <code class="inl">+</code> must be lists: <code class="inl">[1, 2] + 3</code> is a <b>TypeError</b>; write <code class="inl">[1, 2] + [3]</code>.</p>
+    </div>
+    <div class="col">
+      <table class="t">
+        <tr><th></th><th><code>a + b</code></th><th><code>a.extend(b)</code></th></tr>
+        <tr><td>Result</td><td>a <b>new</b> list</td><td>changes <code>a</code></td></tr>
+        <tr><td><code>a</code> after</td><td>unchanged</td><td>longer</td></tr>
+      </table>
+      <div class="q" style="margin-top:14px">What will this code print?</div>
+      <pre class="code"><code>a = [1]
+b = a + [2, 3]
+print(a, b)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">[1] [1, 2, 3]</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16. REMOVE ============ -->
+<section class="slide">
+  <h2>Removing an Item: <code class="inl">remove(value)</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>items = ["pen", "book", "pen", "bag"]
+items.remove("pen")
+print(items)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">['book', 'pen', 'bag']</pre>
+      <ul class="small">
+        <li>Removes by <b>value</b>, not by index.</li>
+        <li>Removes only the <b>first</b> match.</li>
+        <li>If the value is not in the list → <b>ValueError</b>.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Remove safely with <code class="inl">if … in</code></h3>
+      <pre class="code"><code>items = ["book", "pen", "bag"]
+if "phone" in items:
+    items.remove("phone")
+else:
+    print("phone is not in the list")
+print(items)</code></pre>
+      <pre class="out">phone is not in the list
+['book', 'pen', 'bag']</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17. SORT ============ -->
+<section class="slide">
+  <h2>Putting Items in Order: <code class="inl">sort()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>temps = [46, 44, 49, 45]
+temps.sort()
+print(temps)
+temps.sort(reverse=True)
+print(temps)
+gcc = ["Qatar", "Bahrain", "Kuwait"]
+gcc.sort()
+print(gcc)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">[44, 45, 46, 49]
+[49, 46, 45, 44]
+['Bahrain', 'Kuwait', 'Qatar']</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li><code class="inl">sort()</code> → smallest to largest (A to Z for strings).</li>
+        <li><code class="inl">sort(reverse=True)</code> → largest to smallest.</li>
+        <li>It <b>changes</b> the list. The old order is lost.</li>
+        <li>Items must be the same kind (all numbers or all strings).</li>
+      </ul>
+      <div class="note">Only <b>lists</b> have <code class="inl">sort()</code>. A tuple cannot be changed, so it has no <code class="inl">sort()</code> method.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18. REVERSE ============ -->
+<section class="slide">
+  <h2>Flipping the Order: <code class="inl">reverse()</code> and <code class="inl">[::-1]</code></h2>
+  <div class="cols">
+    <div class="col">
+      <h3><code class="inl">reverse()</code> changes the list</h3>
+      <pre class="code"><code>days = ["Sun", "Mon", "Tue"]
+days.reverse()
+print(days)</code></pre>
+      <pre class="out">['Tue', 'Mon', 'Sun']</pre>
+      <h3><code class="inl">[::-1]</code> makes a new list</h3>
+      <pre class="code"><code>days = ["Sun", "Mon", "Tue"]
+back = days[::-1]
+print(back)
+print(days)</code></pre>
+      <pre class="out">['Tue', 'Mon', 'Sun']
+['Sun', 'Mon', 'Tue']</pre>
+    </div>
+    <div class="col">
+      <div class="q">What will this code print?</div>
+      <pre class="code"><code>nums = [3, 1, 2]
+nums.reverse()
+print(nums)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer">
+        <pre class="out">[2, 1, 3]</pre>
+        <p class="small"><code class="inl">reverse()</code> only flips the current order. It does <b>not</b> sort. For largest-first, use <code class="inl">sort(reverse=True)</code>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19. JOIN ============ -->
+<section class="slide">
+  <h2>From a List to a String: <code class="inl">join()</code></h2>
+  <div class="anat" style="font-size:30px"><span class="a3">"separator"</span>.<span class="a1">join</span>(<span class="a2">list_of_strings</span>)</div>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>countries = ["Kuwait", "Oman", "Qatar"]
+print(", ".join(countries))
+print(" - ".join(countries))
+letters = ["C", "S", "1", "2", "6"]
+print("".join(letters))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Kuwait, Oman, Qatar
+Kuwait - Oman - Qatar
+CS126</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li><code class="inl">join()</code> is a <b>string</b> method: the <b>separator</b> comes first.</li>
+        <li>The separator goes <b>between</b> items, not at the ends.</li>
+        <li><code class="inl">""</code> (empty) glues items with nothing between.</li>
+        <li>The result is a <b>string</b>. The list does not change.</li>
+      </ul>
+      <div class="warn">Every item must be a <b>string</b>. <code class="inl">", ".join([1, 2])</code> → <b>TypeError</b>. Works with a tuple of strings too.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20. QUICK REFERENCE ============ -->
+<section class="slide">
+  <h2>Quick Reference</h2>
+  <div class="cols" style="gap:24px">
+    <div class="col">
+      <h3>Give a new value — list unchanged</h3>
+      <table class="t" style="font-size:18px">
+        <tr><th>Tool</th><th>Gives back</th></tr>
+        <tr><td><code>lst[a:b:s]</code></td><td>a new list (slice)</td></tr>
+        <tr><td><code>len(lst)</code></td><td>number of items</td></tr>
+        <tr><td><code>sum(lst)</code></td><td>total (numbers only)</td></tr>
+        <tr><td><code>min(lst)</code> / <code>max(lst)</code></td><td>smallest / largest</td></tr>
+        <tr><td><code>a + b</code></td><td>a new joined list</td></tr>
+        <tr><td><code>sep.join(lst)</code></td><td>a string (strings only)</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <h3>Change the list — give back <code class="inl">None</code></h3>
+      <table class="t" style="font-size:18px">
+        <tr><th>Method</th><th>Effect</th></tr>
+        <tr><td><code>lst.append(x)</code></td><td>add <code>x</code> at the end</td></tr>
+        <tr><td><code>lst.insert(i, x)</code></td><td>add <code>x</code> at index <code>i</code></td></tr>
+        <tr><td><code>lst.extend(other)</code></td><td>add every item of <code>other</code></td></tr>
+        <tr><td><code>lst.remove(x)</code></td><td>delete the first <code>x</code></td></tr>
+        <tr><td><code>lst.sort()</code></td><td>order small → large</td></tr>
+        <tr><td><code>lst.reverse()</code></td><td>flip the order</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="note" style="margin-top:14px">Left side: also works on <b>tuples</b> (and strings, except <code class="inl">sum</code>). Right side: <b>lists only</b>.</div>
+</section>
+
+<!-- ============ 21. MISTAKES 1 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (1): Saving the Result of a Method</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code>nums = [3, 1, 2]
+nums = nums.sort()
+print(nums)</code></pre>
+      <pre class="out">None</pre>
+      <p class="why"><b>Why?</b> <code class="inl">sort()</code> changes the list and gives back <code class="inl">None</code>. Saving that <code class="inl">None</code> loses the list.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>nums = [3, 1, 2]
+nums.sort()
+print(nums)</code></pre>
+      <pre class="out">[1, 2, 3]</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code>cities = ["Kuwait", "Doha"]
+cities = cities.append("Muscat")
+print(cities)</code></pre>
+      <pre class="out">None</pre>
+      <p class="why"><b>Why?</b> The same problem: <code class="inl">append()</code> also gives back <code class="inl">None</code>.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>cities = ["Kuwait", "Doha"]
+cities.append("Muscat")
+print(cities)</code></pre>
+      <pre class="out">['Kuwait', 'Doha', 'Muscat']</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22. MISTAKES 2 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (2): append vs extend, and remove</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code># goal: add two grades
+grades = [80, 90]
+grades.append([70, 60])
+print(grades)</code></pre>
+      <pre class="out">[80, 90, [70, 60]]</pre>
+      <p class="why"><b>Why?</b> <code class="inl">append()</code> adds the whole list as <b>one</b> item.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>grades = [80, 90]
+grades.extend([70, 60])
+print(grades)</code></pre>
+      <pre class="out">[80, 90, 70, 60]</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>cart = ["rice", "tea"]
+cart.remove("milk")</code></pre>
+      <pre class="out">ValueError: list.remove(x): x not in list</pre>
+      <p class="why"><b>Why?</b> <code class="inl">"milk"</code> is not in the list.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>cart = ["rice", "tea"]
+if "milk" in cart:
+    cart.remove("milk")
+print(cart)</code></pre>
+      <pre class="out">['rice', 'tea']</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23. MISTAKES 3 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (3): Using <code class="inl">join()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>names = ["Ali", "Sara"]
+print(names.join(", "))</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:16px">AttributeError: 'list' object has no attribute 'join'</pre>
+      <p class="why"><b>Why?</b> <code class="inl">join()</code> belongs to the <b>separator string</b>, not the list.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>names = ["Ali", "Sara"]
+print(", ".join(names))</code></pre>
+      <pre class="out">Ali, Sara</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>date = [12, 10, 2026]
+print("/".join(date))</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:16px">TypeError: sequence item 0: expected str instance, int found</pre>
+      <p class="why"><b>Why?</b> The items are <b>numbers</b>. <code class="inl">join()</code> needs strings.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>date = ["12", "10", "2026"]
+print("/".join(date))</code></pre>
+      <pre class="out">12/10/2026</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24. WORKED EXAMPLE 1 ============ -->
+<section class="slide">
+  <h2>Worked Example 1: Grade Report</h2>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>scores = [72, 95, 58, 88, 61, 79]
+scores.sort(reverse=True)
+print("Sorted:", scores)
+print("Top 3:", scores[:3])
+print("Highest:", max(scores), "Lowest:", min(scores))
+print("Average:", sum(scores) / len(scores))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Sorted: [95, 88, 79, 72, 61, 58]
+Top 3: [95, 88, 79]
+Highest: 95 Lowest: 58
+Average: 75.5</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li><code class="inl">sort(reverse=True)</code> puts the highest score first.</li>
+        <li>Because the list is sorted, <code class="inl">scores[:3]</code> is the <b>top three</b>.</li>
+        <li><code class="inl">max()</code> and <code class="inl">min()</code> do not need a sorted list, but they agree with it.</li>
+        <li><code class="inl">sum()</code> is 453 and <code class="inl">len()</code> is 6 → 453 / 6 = 75.5.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25. WORKED EXAMPLE 2 ============ -->
+<section class="slide">
+  <h2>Worked Example 2: Shopping List</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>cart = ["milk", "bread"]
+cart.append("dates")
+cart.insert(0, "water")
+cart.extend(["rice", "tea"])
+cart.remove("bread")
+cart.sort()
+print(cart)
+print("Items:", len(cart))
+print("Buy: " + ", ".join(cart))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">['dates', 'milk', 'rice', 'tea', 'water']
+Items: 5
+Buy: dates, milk, rice, tea, water</pre>
+    </div>
+    <div class="col">
+      <h3>The list after each step</h3>
+      <table class="t" style="font-size:17px">
+        <tr><th>Step</th><th><code>cart</code></th></tr>
+        <tr><td>start</td><td>milk, bread</td></tr>
+        <tr><td>append</td><td>milk, bread, dates</td></tr>
+        <tr><td>insert</td><td>water, milk, bread, dates</td></tr>
+        <tr><td>extend</td><td>water, milk, bread, dates, rice, tea</td></tr>
+        <tr><td>remove</td><td>water, milk, dates, rice, tea</td></tr>
+        <tr><td>sort</td><td>dates, milk, rice, tea, water</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26. WORKED EXAMPLE 3 ============ -->
+<section class="slide">
+  <h2>Worked Example 3: Planning a Trip</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>route = ["Kuwait", "Dubai"]
+route.insert(1, "Doha")       # add a stopover
+back = route[::-1]            # the return route
+trip = route + back[1:]       # skip Dubai twice
+print(" -&gt; ".join(route))
+print(" -&gt; ".join(trip))
+print("Stops:", len(trip))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Kuwait -&gt; Doha -&gt; Dubai
+Kuwait -&gt; Doha -&gt; Dubai -&gt; Doha -&gt; Kuwait
+Stops: 5</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li><code class="inl">insert(1, ...)</code> puts Doha between Kuwait and Dubai.</li>
+        <li><code class="inl">route[::-1]</code> is a reversed <b>copy</b>: Dubai, Doha, Kuwait. <code class="inl">route</code> is unchanged.</li>
+        <li><code class="inl">back[1:]</code> drops the first Dubai.</li>
+        <li><code class="inl">+</code> joins both parts into a new list.</li>
+        <li><code class="inl">join()</code> turns each list into one readable string.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27. THINK ABOUT IT ============ -->
+<section class="slide">
+  <h2>Think About It</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="qa">
+        <div class="q">1. What is the difference between <code class="inl">nums.reverse()</code> and <code class="inl">nums[::-1]</code>?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small"><code class="inl">reverse()</code> changes <code class="inl">nums</code> and gives <code class="inl">None</code>. <code class="inl">[::-1]</code> gives a <b>new</b> reversed list and leaves <code class="inl">nums</code> unchanged.</div>
+      </div>
+      <div class="qa">
+        <div class="q">2. Why does <code class="inl">sum(["1", "2"])</code> fail, but <code class="inl">"".join(["1", "2"])</code> works?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small"><code class="inl">sum()</code> adds <b>numbers</b>. <code class="inl">join()</code> glues <b>strings</b>, giving <code class="inl">"12"</code>.</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="qa">
+        <div class="q">3. What does this print?</div>
+        <pre class="code"><code>a = [5, 2, 9]
+b = a[:]
+b.sort()
+print(a, b)</code></pre>
+        <button class="reveal">Show Answer</button>
+        <div class="answer"><pre class="out">[5, 2, 9] [2, 5, 9]</pre><p class="small"><code class="inl">a[:]</code> is a <b>copy</b>. Sorting the copy does not change <code class="inl">a</code>.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 28. PRACTICE ============ -->
+<section class="slide">
+  <h2>Practice in Class (3 minutes)</h2>
+  <p>A football team's goals in its first 5 matches:</p>
+  <pre class="code" data-skip><code>goals = [2, 0, 3, 1, 4]</code></pre>
+  <ol class="small">
+    <li>Today the team scored 2. Add it to the list.</li>
+    <li>Print the total goals, the best match, and the average.</li>
+    <li>Print the goals of the <b>last three</b> matches.</li>
+  </ol>
+  <button class="reveal">Show Answer</button>
+  <div class="answer">
+    <div style="max-width:760px">
+      <pre class="code"><code>goals = [2, 0, 3, 1, 4]
+goals.append(2)
+print(sum(goals), max(goals), sum(goals) / len(goals))
+print(goals[-3:])</code></pre>
+      <pre class="out">12 4 2.0
+[1, 4, 2]</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 29. REMEMBER ============ -->
+<section class="slide">
+  <h2>What You Should Remember</h2>
+  <ol>
+    <li><code class="inl">lst[start:stop:step]</code> gives a <b>new</b> list; <b>stop</b> is not included; <code class="inl">[::-1]</code> reverses.</li>
+    <li><code class="inl">len()</code>, <code class="inl">sum()</code>, <code class="inl">min()</code>, <code class="inl">max()</code> <b>give back</b> a value and do not change the list.</li>
+    <li><code class="inl">append(x)</code> adds one item; <code class="inl">extend(other)</code> adds many; <code class="inl">insert(i, x)</code> adds at a position.</li>
+    <li><code class="inl">a + b</code> makes a <b>new</b> list; <code class="inl">a.extend(b)</code> <b>changes</b> <code class="inl">a</code>.</li>
+    <li><code class="inl">remove(x)</code> deletes the first <code class="inl">x</code> — check with <code class="inl">if x in lst</code> first.</li>
+    <li>Methods that change a list return <code class="inl">None</code>: never write <code class="inl">lst = lst.sort()</code>.</li>
+    <li><code class="inl">"sep".join(list)</code> makes a string, and every item must be a string.</li>
+  </ol>
+</section>
+
+<!-- ============ 30. EXERCISES L1 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 1 — Basic</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">1.</span>Predict the output.</p>
+        <pre class="code"><code>nums = [10, 20, 30, 40, 50, 60]
+print(nums[1:4])
+print(nums[-2:])
+print(nums[::2])</code></pre></div>
+      <div class="ex"><p><span class="ex-num">2.</span>Predict the output.</p>
+        <pre class="code"><code>prices = [3, 1.5, 7, 2]
+print(len(prices), min(prices))
+print(max(prices), sum(prices))</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">3.</span>Find and fix the error.</p>
+        <pre class="code"><code>cities = ["Kuwait", "Doha"]
+cities = cities.append("Muscat")
+print(cities)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">4.</span>Predict the output.</p>
+        <pre class="code"><code>lst = [1, 2, 3]
+lst.append([4, 5])
+print(lst)
+print(len(lst))</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 31. EXERCISES L2 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 2 — Apply</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">5.</span>Kuwait temperatures for one week (Sunday to Saturday):</p>
+        <pre class="code" data-skip><code>temps = [44, 46, 48, 45, 47, 49, 43]</code></pre>
+        <p>Print the last two days (Friday and Saturday) using a slice, then the highest, the lowest, and the average temperature.</p></div>
+      <div class="ex"><p><span class="ex-num">6.</span>Start with <code class="inl">queue = ["Ali", "Sara", "Fahad"]</code>. Mona joins at the <b>end</b>, Noor is a VIP and goes to the <b>front</b>, then Sara <b>leaves</b>. Print the queue.</p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">7.</span>Combine the two lists into one, sort it A to Z, and print it as one string separated by <code class="inl">", "</code>.</p>
+        <pre class="code" data-skip><code>a = ["Qatar", "Kuwait", "Oman"]
+b = ["UAE", "Bahrain", "Saudi Arabia"]</code></pre></div>
+      <div class="ex"><p><span class="ex-num">8.</span>Explain what this code does and give its output.</p>
+        <pre class="code"><code>letters = ["t", "i", "a", "w", "u", "K"]
+letters.reverse()
+print("".join(letters))</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 32. EXERCISES L3 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 3 — Challenge</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">9.</span>Five judges give scores. Drop the <b>highest</b> and the <b>lowest</b>, then print the remaining scores and their average. (Hint: sort, then slice.)</p>
+        <pre class="code" data-skip><code>judges = [8, 9, 7, 10, 6]</code></pre></div>
+      <div class="ex"><p><span class="ex-num">10.</span>Using <code class="inl">if … in</code>, remove <code class="inl">"Doha"</code> from the list if it is there; otherwise print <code class="inl">Doha is not in the list</code>. Then do the same for <code class="inl">"Riyadh"</code> and print the list.</p>
+        <pre class="code" data-skip><code>cities = ["Kuwait", "Riyadh", "Muscat"]</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">11.</span>Print this date in two forms, <code class="inl">12/10/2026</code> and <code class="inl">2026-10-12</code>, <b>without</b> changing <code class="inl">parts</code>.</p>
+        <pre class="code" data-skip><code>parts = ["12", "10", "2026"]</code></pre></div>
+      <div class="ex"><p><span class="ex-num">12.</span>Predict the output. Be careful!</p>
+        <pre class="code"><code>a = [3, 1, 2]
+b = a + [5]
+a.sort()
+print(a, b)
+print(a[::-1])
+print(b[-2:])</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 33. SOLUTIONS DIVIDER ============ -->
+<section class="slide">
+  <div class="s-body section-body" style="padding:0">
+    <div class="title-rule" style="margin:0 auto 24px"></div>
+    <h1>Exercise Solutions</h1>
+    <p class="muted" style="font-size:26px">Try every exercise first. Then compare your answers.</p>
+  </div>
+</section>
+
+<!-- ============ 34. SOLUTIONS 1-4 ============ -->
+<section class="slide">
+  <h2>Solutions 1 – 4 <span class="level">Level 1</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">1.</span>Indexes 1–3; the last two; every second item.</p>
+      <pre class="out">[20, 30, 40]
+[50, 60]
+[10, 30, 50]</pre>
+      <p><span class="ex-num">2.</span>4 items; smallest 1.5; largest 7; total 13.5.</p>
+      <pre class="out">4 1.5
+7 13.5</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">3.</span><code class="inl">append()</code> returns <code class="inl">None</code>, so <code class="inl">cities</code> became <code class="inl">None</code>. Do not assign the result:</p>
+      <pre class="code"><code>cities = ["Kuwait", "Doha"]
+cities.append("Muscat")
+print(cities)</code></pre>
+      <pre class="out">['Kuwait', 'Doha', 'Muscat']</pre>
+      <p><span class="ex-num">4.</span><code class="inl">append()</code> adds the list <code class="inl">[4, 5]</code> as <b>one</b> item.</p>
+      <pre class="out">[1, 2, 3, [4, 5]]
+4</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 35. SOLUTIONS 5-6 ============ -->
+<section class="slide">
+  <h2>Solutions 5 – 6 <span class="level">Level 2</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">5.</span></p>
+      <pre class="code"><code>temps = [44, 46, 48, 45, 47, 49, 43]
+print("Weekend:", temps[-2:])
+print("Highest:", max(temps))
+print("Lowest:", min(temps))
+print("Average:", sum(temps) / len(temps))</code></pre>
+      <pre class="out">Weekend: [49, 43]
+Highest: 49
+Lowest: 43
+Average: 46.0</pre>
+      <p class="small">The total is 322, and 322 / 7 = 46.0.</p>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">6.</span></p>
+      <pre class="code"><code>queue = ["Ali", "Sara", "Fahad"]
+queue.append("Mona")
+queue.insert(0, "Noor")
+queue.remove("Sara")
+print(queue)</code></pre>
+      <pre class="out">['Noor', 'Ali', 'Fahad', 'Mona']</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 36. SOLUTIONS 7-8 ============ -->
+<section class="slide">
+  <h2>Solutions 7 – 8 <span class="level">Level 2</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">7.</span>Concatenate, sort, then join.</p>
+      <pre class="code"><code>a = ["Qatar", "Kuwait", "Oman"]
+b = ["UAE", "Bahrain", "Saudi Arabia"]
+gcc = a + b
+gcc.sort()
+print(", ".join(gcc))</code></pre>
+      <pre class="out" style="font-size:17px">Bahrain, Kuwait, Oman, Qatar, Saudi Arabia, UAE</pre>
+      <p class="small"><code class="inl">a.extend(b)</code> instead of <code class="inl">+</code> also works.</p>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">8.</span><code class="inl">reverse()</code> flips the list to <code class="inl">["K", "u", "w", "a", "i", "t"]</code>. Then <code class="inl">"".join()</code> glues the letters with nothing between them.</p>
+      <pre class="out">Kuwait</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 37. SOLUTIONS 9-10 ============ -->
+<section class="slide">
+  <h2>Solutions 9 – 10 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">9.</span>After sorting, the lowest is first and the highest is last, so <code class="inl">[1:-1]</code> drops both.</p>
+      <pre class="code"><code>judges = [8, 9, 7, 10, 6]
+judges.sort()
+middle = judges[1:-1]
+print(middle)
+print(sum(middle) / len(middle))</code></pre>
+      <pre class="out">[7, 8, 9]
+8.0</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">10.</span></p>
+      <pre class="code"><code>cities = ["Kuwait", "Riyadh", "Muscat"]
+if "Doha" in cities:
+    cities.remove("Doha")
+else:
+    print("Doha is not in the list")
+if "Riyadh" in cities:
+    cities.remove("Riyadh")
+else:
+    print("Riyadh is not in the list")
+print(cities)</code></pre>
+      <pre class="out">Doha is not in the list
+['Kuwait', 'Muscat']</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 38. SOLUTIONS 11-12 ============ -->
+<section class="slide">
+  <h2>Solutions 11 – 12 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">11.</span><code class="inl">[::-1]</code> makes a reversed <b>copy</b>, so <code class="inl">parts</code> is not changed.</p>
+      <pre class="code"><code>parts = ["12", "10", "2026"]
+print("/".join(parts))
+print("-".join(parts[::-1]))
+print(parts)</code></pre>
+      <pre class="out">12/10/2026
+2026-10-12
+['12', '10', '2026']</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">12.</span><code class="inl">b</code> was made <b>before</b> sorting, so it keeps the old order.</p>
+      <pre class="out">[1, 2, 3] [3, 1, 2, 5]
+[3, 2, 1]
+[2, 5]</pre>
+      <p class="small"><code class="inl">a + [5]</code> creates a new list. Sorting <code class="inl">a</code> later does not affect <code class="inl">b</code>.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="btnPrev" title="Previous (Left Arrow)">◀ Previous</button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button id="btnNext" title="Next (Right Arrow)">Next ▶</button>
+  <div class="spacer"></div>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="spacer"></div>
+  <button id="btnFull">Full Screen</button>
+  <button id="btnTheme">Dark Mode</button>
+  <button id="btnPdf">Export PDF</button>
+</div>
+
+<script>
+(function () {
+  var COURSE = "CS126 – Introduction to Python";
+  var TOPIC = "Advanced Methods for Lists";
+
+  /* ---------- Theme (restore before anything paints) ---------- */
+  var root = document.documentElement;
+  try { if (localStorage.getItem("cs126-theme") === "dark") root.classList.add("dark"); } catch (e) {}
+
+  /* ---------- Build slide chrome ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length;
+  slides.forEach(function (s, i) {
+    if (!s.querySelector(".s-body")) {
+      var body = document.createElement("div");
+      body.className = "s-body";
+      while (s.firstChild) body.appendChild(s.firstChild);
+      s.appendChild(body);
+    }
+    var head = document.createElement("div");
+    head.className = "s-head";
+    head.innerHTML = '<span class="course">' + COURSE + '</span><span>' + TOPIC + '</span>';
+    var foot = document.createElement("div");
+    foot.className = "s-foot";
+    foot.innerHTML = '<span>Dr. Fawaz Alazemi</span><span>Slide ' + (i + 1) + ' of ' + N + '</span>';
+    s.insertBefore(head, s.firstChild);
+    s.appendChild(foot);
+  });
+
+  /* ---------- Python syntax highlighting (no libraries) ---------- */
+  var KW = "for|in|if|elif|else|and|or|not|True|False|None|while|def|return|import";
+  var FN = "print|range|len|list|str|int|float|sum|max|min|round|append|input";
+  var re = new RegExp(
+    "(#[^\\n]*)|(\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(" + FN + ")(?=\\()|\\b(\\d+(?:\\.\\d+)?)\\b",
+    "g");
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code code").forEach(function (el) {
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "tk-com" : m[2] ? "tk-str" : m[3] ? "tk-kw" : m[4] ? "tk-fn" : "tk-num";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = re.lastIndex;
+    }
+    out += esc(src.slice(last));
+    el.innerHTML = out;
+  });
+
+  /* ---------- Show Answer buttons ---------- */
+  document.querySelectorAll(".reveal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.nextElementSibling;
+      var shown = a.classList.toggle("shown");
+      b.textContent = shown ? "Hide Answer" : "Show Answer";
+      b.blur();
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  var cur = 0;
+  var counter = document.getElementById("counter");
+  var bar = document.getElementById("bar");
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    counter.textContent = (cur + 1) + " / " + N;
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+  function btn(id, fn) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () { fn(); b.blur(); });
+    return b;
+  }
+  btn("btnPrev", function () { go(cur - 1); });
+  btn("btnNext", function () { go(cur + 1); });
+
+  /* ---------- Full screen ---------- */
+  var fullBtn = btn("btnFull", function () {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el);
+    }
+  });
+  function onFs() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fullBtn.textContent = on ? "Exit Full Screen" : "Full Screen";
+    fit();
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+
+  /* ---------- Dark / light ---------- */
+  var themeBtn = btn("btnTheme", function () {
+    var dark = root.classList.toggle("dark");
+    try { localStorage.setItem("cs126-theme", dark ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  });
+  function themeLabel() { themeBtn.textContent = root.classList.contains("dark") ? "Light Mode" : "Dark Mode"; }
+  themeLabel();
+
+  /* ---------- Export PDF ---------- */
+  btn("btnPdf", function () { window.print(); });
+
+  /* ---------- Scale the 1280x720 canvas to fit ---------- */
+  var stage = document.getElementById("stage");
+  var vp = document.getElementById("viewport");
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight;
+    var s = Math.min(w / 1280, h / 720) * 0.98;
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS126 – Loops: The while Loop</title>
+<style>
+/* ===================== THEME ===================== */
+:root {
+  --bg: #f4f6f8;
+  --slide-bg: #fbfbfc;
+  --text: #1f2933;
+  --muted: #5b6875;
+  --navy: #1b365d;
+  --teal: #0f7c74;
+  --teal-soft: #e3f2f0;
+  --line: #d5dbe1;
+  --code-bg: #f1f3f5;
+  --code-text: #1f2933;
+  --out-bg: #ffffff;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --good: #1a7f37;
+  --good-soft: #e8f5ec;
+  --amber: #a15c00;
+  --tok-kw: #7a2bb5;
+  --tok-str: #a5481a;
+  --tok-num: #0b6bcb;
+  --tok-fn: #0f7c74;
+  --tok-com: #6b7785;
+  --bar-bg: #ffffff;
+}
+html.dark {
+  --bg: #0b1120;
+  --slide-bg: #111827;
+  --text: #e8edf3;
+  --muted: #a3afbd;
+  --navy: #9cc4ff;
+  --teal: #34d1bf;
+  --teal-soft: #12302e;
+  --line: #334155;
+  --code-bg: #0b1220;
+  --code-text: #e8edf3;
+  --out-bg: #0f172a;
+  --bad: #ff8a80;
+  --bad-soft: #3a1717;
+  --good: #7ee2a0;
+  --good-soft: #13301f;
+  --amber: #ffc46b;
+  --tok-kw: #d7a8ff;
+  --tok-str: #ffb38a;
+  --tok-num: #8fc8ff;
+  --tok-fn: #5fe3d2;
+  --tok-com: #8b98a8;
+  --bar-bg: #0f172a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* ===================== STAGE ===================== */
+.viewport {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 56px;
+  overflow: hidden;
+}
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: center center;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--slide-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+.s-head {
+  height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--teal);
+  font-size: 16px; color: var(--muted);
+}
+.s-head .course { color: var(--navy); font-weight: 600; }
+.s-body {
+  flex: 1; min-height: 0;
+  padding: 22px 56px 10px;
+  display: flex; flex-direction: column;
+  font-size: 24px; line-height: 1.4;
+}
+.s-foot {
+  height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; font-size: 15px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+h1 { color: var(--navy); font-size: 56px; margin: 0 0 12px; line-height: 1.15; }
+h2 { color: var(--navy); font-size: 36px; margin: 0 0 16px; line-height: 1.2; }
+h3 { color: var(--teal); font-size: 24px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 30px; }
+li { margin-bottom: 6px; }
+.small { font-size: 20px; }
+.muted { color: var(--muted); }
+.teal { color: var(--teal); font-weight: 600; }
+.navy { color: var(--navy); font-weight: 600; }
+.mono, code.inl {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols.w60 { grid-template-columns: 1.25fr 1fr; }
+.cols.w40 { grid-template-columns: 1fr 1.25fr; }
+.cols.w70 { grid-template-columns: 1.6fr 1fr; }
+.tight pre { font-size: 18px; line-height: 1.38; margin-bottom: 8px; }
+.tight p { margin-bottom: 6px; }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.col { min-width: 0; }
+
+/* ===================== CODE ===================== */
+pre {
+  margin: 0 0 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 20px; line-height: 1.45;
+  white-space: pre; overflow: hidden;
+  border-radius: 6px;
+}
+pre.code {
+  background: var(--code-bg); color: var(--code-text);
+  border: 1px solid var(--line); border-left: 5px solid var(--teal);
+  padding: 10px 16px;
+}
+pre.code.bad  { border-left-color: var(--bad); }
+pre.code.good { border-left-color: var(--good); }
+pre.out {
+  background: var(--out-bg); color: var(--text);
+  border: 1px dashed var(--line); border-left: 5px solid var(--navy);
+  padding: 8px 16px;
+}
+.lbl {
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.tk-kw { color: var(--tok-kw); font-weight: 600; }
+.tk-str { color: var(--tok-str); }
+.tk-num { color: var(--tok-num); }
+.tk-fn { color: var(--tok-fn); }
+.tk-com { color: var(--tok-com); font-style: italic; }
+
+/* ===================== BOXES ===================== */
+.note {
+  border-left: 5px solid var(--teal); background: var(--teal-soft);
+  padding: 10px 16px; border-radius: 4px; margin: 0 0 12px; font-size: 21px;
+}
+.warn {
+  border-left: 5px solid var(--amber); padding: 10px 16px; margin: 0 0 12px;
+  font-size: 21px; background: transparent; border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+}
+.tag-bad, .tag-good {
+  display: inline-block; font-weight: 700; font-size: 17px;
+  padding: 2px 10px; border-radius: 4px; margin-bottom: 4px;
+}
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-good { color: var(--good); background: var(--good-soft); }
+.why { font-size: 19px; margin: 0 0 10px; }
+
+table.t {
+  border-collapse: collapse; font-size: 20px; width: 100%;
+}
+table.t th, table.t td {
+  border: 1px solid var(--line); padding: 6px 12px; text-align: left;
+}
+table.t th { background: var(--teal-soft); color: var(--navy); }
+table.t td.c, table.t th.c { text-align: center; }
+table.t code { font-family: Consolas, Monaco, monospace; }
+
+/* ===================== Q & A ===================== */
+.qa { margin: 0 0 10px; }
+.reveal {
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--teal); background: transparent;
+  border: 1.5px solid var(--teal); border-radius: 4px;
+  padding: 3px 12px; cursor: pointer; margin: 0 0 6px;
+}
+.reveal:hover { background: var(--teal-soft); }
+.answer { visibility: hidden; }
+.answer.shown { visibility: visible; }
+.q { font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+
+/* ===================== TITLE / SECTION ===================== */
+.title-body { justify-content: center; padding-left: 90px; }
+.title-body .sub { font-size: 30px; color: var(--teal); margin-bottom: 36px; }
+.title-body .meta { font-size: 24px; color: var(--muted); line-height: 1.6; }
+.title-rule { width: 120px; height: 5px; background: var(--teal); margin: 0 0 28px; }
+.section-body { justify-content: center; align-items: center; text-align: center; }
+
+/* ===================== DIAGRAMS ===================== */
+.anat {
+  font-family: Consolas, Monaco, monospace; font-size: 40px;
+  background: var(--code-bg); border: 1px solid var(--line);
+  border-left: 5px solid var(--teal); border-radius: 6px;
+  padding: 18px 28px; margin: 0 0 16px; line-height: 1.6;
+}
+.anat .a1 { color: var(--tok-kw); font-weight: 700; }
+.anat .a2 { color: var(--tok-num); font-weight: 700; }
+.anat .a3 { color: var(--tok-str); font-weight: 700; }
+.anat .a4 { color: var(--bad); font-weight: 700; }
+.anat .a5 { color: var(--tok-fn); font-weight: 700; }
+.anat .ind { background: var(--teal-soft); outline: 1px dashed var(--teal); }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 36px; font-size: 21px; }
+.legend b { font-family: Consolas, Monaco, monospace; }
+
+.boxes { display: flex; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap; }
+.box {
+  min-width: 64px; text-align: center;
+  font-family: Consolas, Monaco, monospace; font-size: 22px;
+}
+.box .v {
+  border: 2px solid var(--navy); border-radius: 4px; padding: 6px 10px;
+  background: var(--slide-bg);
+}
+.box .i { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.box.off .v { border-style: dashed; border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.box.hi .v { background: var(--teal-soft); border-color: var(--teal); }
+
+svg text { font-family: "Segoe UI", Arial, sans-serif; }
+.sv-box { fill: var(--slide-bg); stroke: var(--navy); stroke-width: 2; }
+.sv-dec { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.sv-t { fill: var(--text); font-size: 19px; }
+.sv-m { fill: var(--muted); font-size: 16px; font-weight: 600; }
+.sv-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.sv-arrow { fill: var(--muted); }
+
+.ex-num {
+  display: inline-block; min-width: 38px; font-weight: 700; color: var(--teal);
+}
+.level {
+  display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--teal); border: 1.5px solid var(--teal);
+  border-radius: 4px; padding: 1px 10px; margin-left: 12px; vertical-align: middle;
+}
+.ex { margin-bottom: 10px; }
+.ex p { margin: 0 0 6px; }
+
+/* ===================== CONTROLS ===================== */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: var(--bar-bg); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  font-size: 15px;
+}
+.controls button {
+  font: inherit; font-size: 15px; color: var(--navy);
+  background: transparent; border: 1px solid var(--line); border-radius: 4px;
+  padding: 6px 14px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--teal); color: var(--teal); }
+.controls .counter { color: var(--muted); min-width: 64px; text-align: center; }
+.progress {
+  flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.progress div { height: 100%; width: 0; background: var(--teal); }
+.spacer { width: 8px; }
+
+/* ===================== PRINT ===================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  :root, html.dark {
+    --bg: #ffffff; --slide-bg: #ffffff; --text: #1f2933; --muted: #5b6875;
+    --navy: #1b365d; --teal: #0f7c74; --teal-soft: #e3f2f0; --line: #d5dbe1;
+    --code-bg: #f1f3f5; --code-text: #1f2933; --out-bg: #ffffff;
+    --bad: #b42318; --bad-soft: #fdecea; --good: #1a7f37; --good-soft: #e8f5ec;
+    --amber: #a15c00; --tok-kw: #7a2bb5; --tok-str: #a5481a; --tok-num: #0b6bcb;
+    --tok-fn: #0f7c74; --tok-com: #6b7785;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .controls, .reveal { display: none !important; }
+  .answer { visibility: visible !important; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; inset: auto;
+    width: 1280px; height: 720px; zoom: 0.82;
+    margin: 0 auto; border: none; transform: translateY(120px);
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- ============ 1. TITLE ============ -->
+<section class="slide" data-plain="1">
+  <div class="s-body title-body">
+    <div class="muted" style="font-size:22px;margin-bottom:10px">CS126 – Introduction to Python</div>
+    <h1>Loops: The <span style="font-family:Consolas,Monaco,monospace">while</span> Loop</h1>
+    <div class="sub">Repeating actions as long as a condition is True</div>
+    <div class="title-rule"></div>
+    <div class="meta">Dr. Fawaz Alazemi</div>
+  </div>
+</section>
+
+<!-- ============ 2. OBJECTIVES ============ -->
+<section class="slide">
+  <h2>Learning Objectives</h2>
+  <p>By the end of this lecture, you will be able to:</p>
+  <ol>
+    <li>Explain how a <code class="inl">while</code> loop works and how it differs from a <code class="inl">for</code> loop.</li>
+    <li>Write a <code class="inl">while</code> loop with a correct condition, colon, and indented body.</li>
+    <li>Use the three parts of a counting loop: <b>initialize</b>, <b>test</b>, <b>update</b>.</li>
+    <li>Recognize, avoid, and stop <b>infinite loops</b>.</li>
+    <li>Use <code class="inl">while</code> when the number of repetitions is <b>not known</b> in advance.</li>
+    <li>Use <code class="inl">while</code> with lists, compound conditions, and user input (sentinels and validation).</li>
+    <li>Trace a <code class="inl">while</code> loop step by step and fix common mistakes.</li>
+  </ol>
+</section>
+
+<!-- ============ 3. MOTIVATION ============ -->
+<section class="slide">
+  <h2>Why Do We Need Another Loop?</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>A <code class="inl">for</code> loop knows the count</h3>
+      <pre class="code"><code>for i in range(5):
+    print("Hello")</code></pre>
+      <p class="small">Runs exactly 5 times. A loop over a list runs once per item.</p>
+      <div class="note">A <code class="inl">for</code> loop works when you know <b>how many</b> times, or <b>which items</b>.</div>
+    </div>
+    <div class="col">
+      <h3>Sometimes we do not know the count</h3>
+      <ul class="small">
+        <li>You save 150 KD every month. <b>How many months</b> until you have 1000 KD?</li>
+        <li>Keep asking for a grade <b>until</b> the user types a valid one.</li>
+        <li>Keep reading names <b>until</b> the user types <code class="inl">quit</code>.</li>
+      </ul>
+      <div class="note">A <code class="inl">while</code> loop repeats <b>as long as a condition is True</b>. It stops when the condition becomes False.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. WHAT IS A WHILE LOOP ============ -->
+<section class="slide">
+  <h2>What Is a <code class="inl">while</code> Loop?</h2>
+  <p>A <code class="inl">while</code> loop checks a <b>condition</b>. If it is <code class="inl">True</code>, the body runs, then Python checks the condition <b>again</b>.</p>
+  <table class="t" style="margin-top:6px">
+    <tr><th style="width:30%">Term</th><th>Meaning</th></tr>
+    <tr><td><b>Condition</b></td><td>A logical expression that is <code>True</code> or <code>False</code></td></tr>
+    <tr><td><b>Loop body</b></td><td>The indented lines that repeat</td></tr>
+    <tr><td><b>Iteration</b></td><td>One run of the loop body</td></tr>
+    <tr><td><b>Loop control variable</b></td><td>The variable the condition checks and the body changes</td></tr>
+  </table>
+  <div class="note" style="margin-top:16px">Everyday example: <i>"While the tea is too hot, wait one minute."</i> You check, wait, check again … and stop when the tea is ready.</div>
+</section>
+
+<!-- ============ 5. SYNTAX ============ -->
+<section class="slide">
+  <h2>The <code class="inl">while</code> Loop Syntax</h2>
+  <div class="anat"><span class="a1">while</span> <span class="a3">condition</span><span class="a4">:</span><br><span class="ind">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="a5">statement(s)</span></div>
+  <div class="legend">
+    <div><b style="color:var(--tok-kw)">while</b> — keyword that starts the loop</div>
+    <div><b style="color:var(--tok-str)">condition</b> — any logical expression, like in <code class="inl">if</code></div>
+    <div><b style="color:var(--bad)">:</b> — colon ends the header line</div>
+    <div><b style="color:var(--tok-fn)">statement(s)</b> — the loop body</div>
+    <div><b>4 spaces</b> — indentation marks the body</div>
+    <div>The body must <b>change something</b> so the condition can become False</div>
+  </div>
+  <div class="cols" style="margin-top:18px;flex:none">
+    <div class="note"><code class="inl">if</code> runs its body <b>at most once</b>.</div>
+    <div class="note"><code class="inl">while</code> runs its body <b>again and again</b> while the condition is True.</div>
+  </div>
+</section>
+
+<!-- ============ 6. FIRST EXAMPLE ============ -->
+<section class="slide">
+  <h2>First Example: Counting from 1 to 5</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>count = 1                # 1. initialize
+while count &lt;= 5:        # 2. test
+    print(count)
+    count = count + 1    # 3. update
+print("Done")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">1
+2
+3
+4
+5
+Done</pre>
+    </div>
+    <div class="col small">
+      <h3>The three parts</h3>
+      <ol>
+        <li><b>Initialize</b> — give the control variable a start value <b>before</b> the loop.</li>
+        <li><b>Test</b> — the condition decides whether the body runs.</li>
+        <li><b>Update</b> — change the variable <b>inside</b> the body, so the loop moves toward stopping.</li>
+      </ol>
+      <div class="note">When <code class="inl">count</code> becomes 6, <code class="inl">6 &lt;= 5</code> is False. The loop ends and <code class="inl">"Done"</code> is printed once.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. FLOW + TRACE ============ -->
+<section class="slide">
+  <h2>How a <code class="inl">while</code> Loop Runs</h2>
+  <div class="cols">
+    <div class="col">
+      <svg viewBox="0 0 520 440" width="100%" height="440" role="img" aria-label="Flow chart of a while loop">
+        <defs><marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+        <rect x="130" y="10" width="260" height="50" rx="6" class="sv-box"/>
+        <text x="260" y="42" text-anchor="middle" class="sv-t">Initialize variable</text>
+        <line x1="260" y1="60" x2="260" y2="92" class="sv-line" marker-end="url(#ah)"/>
+        <polygon points="260,96 380,150 260,204 140,150" class="sv-dec"/>
+        <text x="260" y="146" text-anchor="middle" class="sv-t">Condition</text>
+        <text x="260" y="170" text-anchor="middle" class="sv-t">True?</text>
+        <line x1="260" y1="204" x2="260" y2="240" class="sv-line" marker-end="url(#ah)"/>
+        <text x="272" y="228" class="sv-m">Yes</text>
+        <rect x="130" y="244" width="260" height="66" rx="6" class="sv-box"/>
+        <text x="260" y="271" text-anchor="middle" class="sv-t">Run the loop body</text>
+        <text x="260" y="296" text-anchor="middle" class="sv-t">(including the update)</text>
+        <path d="M130,277 L60,277 L60,150 L132,150" class="sv-line" marker-end="url(#ah)"/>
+        <text x="20" y="220" class="sv-m" transform="rotate(-90 40 220)">check again</text>
+        <path d="M380,150 L470,150 L470,385 L392,385" class="sv-line" marker-end="url(#ah)"/>
+        <text x="392" y="140" class="sv-m">No</text>
+        <rect x="130" y="362" width="260" height="46" rx="6" class="sv-box"/>
+        <text x="260" y="392" text-anchor="middle" class="sv-t">Continue after loop</text>
+      </svg>
+    </div>
+    <div class="col">
+      <h3>Trace of the counting loop</h3>
+      <table class="t">
+        <tr><th class="c"><code>count</code></th><th class="c"><code>count &lt;= 5</code></th><th class="c">Printed</th></tr>
+        <tr><td class="c">1</td><td class="c">True</td><td class="c">1</td></tr>
+        <tr><td class="c">2</td><td class="c">True</td><td class="c">2</td></tr>
+        <tr><td class="c">3</td><td class="c">True</td><td class="c">3</td></tr>
+        <tr><td class="c">4</td><td class="c">True</td><td class="c">4</td></tr>
+        <tr><td class="c">5</td><td class="c">True</td><td class="c">5</td></tr>
+        <tr><td class="c">6</td><td class="c">False</td><td class="c muted">loop ends</td></tr>
+      </table>
+      <div class="note" style="margin-top:14px">The condition is checked <b>6</b> times, but the body runs only <b>5</b> times.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. QUESTIONS ============ -->
+<section class="slide">
+  <h2>What Will This Code Print?</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Question 1</h3>
+      <pre class="code"><code>n = 10
+while n &gt; 0:
+    print(n)
+    n = n - 3</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer">
+        <pre class="out">10
+7
+4
+1</pre>
+        <p class="small">Next, <code class="inl">n</code> becomes −2, and <code class="inl">-2 &gt; 0</code> is False.</p>
+      </div>
+    </div>
+    <div class="col">
+      <h3>Question 2</h3>
+      <pre class="code"><code>x = 8
+while x &lt; 5:
+    print("Hello")
+print("End")</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer">
+        <pre class="out">End</pre>
+        <p class="small">The condition is False at the <b>first</b> check, so the body runs <b>zero</b> times.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. INFINITE LOOPS ============ -->
+<section class="slide">
+  <h2>Infinite Loops</h2>
+  <p>If the condition <b>never</b> becomes False, the loop never stops. This is an <b>infinite loop</b>.</p>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Never stops</span>
+      <pre class="code bad" data-skip><code>count = 1
+while count &lt;= 5:
+    print(count)
+# no update: count stays 1</code></pre>
+      <p class="small">Prints <code class="inl">1</code> forever.<br><b>To stop it:</b> press <b>Ctrl + C</b> in the terminal, or the <b>Stop</b> button in your editor.</p>
+    </div>
+    <div class="col">
+      <div class="q">Is this an infinite loop?</div>
+      <pre class="code" data-skip><code>n = 1
+while n != 10:
+    n = n + 2</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer small">
+        <p><b>Yes.</b> <code class="inl">n</code> is 1, 3, 5, 7, 9, 11, … It jumps <b>over</b> 10, so <code class="inl">n != 10</code> is always True.</p>
+        <p>Safer: <code class="inl">while n &lt; 10:</code></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. UNKNOWN COUNT ============ -->
+<section class="slide">
+  <h2>Repeating Until a Goal Is Reached</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code — save 150 KD every month until you have 1000 KD</div>
+      <pre class="code"><code>balance = 0
+months = 0
+while balance &lt; 1000:
+    balance = balance + 150
+    months = months + 1
+print("Months:", months)
+print("Balance:", balance, "KD")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Months: 7
+Balance: 1050 KD</pre>
+    </div>
+    <div class="col">
+      <h3>Trace</h3>
+      <table class="t">
+        <tr><th class="c"><code>months</code></th><th class="c"><code>balance</code></th><th class="c"><code>&lt; 1000</code>?</th></tr>
+        <tr><td class="c">0</td><td class="c">0</td><td class="c">True</td></tr>
+        <tr><td class="c">1 – 5</td><td class="c">150 … 750</td><td class="c">True</td></tr>
+        <tr><td class="c">6</td><td class="c">900</td><td class="c">True</td></tr>
+        <tr><td class="c">7</td><td class="c">1050</td><td class="c">False</td></tr>
+      </table>
+      <div class="note" style="margin-top:14px">We did <b>not</b> know the answer (7) before running. The loop <b>found</b> it for us.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. WHILE OVER A LIST ============ -->
+<section class="slide">
+  <h2><code class="inl">while</code> with a List Index</h2>
+  <div class="boxes">
+    <div class="box"><div class="v">46</div><div class="i">index 0</div></div>
+    <div class="box"><div class="v">48</div><div class="i">index 1</div></div>
+    <div class="box"><div class="v">44</div><div class="i">index 2</div></div>
+    <div class="box"><div class="v">50</div><div class="i">index 3</div></div>
+    <div style="align-self:center;font-size:20px;margin-left:14px" class="muted">Valid indexes: 0 to <code class="inl">len(temps) - 1</code></div>
+  </div>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>temps = [46, 48, 44, 50]
+i = 0
+while i &lt; len(temps):
+    print("Day", i + 1, ":", temps[i])
+    i = i + 1</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Day 1 : 46
+Day 2 : 48
+Day 3 : 44
+Day 4 : 50</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">i</code> starts at <b>0</b>, the first index.</li>
+        <li>The test is <code class="inl">i &lt; len(temps)</code>, so the last index used is 3.</li>
+        <li><code class="inl">i &lt;= len(temps)</code> would try <code class="inl">temps[4]</code> → <b>IndexError</b>.</li>
+      </ul>
+      <div class="note">For simply visiting every item, a <code class="inl">for</code> loop is easier. <code class="inl">while</code> is useful when you may need to <b>stop early</b> (next slide).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. SEARCH WITH COMPOUND CONDITION ============ -->
+<section class="slide">
+  <h2>Stopping Early: A Compound Condition</h2>
+  <div class="cols w60 tight">
+    <div class="col">
+      <div class="lbl">Code — find the first day above 50 °C</div>
+      <pre class="code"><code>temps = [46, 48, 44, 51, 47, 52]
+i = 0
+while i &lt; len(temps) and temps[i] &lt;= 50:
+    i = i + 1
+if i &lt; len(temps):
+    print("First day above 50:", i + 1)
+else:
+    print("No day above 50")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">First day above 50: 4</pre>
+    </div>
+    <div class="col small">
+      <h3>How it works</h3>
+      <ul>
+        <li>The loop continues only while <b>both</b> parts are True.</li>
+        <li>It stops at index 3 because <code class="inl">51 &lt;= 50</code> is False.</li>
+        <li>The <code class="inl">if</code> after the loop checks <b>why</b> it stopped.</li>
+      </ul>
+      <div class="warn"><b>Order matters.</b> With <code class="inl">and</code>, Python stops checking when the left part is False. So <code class="inl">temps[i]</code> is never read with an index that is too big.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13. SENTINEL ============ -->
+<section class="slide">
+  <h2>Reading Input Until a Stop Value</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="Sara|Fahad|quit"><code>name = input("Enter a name (or quit): ")
+while name != "quit":
+    print("Welcome,", name)
+    name = input("Enter a name (or quit): ")
+print("Goodbye")</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Enter a name (or quit): Sara
+Welcome, Sara
+Enter a name (or quit): Fahad
+Welcome, Fahad
+Enter a name (or quit): quit
+Goodbye</pre>
+    </div>
+    <div class="col small">
+      <h3>The sentinel pattern</h3>
+      <p>A <b>sentinel</b> is a special value that means "stop" — here, <code class="inl">"quit"</code>.</p>
+      <ol>
+        <li>Read the first value <b>before</b> the loop.</li>
+        <li>Test it in the condition.</li>
+        <li>Read the next value at the <b>end</b> of the body.</li>
+      </ol>
+      <div class="note">The second <code class="inl">input()</code> is the <b>update</b>. Without it, the loop never stops.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. VALIDATION ============ -->
+<section class="slide">
+  <h2>Input Validation: Ask Again Until It Is Correct</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="120|-5|85"><code>grade = int(input("Enter grade (0-100): "))
+while grade &lt; 0 or grade &gt; 100:
+    print("Invalid grade. Try again.")
+    grade = int(input("Enter grade (0-100): "))
+print("Saved:", grade)</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Enter grade (0-100): 120
+Invalid grade. Try again.
+Enter grade (0-100): -5
+Invalid grade. Try again.
+Enter grade (0-100): 85
+Saved: 85</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li>The condition describes the <b>bad</b> case: below 0 <b>or</b> above 100.</li>
+        <li>While the input is bad, print a message and ask again.</li>
+        <li>If the first input is already valid, the body runs <b>zero</b> times.</li>
+      </ul>
+      <div class="note">Validation is one of the most common real uses of <code class="inl">while</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15. FOR VS WHILE ============ -->
+<section class="slide">
+  <h2><code class="inl">for</code> or <code class="inl">while</code>?</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Same task with for</div>
+      <pre class="code"><code>for i in range(1, 6):
+    print(i)</code></pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Same task with while</div>
+      <pre class="code"><code>i = 1
+while i &lt; 6:
+    print(i)
+    i = i + 1</code></pre>
+    </div>
+  </div>
+  <table class="t" style="margin-top:4px">
+    <tr><th></th><th><code>for</code> loop</th><th><code>while</code> loop</th></tr>
+    <tr><td><b>Best when</b></td><td>you know the count, or visit each item</td><td>you repeat <b>until</b> something happens</td></tr>
+    <tr><td><b>Stops when</b></td><td>the sequence has no items left</td><td>the condition becomes False</td></tr>
+    <tr><td><b>Update</b></td><td>automatic</td><td><b>you</b> must write it</td></tr>
+    <tr><td><b>Infinite loop?</b></td><td>not over a list or range</td><td>possible if you forget the update</td></tr>
+  </table>
+</section>
+
+<!-- ============ 16. MISTAKES 1 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (1): Syntax and Indentation</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>count = 1
+while count &lt;= 3
+    print(count)
+    count = count + 1</code></pre>
+      <p class="why"><b>Why?</b> The colon <code class="inl">:</code> is missing. Python gives a <b>SyntaxError</b>.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>count = 1
+while count &lt;= 3:
+    print(count)
+    count = count + 1</code></pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>count = 1
+while count &lt;= 3:
+    print(count)
+count = count + 1</code></pre>
+      <p class="why"><b>Why?</b> The update is <b>not indented</b>, so it is outside the loop. <code class="inl">count</code> stays 1 → infinite loop.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>count = 1
+while count &lt;= 3:
+    print(count)
+    count = count + 1</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17. MISTAKES 2 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (2): Wrong Condition or Update</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code># goal: print 1 to 5
+i = 1
+while i &lt; 5:
+    print(i)
+    i = i + 1</code></pre>
+      <p class="why"><b>Why?</b> <code class="inl">&lt;</code> stops before 5, so only 1 to 4 are printed.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>i = 1
+while i &lt;= 5:
+    print(i)
+    i = i + 1</code></pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code># goal: count down from 10
+n = 10
+while n &gt; 0:
+    print(n)
+    n = n + 1</code></pre>
+      <p class="why"><b>Why?</b> The update moves the <b>wrong way</b>. <code class="inl">n</code> grows forever → infinite loop.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>n = 10
+while n &gt; 0:
+    print(n)
+    n = n - 1</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18. MISTAKES 3 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (3): Loops with Input</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>answer = input("Continue? ")
+while answer != "no":
+    print("Working...")</code></pre>
+      <p class="why"><b>Why?</b> Input is read only <b>once</b>. The answer never changes → infinite loop.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good" data-input="yes|no"><code>answer = input("Continue? ")
+while answer != "no":
+    print("Working...")
+    answer = input("Continue? ")</code></pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>pin = input("PIN: ")
+while pin != 1234:
+    pin = input("PIN: ")</code></pre>
+      <p class="why"><b>Why?</b> <code class="inl">input()</code> gives a <b>string</b>. <code class="inl">"1234" != 1234</code> is always True → infinite loop.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good" data-input="1111|1234"><code>pin = int(input("PIN: "))
+while pin != 1234:
+    pin = int(input("PIN: "))</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19. WORKED EXAMPLE 1 ============ -->
+<section class="slide">
+  <h2>Worked Example 1: Counting the Digits of a Number</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>n = 2026
+digits = 0
+while n &gt; 0:
+    n = n // 10      # drop last digit
+    digits = digits + 1
+print("Digits:", digits)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Digits: 4</pre>
+      <p class="small"><code class="inl">//</code> is integer division: <code class="inl">2026 // 10</code> is <code class="inl">202</code>.</p>
+    </div>
+    <div class="col">
+      <h3>Trace</h3>
+      <table class="t">
+        <tr><th class="c"><code>n</code> before</th><th class="c"><code>n &gt; 0</code>?</th><th class="c"><code>n</code> after</th><th class="c"><code>digits</code></th></tr>
+        <tr><td class="c">2026</td><td class="c">True</td><td class="c">202</td><td class="c">1</td></tr>
+        <tr><td class="c">202</td><td class="c">True</td><td class="c">20</td><td class="c">2</td></tr>
+        <tr><td class="c">20</td><td class="c">True</td><td class="c">2</td><td class="c">3</td></tr>
+        <tr><td class="c">2</td><td class="c">True</td><td class="c">0</td><td class="c">4</td></tr>
+        <tr><td class="c">0</td><td class="c">False</td><td class="c" colspan="2">loop ends</td></tr>
+      </table>
+      <div class="note" style="margin-top:14px">The number of repetitions depends on the <b>size</b> of the number, not on a fixed count.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20. WORKED EXAMPLE 2 ============ -->
+<section class="slide">
+  <h2>Worked Example 2: ATM Withdrawals</h2>
+  <div class="cols w70 tight">
+    <div class="col">
+      <div class="lbl">Code — pay requests in order while there is enough money</div>
+      <pre class="code"><code>balance = 500
+requests = [100, 150, 80, 200, 50]
+i = 0
+while i &lt; len(requests) and requests[i] &lt;= balance:
+    balance = balance - requests[i]
+    print("Paid", requests[i], "KD - balance", balance)
+    i = i + 1
+print("Requests completed:", i)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Paid 100 KD - balance 400
+Paid 150 KD - balance 250
+Paid 80 KD - balance 170
+Requests completed: 3</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li>100 ≤ 500 → pay; balance 400.</li>
+        <li>150 ≤ 400 → pay; balance 250.</li>
+        <li>80 ≤ 250 → pay; balance 170.</li>
+        <li>200 ≤ 170 is <b>False</b> → the loop stops.</li>
+        <li><code class="inl">i</code> is 3, the number of paid requests.</li>
+      </ol>
+      <p>The last request (50) is never checked.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21. WORKED EXAMPLE 3 ============ -->
+<section class="slide">
+  <h2>Worked Example 3: Guessing Game</h2>
+  <div class="cols w60 tight">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="4|9|7"><code>secret = 7
+guess = int(input("Guess (1-10): "))
+tries = 1
+while guess != secret:
+    if guess &lt; secret:
+        print("Too low")
+    else:
+        print("Too high")
+    guess = int(input("Guess (1-10): "))
+    tries = tries + 1
+print("Correct! Tries:", tries)</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Guess (1-10): 4
+Too low
+Guess (1-10): 9
+Too high
+Guess (1-10): 7
+Correct! Tries: 3</pre>
+    </div>
+    <div class="col small">
+      <h3>Ideas combined</h3>
+      <ul>
+        <li>The loop repeats <b>until</b> the guess is correct — we cannot know how many tries.</li>
+        <li><code class="inl">if / else</code> inside the body gives a hint.</li>
+        <li>New input at the end of the body is the <b>update</b>.</li>
+        <li><code class="inl">tries</code> is a counter.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22. THINK ABOUT IT ============ -->
+<section class="slide">
+  <h2>Think About It</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="qa">
+        <div class="q">1. What is the smallest number of times a <code class="inl">while</code> body can run?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small"><b>Zero.</b> If the condition is False at the first check, the body never runs.</div>
+      </div>
+      <div class="qa">
+        <div class="q">2. Can every <code class="inl">for</code> loop be written as a <code class="inl">while</code> loop?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small"><b>Yes</b> — use a counter or an index. The reverse is not always easy: "repeat until the user types quit" has no fixed count.</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="qa">
+        <div class="q">3. What does this print?</div>
+        <pre class="code"><code>k = 1
+while k &lt; 100:
+    k = k * 2
+print(k)</code></pre>
+        <button class="reveal">Show Answer</button>
+        <div class="answer"><pre class="out">128</pre><p class="small"><code class="inl">k</code>: 1, 2, 4, …, 64, then 128. Now <code class="inl">128 &lt; 100</code> is False.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23. PRACTICE ============ -->
+<section class="slide">
+  <h2>Practice in Class (3 minutes)</h2>
+  <p>A car's petrol tank has <b>50 litres</b>. Each trip uses <b>7 litres</b>. Using a <code class="inl">while</code> loop, count how many full trips the car can make, and print the litres left.</p>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Expected output</div>
+      <pre class="out">Trips: 7
+Left: 1 litres</pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer">
+        <pre class="code"><code>tank = 50
+trips = 0
+while tank &gt;= 7:
+    tank = tank - 7
+    trips = trips + 1
+print("Trips:", trips)
+print("Left:", tank, "litres")</code></pre>
+      </div>
+    </div>
+    <div class="col">
+      <div class="note"><b>Hint:</b> Which variable does the condition check? What changes in each iteration? What do you count?</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24. REMEMBER ============ -->
+<section class="slide">
+  <h2>What You Should Remember</h2>
+  <ol>
+    <li>A <code class="inl">while</code> loop repeats its body <b>as long as</b> the condition is True.</li>
+    <li>Syntax: <code class="inl">while condition:</code> then an <b>indented</b> body.</li>
+    <li>Counting loops need three parts: <b>initialize</b>, <b>test</b>, <b>update</b>.</li>
+    <li>If the condition never becomes False, you get an <b>infinite loop</b>. Stop it with <b>Ctrl + C</b>.</li>
+    <li>The body may run <b>zero</b> times if the condition is False at the start.</li>
+    <li>Use <code class="inl">while</code> when you repeat <b>until something happens</b>; use <code class="inl">for</code> when you know the items or the count.</li>
+    <li>With input, read <b>before</b> the loop and <b>again</b> at the end of the body.</li>
+  </ol>
+</section>
+
+<!-- ============ 25. EXERCISES L1 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 1 — Basic</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">1.</span>Predict the output.</p>
+        <pre class="code"><code>x = 1
+while x &lt; 20:
+    print(x)
+    x = x * 3</code></pre></div>
+      <div class="ex"><p><span class="ex-num">2.</span>Predict the output.</p>
+        <pre class="code"><code>n = 10
+while n &gt; 0:
+    n = n - 4
+    print(n)</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">3.</span>Find and fix the <b>two</b> errors.</p>
+        <pre class="code" data-skip><code>count = 1
+while count &lt;= 3
+    print(count)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">4.</span>How many times does <code class="inl">"Hi"</code> print? Explain.</p>
+        <pre class="code"><code>i = 5
+while i &lt; 5:
+    print("Hi")
+    i = i + 1</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26. EXERCISES L2 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 2 — Apply</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">5.</span>Use a <code class="inl">while</code> loop to print the even numbers from 2 to 10.</p></div>
+      <div class="ex"><p><span class="ex-num">6.</span>A student has <b>200 KD</b> and saves <b>75 KD</b> every month. Use a <code class="inl">while</code> loop to find how many months until the balance is <b>at least 650 KD</b>. Print the months and the balance.</p></div>
+      <div class="ex"><p><span class="ex-num">8.</span>Rewrite this <code class="inl">for</code> loop as a <code class="inl">while</code> loop with the same output.</p>
+        <pre class="code"><code>for i in range(10, 0, -2):
+    print(i)</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">7.</span>Complete the code so it prints the total of the list (<code class="inl">20</code>).</p>
+        <pre class="code" data-skip><code>prices = [2, 4, 6, 8]
+total = 0
+i = ___
+while i ___ len(prices):
+    total = total + ___
+    ___
+print(total)</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27. EXERCISES L3 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 3 — Challenge</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">9.</span>A bacteria sample starts with <b>10</b> cells and <b>doubles</b> every hour. How many hours until it has <b>more than 1000</b> cells? Print the hours and the final count.</p></div>
+      <div class="ex"><p><span class="ex-num">10.</span>Write a program that finds the <b>sum of the digits</b> of <code class="inl">n = 4083</code> (answer: 15).<br><span class="small muted">Hint: <code class="inl">n % 10</code> gives the last digit.</span></p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">11.</span>Predict the output. Trace both variables.</p>
+        <pre class="code"><code>i = 0
+total = 0
+while i &lt; 10 and total &lt; 8:
+    total = total + i
+    i = i + 1
+print(i, total)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">12.</span>Keep asking for a password until it has <b>at least 8 characters</b>. Print <code class="inl">Too short</code> for each bad one, then <code class="inl">Password accepted</code>.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 28. SOLUTIONS DIVIDER ============ -->
+<section class="slide">
+  <div class="s-body section-body" style="padding:0">
+    <div class="title-rule" style="margin:0 auto 24px"></div>
+    <h1>Exercise Solutions</h1>
+    <p class="muted" style="font-size:26px">Try every exercise first. Then compare your answers.</p>
+  </div>
+</section>
+
+<!-- ============ 29. SOLUTIONS 1-4 ============ -->
+<section class="slide">
+  <h2>Solutions 1 – 4 <span class="level">Level 1</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">1.</span><code class="inl">x</code> is multiplied by 3: 1, 3, 9, then 27 stops the loop.</p>
+      <pre class="out">1
+3
+9</pre>
+      <p><span class="ex-num">2.</span>The update happens <b>before</b> the print, so −2 is printed before the next check.</p>
+      <pre class="out">6
+2
+-2</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">3.</span>Add the colon, and add the update so the loop stops.</p>
+      <pre class="code"><code>count = 1
+while count &lt;= 3:
+    print(count)
+    count = count + 1</code></pre>
+      <p><span class="ex-num">4.</span><b>Zero times.</b> <code class="inl">5 &lt; 5</code> is False at the first check, so the body never runs and nothing is printed.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 30a. SOLUTIONS 5-6 ============ -->
+<section class="slide">
+  <h2>Solutions 5 – 6 <span class="level">Level 2</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">5.</span>Start at 2 and add 2 each time.</p>
+      <pre class="code"><code>n = 2
+while n &lt;= 10:
+    print(n)
+    n = n + 2</code></pre>
+      <pre class="out">2
+4
+6
+8
+10</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">6.</span>Repeat until the goal is reached.</p>
+      <pre class="code"><code>balance = 200
+months = 0
+while balance &lt; 650:
+    balance = balance + 75
+    months = months + 1
+print("Months:", months)
+print("Balance:", balance, "KD")</code></pre>
+      <pre class="out">Months: 6
+Balance: 650 KD</pre>
+      <p class="small">200 → 275 → 350 → 425 → 500 → 575 → 650. Since <code class="inl">650 &lt; 650</code> is False, the loop stops.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 30b. SOLUTIONS 7-8 ============ -->
+<section class="slide">
+  <h2>Solutions 7 – 8 <span class="level">Level 2</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">7.</span>Start at index 0; stop before <code class="inl">len(prices)</code>.</p>
+      <pre class="code"><code>prices = [2, 4, 6, 8]
+total = 0
+i = 0
+while i &lt; len(prices):
+    total = total + prices[i]
+    i = i + 1
+print(total)</code></pre>
+      <pre class="out">20</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">8.</span>Initialize to 10, test <code class="inl">i &gt; 0</code>, update by −2.</p>
+      <pre class="code"><code>i = 10
+while i &gt; 0:
+    print(i)
+    i = i - 2</code></pre>
+      <pre class="out">10
+8
+6
+4
+2</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 31. SOLUTIONS 9-10 ============ -->
+<section class="slide">
+  <h2>Solutions 9 – 10 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">9.</span>10 → 20 → 40 → 80 → 160 → 320 → 640 → 1280.</p>
+      <pre class="code"><code>cells = 10
+hours = 0
+while cells &lt;= 1000:
+    cells = cells * 2
+    hours = hours + 1
+print("Hours:", hours)
+print("Cells:", cells)</code></pre>
+      <pre class="out">Hours: 7
+Cells: 1280</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">10.</span>Add the last digit, then remove it.</p>
+      <pre class="code"><code>n = 4083
+total = 0
+while n &gt; 0:
+    total = total + n % 10
+    n = n // 10
+print("Sum of digits:", total)</code></pre>
+      <pre class="out">Sum of digits: 15</pre>
+      <p class="small">Digits added: 3, 8, 0, 4 → 15.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 32. SOLUTIONS 11-12 ============ -->
+<section class="slide">
+  <h2>Solutions 11 – 12 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">11.</span>The loop stops when <code class="inl">total &lt; 8</code> becomes False.</p>
+      <table class="t">
+        <tr><th class="c"><code>i</code> before</th><th class="c"><code>total</code> after</th><th class="c"><code>i</code> after</th></tr>
+        <tr><td class="c">0</td><td class="c">0</td><td class="c">1</td></tr>
+        <tr><td class="c">1</td><td class="c">1</td><td class="c">2</td></tr>
+        <tr><td class="c">2</td><td class="c">3</td><td class="c">3</td></tr>
+        <tr><td class="c">3</td><td class="c">6</td><td class="c">4</td></tr>
+        <tr><td class="c">4</td><td class="c">10</td><td class="c">5</td></tr>
+      </table>
+      <pre class="out" style="margin-top:10px">5 10</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">12.</span>Validation loop using <code class="inl">len()</code>.</p>
+      <pre class="code" data-input="abc|kuwait2026"><code>password = input("Password: ")
+while len(password) &lt; 8:
+    print("Too short")
+    password = input("Password: ")
+print("Password accepted")</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Password: abc
+Too short
+Password: kuwait2026
+Password accepted</pre>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="btnPrev" title="Previous (Left Arrow)">◀ Previous</button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button id="btnNext" title="Next (Right Arrow)">Next ▶</button>
+  <div class="spacer"></div>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="spacer"></div>
+  <button id="btnFull">Full Screen</button>
+  <button id="btnTheme">Dark Mode</button>
+  <button id="btnPdf">Export PDF</button>
+</div>
+
+<script>
+(function () {
+  var COURSE = "CS126 – Introduction to Python";
+  var TOPIC = "Loops: The while Loop";
+
+  /* ---------- Theme (restore before anything paints) ---------- */
+  var root = document.documentElement;
+  try { if (localStorage.getItem("cs126-theme") === "dark") root.classList.add("dark"); } catch (e) {}
+
+  /* ---------- Build slide chrome ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length;
+  slides.forEach(function (s, i) {
+    if (!s.querySelector(".s-body")) {
+      var body = document.createElement("div");
+      body.className = "s-body";
+      while (s.firstChild) body.appendChild(s.firstChild);
+      s.appendChild(body);
+    }
+    var head = document.createElement("div");
+    head.className = "s-head";
+    head.innerHTML = '<span class="course">' + COURSE + '</span><span>' + TOPIC + '</span>';
+    var foot = document.createElement("div");
+    foot.className = "s-foot";
+    foot.innerHTML = '<span>Dr. Fawaz Alazemi</span><span>Slide ' + (i + 1) + ' of ' + N + '</span>';
+    s.insertBefore(head, s.firstChild);
+    s.appendChild(foot);
+  });
+
+  /* ---------- Python syntax highlighting (no libraries) ---------- */
+  var KW = "for|in|if|elif|else|and|or|not|True|False|None|while|def|return|import";
+  var FN = "print|range|len|list|str|int|float|sum|max|min|round|append|input";
+  var re = new RegExp(
+    "(#[^\\n]*)|(\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(" + FN + ")(?=\\()|\\b(\\d+(?:\\.\\d+)?)\\b",
+    "g");
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code code").forEach(function (el) {
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "tk-com" : m[2] ? "tk-str" : m[3] ? "tk-kw" : m[4] ? "tk-fn" : "tk-num";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = re.lastIndex;
+    }
+    out += esc(src.slice(last));
+    el.innerHTML = out;
+  });
+
+  /* ---------- Show Answer buttons ---------- */
+  document.querySelectorAll(".reveal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.nextElementSibling;
+      var shown = a.classList.toggle("shown");
+      b.textContent = shown ? "Hide Answer" : "Show Answer";
+      b.blur();
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  var cur = 0;
+  var counter = document.getElementById("counter");
+  var bar = document.getElementById("bar");
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    counter.textContent = (cur + 1) + " / " + N;
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+  function btn(id, fn) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () { fn(); b.blur(); });
+    return b;
+  }
+  btn("btnPrev", function () { go(cur - 1); });
+  btn("btnNext", function () { go(cur + 1); });
+
+  /* ---------- Full screen ---------- */
+  var fullBtn = btn("btnFull", function () {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el);
+    }
+  });
+  function onFs() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fullBtn.textContent = on ? "Exit Full Screen" : "Full Screen";
+    fit();
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+
+  /* ---------- Dark / light ---------- */
+  var themeBtn = btn("btnTheme", function () {
+    var dark = root.classList.toggle("dark");
+    try { localStorage.setItem("cs126-theme", dark ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  });
+  function themeLabel() { themeBtn.textContent = root.classList.contains("dark") ? "Light Mode" : "Dark Mode"; }
+  themeLabel();
+
+  /* ---------- Export PDF ---------- */
+  btn("btnPdf", function () { window.print(); });
+
+  /* ---------- Scale the 1280x720 canvas to fit ---------- */
+  var stage = document.getElementById("stage");
+  var vp = document.getElementById("viewport");
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight;
+    var s = Math.min(w / 1280, h / 720) * 0.98;
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>

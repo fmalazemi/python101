@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS126 – Introduction to Strings</title>
+<style>
+/* ===================== THEME ===================== */
+:root {
+  --bg: #f4f6f8;
+  --slide-bg: #fbfbfc;
+  --text: #1f2933;
+  --muted: #5b6875;
+  --navy: #1b365d;
+  --teal: #0f7c74;
+  --teal-soft: #e3f2f0;
+  --line: #d5dbe1;
+  --code-bg: #f1f3f5;
+  --code-text: #1f2933;
+  --out-bg: #ffffff;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --good: #1a7f37;
+  --good-soft: #e8f5ec;
+  --amber: #a15c00;
+  --tok-kw: #7a2bb5;
+  --tok-str: #a5481a;
+  --tok-num: #0b6bcb;
+  --tok-fn: #0f7c74;
+  --tok-com: #6b7785;
+  --bar-bg: #ffffff;
+}
+html.dark {
+  --bg: #0b1120;
+  --slide-bg: #111827;
+  --text: #e8edf3;
+  --muted: #a3afbd;
+  --navy: #9cc4ff;
+  --teal: #34d1bf;
+  --teal-soft: #12302e;
+  --line: #334155;
+  --code-bg: #0b1220;
+  --code-text: #e8edf3;
+  --out-bg: #0f172a;
+  --bad: #ff8a80;
+  --bad-soft: #3a1717;
+  --good: #7ee2a0;
+  --good-soft: #13301f;
+  --amber: #ffc46b;
+  --tok-kw: #d7a8ff;
+  --tok-str: #ffb38a;
+  --tok-num: #8fc8ff;
+  --tok-fn: #5fe3d2;
+  --tok-com: #8b98a8;
+  --bar-bg: #0f172a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* ===================== STAGE ===================== */
+.viewport {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 56px;
+  overflow: hidden;
+}
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: center center;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--slide-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+.s-head {
+  height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--teal);
+  font-size: 16px; color: var(--muted);
+}
+.s-head .course { color: var(--navy); font-weight: 600; }
+.s-body {
+  flex: 1; min-height: 0;
+  padding: 22px 56px 10px;
+  display: flex; flex-direction: column;
+  font-size: 24px; line-height: 1.4;
+}
+.s-foot {
+  height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; font-size: 15px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+h1 { color: var(--navy); font-size: 56px; margin: 0 0 12px; line-height: 1.15; }
+h2 { color: var(--navy); font-size: 36px; margin: 0 0 16px; line-height: 1.2; }
+h3 { color: var(--teal); font-size: 24px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 30px; }
+li { margin-bottom: 6px; }
+.small { font-size: 20px; }
+.muted { color: var(--muted); }
+.teal { color: var(--teal); font-weight: 600; }
+.navy { color: var(--navy); font-weight: 600; }
+.mono, code.inl {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols.w60 { grid-template-columns: 1.25fr 1fr; }
+.cols.w40 { grid-template-columns: 1fr 1.25fr; }
+.cols.w70 { grid-template-columns: 1.6fr 1fr; }
+.tight pre { font-size: 18px; line-height: 1.38; margin-bottom: 8px; }
+.tight p { margin-bottom: 6px; }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.col { min-width: 0; }
+
+/* ===================== CODE ===================== */
+pre {
+  margin: 0 0 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 20px; line-height: 1.45;
+  white-space: pre; overflow: hidden;
+  border-radius: 6px;
+}
+pre.code {
+  background: var(--code-bg); color: var(--code-text);
+  border: 1px solid var(--line); border-left: 5px solid var(--teal);
+  padding: 10px 16px;
+}
+pre.code.bad  { border-left-color: var(--bad); }
+pre.code.good { border-left-color: var(--good); }
+pre.out {
+  background: var(--out-bg); color: var(--text);
+  border: 1px dashed var(--line); border-left: 5px solid var(--navy);
+  padding: 8px 16px;
+}
+.lbl {
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.tk-kw { color: var(--tok-kw); font-weight: 600; }
+.tk-str { color: var(--tok-str); }
+.tk-num { color: var(--tok-num); }
+.tk-fn { color: var(--tok-fn); }
+.tk-com { color: var(--tok-com); font-style: italic; }
+
+/* ===================== BOXES ===================== */
+.note {
+  border-left: 5px solid var(--teal); background: var(--teal-soft);
+  padding: 10px 16px; border-radius: 4px; margin: 0 0 12px; font-size: 21px;
+}
+.warn {
+  border-left: 5px solid var(--amber); padding: 10px 16px; margin: 0 0 12px;
+  font-size: 21px; background: transparent; border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+}
+.tag-bad, .tag-good {
+  display: inline-block; font-weight: 700; font-size: 17px;
+  padding: 2px 10px; border-radius: 4px; margin-bottom: 4px;
+}
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-good { color: var(--good); background: var(--good-soft); }
+.why { font-size: 19px; margin: 0 0 10px; }
+
+table.t {
+  border-collapse: collapse; font-size: 20px; width: 100%;
+}
+table.t th, table.t td {
+  border: 1px solid var(--line); padding: 6px 12px; text-align: left;
+}
+table.t th { background: var(--teal-soft); color: var(--navy); }
+table.t td.c, table.t th.c { text-align: center; }
+table.t code { font-family: Consolas, Monaco, monospace; }
+
+/* ===================== Q & A ===================== */
+.qa { margin: 0 0 10px; }
+.reveal {
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--teal); background: transparent;
+  border: 1.5px solid var(--teal); border-radius: 4px;
+  padding: 3px 12px; cursor: pointer; margin: 0 0 6px;
+}
+.reveal:hover { background: var(--teal-soft); }
+.answer { visibility: hidden; }
+.answer.shown { visibility: visible; }
+.q { font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+
+/* ===================== TITLE / SECTION ===================== */
+.title-body { justify-content: center; padding-left: 90px; }
+.title-body .sub { font-size: 30px; color: var(--teal); margin-bottom: 36px; }
+.title-body .meta { font-size: 24px; color: var(--muted); line-height: 1.6; }
+.title-rule { width: 120px; height: 5px; background: var(--teal); margin: 0 0 28px; }
+.section-body { justify-content: center; align-items: center; text-align: center; }
+
+/* ===================== DIAGRAMS ===================== */
+.anat {
+  font-family: Consolas, Monaco, monospace; font-size: 40px;
+  background: var(--code-bg); border: 1px solid var(--line);
+  border-left: 5px solid var(--teal); border-radius: 6px;
+  padding: 18px 28px; margin: 0 0 16px; line-height: 1.6;
+}
+.anat .a1 { color: var(--tok-kw); font-weight: 700; }
+.anat .a2 { color: var(--tok-num); font-weight: 700; }
+.anat .a3 { color: var(--tok-str); font-weight: 700; }
+.anat .a4 { color: var(--bad); font-weight: 700; }
+.anat .a5 { color: var(--tok-fn); font-weight: 700; }
+.anat .ind { background: var(--teal-soft); outline: 1px dashed var(--teal); }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 36px; font-size: 21px; }
+.legend b { font-family: Consolas, Monaco, monospace; }
+
+.boxes { display: flex; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap; }
+.box {
+  min-width: 64px; text-align: center;
+  font-family: Consolas, Monaco, monospace; font-size: 22px;
+}
+.box .v {
+  border: 2px solid var(--navy); border-radius: 4px; padding: 6px 10px;
+  background: var(--slide-bg);
+}
+.box .i { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.box .n { font-size: 16px; color: var(--tok-num); margin-bottom: 3px; font-weight: 600; }
+.box.off .v { border-style: dashed; border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.box.hi .v { background: var(--teal-soft); border-color: var(--teal); }
+
+svg text { font-family: "Segoe UI", Arial, sans-serif; }
+.sv-box { fill: var(--slide-bg); stroke: var(--navy); stroke-width: 2; }
+.sv-dec { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.sv-t { fill: var(--text); font-size: 19px; }
+.sv-m { fill: var(--muted); font-size: 16px; font-weight: 600; }
+.sv-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.sv-arrow { fill: var(--muted); }
+
+.ex-num {
+  display: inline-block; min-width: 38px; font-weight: 700; color: var(--teal);
+}
+.level {
+  display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--teal); border: 1.5px solid var(--teal);
+  border-radius: 4px; padding: 1px 10px; margin-left: 12px; vertical-align: middle;
+}
+.ex { margin-bottom: 10px; }
+.ex p { margin: 0 0 6px; }
+
+/* ===================== CONTROLS ===================== */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: var(--bar-bg); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  font-size: 15px;
+}
+.controls button {
+  font: inherit; font-size: 15px; color: var(--navy);
+  background: transparent; border: 1px solid var(--line); border-radius: 4px;
+  padding: 6px 14px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--teal); color: var(--teal); }
+.controls .counter { color: var(--muted); min-width: 64px; text-align: center; }
+.progress {
+  flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.progress div { height: 100%; width: 0; background: var(--teal); }
+.spacer { width: 8px; }
+
+/* Code size for this deck */
+pre { font-size: 19px; }
+.tight pre { font-size: 17px; }
+
+/* ===================== PRINT ===================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  :root, html.dark {
+    --bg: #ffffff; --slide-bg: #ffffff; --text: #1f2933; --muted: #5b6875;
+    --navy: #1b365d; --teal: #0f7c74; --teal-soft: #e3f2f0; --line: #d5dbe1;
+    --code-bg: #f1f3f5; --code-text: #1f2933; --out-bg: #ffffff;
+    --bad: #b42318; --bad-soft: #fdecea; --good: #1a7f37; --good-soft: #e8f5ec;
+    --amber: #a15c00; --tok-kw: #7a2bb5; --tok-str: #a5481a; --tok-num: #0b6bcb;
+    --tok-fn: #0f7c74; --tok-com: #6b7785;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .controls, .reveal { display: none !important; }
+  .answer { visibility: visible !important; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; inset: auto;
+    width: 1280px; height: 720px; zoom: 0.82;
+    margin: 0 auto; border: none; transform: translateY(120px);
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- ============ 1. TITLE ============ -->
+<section class="slide">
+  <div class="s-body title-body">
+    <div class="muted" style="font-size:22px;margin-bottom:10px">CS126 – Introduction to Python</div>
+    <h1>Introduction to Strings</h1>
+    <div class="sub">Working with text in Python</div>
+    <div class="title-rule"></div>
+    <div class="meta">Dr. Fawaz Alazemi</div>
+  </div>
+</section>
+
+<!-- ============ 2. OBJECTIVES ============ -->
+<section class="slide">
+  <h2>Learning Objectives</h2>
+  <p>By the end of this lecture, you will be able to:</p>
+  <ol>
+    <li>Create strings with quotes, and use special characters such as <code class="inl">\n</code>.</li>
+    <li>Join strings with <code class="inl">+</code>, repeat them with <code class="inl">*</code>, and find their length with <code class="inl">len()</code>.</li>
+    <li>Convert between strings and numbers with <code class="inl">str()</code>, <code class="inl">int()</code>, <code class="inl">float()</code>.</li>
+    <li>Read characters with <b>indexing</b> and parts of a string with <b>slicing</b>.</li>
+    <li>Explain why strings <b>cannot be changed</b> (immutable).</li>
+    <li>Use <code class="inl">in</code> and comparisons with strings inside <code class="inl">if</code> statements.</li>
+    <li>Use common string methods: <code class="inl">upper</code>, <code class="inl">lower</code>, <code class="inl">strip</code>, <code class="inl">replace</code>, <code class="inl">find</code>, <code class="inl">count</code>, and more.</li>
+  </ol>
+</section>
+
+<!-- ============ 3. WHAT IS A STRING ============ -->
+<section class="slide">
+  <h2>What Is a String?</h2>
+  <p>A <b>string</b> is a piece of <b>text</b>: a sequence of <b>characters</b> (letters, digits, spaces, symbols) written inside <b>quotes</b>.</p>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>name = "Sara"
+city = 'Kuwait City'
+course = "CS126"
+empty = ""
+print(name, city, course)
+print(type(name))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Sara Kuwait City CS126
+&lt;class 'str'&gt;</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li>Single <code class="inl">'…'</code> or double <code class="inl">"…"</code> quotes both work. Choose one style and be consistent.</li>
+        <li>The quotes are <b>not</b> part of the text; <code class="inl">print()</code> does not show them.</li>
+        <li><code class="inl">""</code> is the <b>empty string</b>: no characters at all.</li>
+        <li>The Python type name is <code class="inl">str</code>.</li>
+      </ul>
+      <div class="note">Text is everywhere: names, messages, emails, phone numbers, civil IDs, course codes.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. QUOTES AND ESCAPES ============ -->
+<section class="slide">
+  <h2>Quotes Inside Strings and Special Characters</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Quotes inside a string</h3>
+      <pre class="code"><code>print("It's hot in Kuwait")
+print('He said "Welcome"')
+print("He said \"Welcome\"")</code></pre>
+      <pre class="out">It's hot in Kuwait
+He said "Welcome"
+He said "Welcome"</pre>
+      <p class="small">Use the <b>other</b> kind of quote outside, or put a backslash <code class="inl">\</code> before the quote.</p>
+    </div>
+    <div class="col">
+      <h3>Escape sequences</h3>
+      <table class="t" style="font-size:19px">
+        <tr><th>Write</th><th>Meaning</th></tr>
+        <tr><td><code>\n</code></td><td>new line</td></tr>
+        <tr><td><code>\t</code></td><td>tab (a wide space)</td></tr>
+        <tr><td><code>\"</code> &nbsp; <code>\'</code></td><td>a quote character</td></tr>
+        <tr><td><code>\\</code></td><td>one backslash</td></tr>
+      </table>
+      <pre class="code" style="margin-top:10px"><code>print("Kuwait\nDoha")
+print("C:\\Users")</code></pre>
+      <pre class="out">Kuwait
+Doha
+C:\Users</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. LEN ============ -->
+<section class="slide">
+  <h2>The Length of a String: <code class="inl">len()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>print(len("Kuwait"))
+print(len("Kuwait City"))
+print(len(""))
+print(len("Hi\n"))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">6
+11
+0
+3</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li><code class="inl">len()</code> counts <b>every</b> character: letters, digits, <b>spaces</b>, symbols.</li>
+        <li><code class="inl">"Kuwait City"</code> has 11 characters (the space counts).</li>
+        <li><code class="inl">\n</code> is <b>one</b> character, even though we type two symbols.</li>
+      </ul>
+      <div class="q">How long is <code class="inl">"CS 126!"</code>?</div>
+      <button class="reveal">Show Answer</button>
+      <div class="answer small"><b>7</b> — C, S, space, 1, 2, 6, !</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. + AND * ============ -->
+<section class="slide">
+  <h2>Joining (<code class="inl">+</code>) and Repeating (<code class="inl">*</code>)</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Concatenation with <code class="inl">+</code></h3>
+      <pre class="code"><code>first = "Fawaz"
+last = "Alazemi"
+print(first + last)
+print(first + " " + last)
+print("Dr. " + first)</code></pre>
+      <pre class="out">FawazAlazemi
+Fawaz Alazemi
+Dr. Fawaz</pre>
+      <p class="small"><code class="inl">+</code> does <b>not</b> add spaces. Add them yourself.</p>
+    </div>
+    <div class="col">
+      <h3>Repetition with <code class="inl">*</code></h3>
+      <pre class="code"><code>print("Ha" * 3)
+print("-" * 20)
+print("=" * 3 + " Menu " + "=" * 3)</code></pre>
+      <pre class="out">HaHaHa
+--------------------
+=== Menu ===</pre>
+      <div class="q">What will <code class="inl">print("ab" * 2 + "c")</code> show?</div>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">ababc</pre><p class="small"><code class="inl">*</code> happens before <code class="inl">+</code>, as in math.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. STRINGS AND NUMBERS ============ -->
+<section class="slide">
+  <h2>Strings and Numbers Are Different</h2>
+  <div class="cols">
+    <div class="col">
+      <pre class="code"><code>print(5 + 3)
+print("5" + "3")
+print("5" * 3)</code></pre>
+      <pre class="out">8
+53
+555</pre>
+      <span class="tag-bad">Error</span>
+      <pre class="code bad" data-skip><code>age = 20
+print("Age: " + age)</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: can only concatenate str (not "int") to str</pre>
+    </div>
+    <div class="col">
+      <h3>Converting</h3>
+      <table class="t" style="font-size:19px">
+        <tr><th>Function</th><th>Example</th><th>Result</th></tr>
+        <tr><td><code>str()</code></td><td><code>str(20)</code></td><td><code>"20"</code></td></tr>
+        <tr><td><code>int()</code></td><td><code>int("20")</code></td><td><code>20</code></td></tr>
+        <tr><td><code>float()</code></td><td><code>float("2.5")</code></td><td><code>2.5</code></td></tr>
+      </table>
+      <pre class="code good" style="margin-top:10px"><code>age = 20
+print("Age: " + str(age))
+print(int("5") + int("3"))</code></pre>
+      <pre class="out">Age: 20
+8</pre>
+      <p class="small"><code class="inl">input()</code> always gives a <b>string</b>, so convert it before doing math.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. INDEXING ============ -->
+<section class="slide">
+  <h2>Indexing: Reading One Character</h2>
+  <p>Every character has a position called an <b>index</b>. The first index is <b>0</b>.</p>
+  <div class="boxes" style="margin:6px 0 16px">
+    <div class="box" style="min-width:52px"><div class="n">-6</div><div class="v">K</div><div class="i">0</div></div>
+    <div class="box" style="min-width:52px"><div class="n">-5</div><div class="v">u</div><div class="i">1</div></div>
+    <div class="box" style="min-width:52px"><div class="n">-4</div><div class="v">w</div><div class="i">2</div></div>
+    <div class="box" style="min-width:52px"><div class="n">-3</div><div class="v">a</div><div class="i">3</div></div>
+    <div class="box" style="min-width:52px"><div class="n">-2</div><div class="v">i</div><div class="i">4</div></div>
+    <div class="box" style="min-width:52px"><div class="n">-1</div><div class="v">t</div><div class="i">5</div></div>
+    <div style="align-self:center;font-size:19px;margin-left:16px;line-height:1.7"><span style="color:var(--tok-num)">top: negative index</span><br><span class="muted">bottom: positive index</span></div>
+  </div>
+  <div class="cols">
+    <div class="col">
+      <pre class="code"><code>word = "Kuwait"
+print(word[0])
+print(word[3])
+print(word[-1])
+print(word[len(word) - 1])</code></pre>
+      <pre class="out">K
+a
+t
+t</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li>Syntax: <code class="inl">string[index]</code> — the result is a string of one character.</li>
+        <li>The last index is <code class="inl">len(s) - 1</code>, or simply <code class="inl">-1</code>.</li>
+        <li>An index that does not exist → <b>IndexError</b>: <code class="inl">"Kuwait"[6]</code>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. INDEX QUESTIONS ============ -->
+<section class="slide">
+  <h2>Practice with Indexes</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="q">What will this code print?</div>
+      <pre class="code"><code>code = "CS126"
+print(code[2] + code[-1])
+print(code[1] + code[0])</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">16
+SC</pre><p class="small">Each character is a string, so <code class="inl">+</code> joins them: <code class="inl">"1" + "6"</code> is <code class="inl">"16"</code>, not 7.</p></div>
+    </div>
+    <div class="col">
+      <div class="q">Which line causes an error?</div>
+      <pre class="code" data-skip><code>s = "Oman"
+print(s[-4])    # line A
+print(s[4])     # line B</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer small"><b>Line B.</b> <code class="inl">"Oman"</code> has indexes 0–3. <code class="inl">s[-4]</code> is <code class="inl">"O"</code>, but index 4 does not exist → <b>IndexError</b>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. SLICING ============ -->
+<section class="slide">
+  <h2>Slicing: Taking Part of a String</h2>
+  <p><code class="inl">s[start:stop]</code> gives the characters from <b>start</b> up to, but <b>not including</b>, <b>stop</b>.</p>
+  <div class="boxes" style="margin:6px 0 14px">
+    <div class="box" style="min-width:46px"><div class="v">K</div><div class="i">0</div></div>
+    <div class="box" style="min-width:46px"><div class="v">u</div><div class="i">1</div></div>
+    <div class="box" style="min-width:46px"><div class="v">w</div><div class="i">2</div></div>
+    <div class="box" style="min-width:46px"><div class="v">a</div><div class="i">3</div></div>
+    <div class="box" style="min-width:46px"><div class="v">i</div><div class="i">4</div></div>
+    <div class="box" style="min-width:46px"><div class="v">t</div><div class="i">5</div></div>
+    <div class="box" style="min-width:46px"><div class="v">&nbsp;</div><div class="i">6</div></div>
+    <div class="box hi" style="min-width:46px"><div class="v">C</div><div class="i">7</div></div>
+    <div class="box hi" style="min-width:46px"><div class="v">i</div><div class="i">8</div></div>
+    <div class="box hi" style="min-width:46px"><div class="v">t</div><div class="i">9</div></div>
+    <div class="box hi" style="min-width:46px"><div class="v">y</div><div class="i">10</div></div>
+    <div style="align-self:center;font-size:19px;margin-left:10px" class="muted"><code class="inl">city[7:11]</code></div>
+  </div>
+  <div class="cols">
+    <div class="col">
+      <pre class="code"><code>city = "Kuwait City"
+print(city[0:6])
+print(city[7:11])
+print(city[2:4])</code></pre>
+      <pre class="out">Kuwait
+City
+wa</pre>
+    </div>
+    <div class="col">
+      <div class="note">Number of characters = <b>stop − start</b>.<br><code class="inl">city[0:6]</code> → 6 characters.</div>
+      <p class="small">A slice never causes an IndexError: <code class="inl">city[7:100]</code> is still <code class="inl">"City"</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. SLICING SHORTCUTS ============ -->
+<section class="slide">
+  <h2>Slicing Shortcuts</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>code = "KWT-2026"
+print(code[:3])     # first 3
+print(code[4:])     # from 4 to end
+print(code[-4:])    # last 4
+print(code[::2])    # every 2nd
+print(code[::-1])   # reversed</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">KWT
+2026
+2026
+KT22
+6202-TWK</pre>
+    </div>
+    <div class="col">
+      <table class="t">
+        <tr><th>Slice</th><th>Meaning</th></tr>
+        <tr><td><code>s[:n]</code></td><td>first <code>n</code> characters</td></tr>
+        <tr><td><code>s[n:]</code></td><td>from index <code>n</code> to the end</td></tr>
+        <tr><td><code>s[-n:]</code></td><td>last <code>n</code> characters</td></tr>
+        <tr><td><code>s[a:b:step]</code></td><td>jump by <code>step</code></td></tr>
+        <tr><td><code>s[::-1]</code></td><td>the string reversed</td></tr>
+      </table>
+      <div class="q" style="margin-top:12px">What is <code class="inl">"Bahrain"[1:-1]</code>?</div>
+      <button class="reveal">Show Answer</button>
+      <div class="answer small"><code class="inl">"ahrai"</code> — everything except the first and last characters.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. IMMUTABLE ============ -->
+<section class="slide">
+  <h2>Strings Cannot Be Changed (Immutable)</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Error</span>
+      <pre class="code bad" data-skip><code>word = "cat"
+word[0] = "b"</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: 'str' object does not support item assignment</pre>
+      <p class="why">You can <b>read</b> a character with an index, but you cannot <b>replace</b> it.</p>
+    </div>
+    <div class="col">
+      <span class="tag-good">Build a new string instead</span>
+      <pre class="code good"><code>word = "cat"
+word = "b" + word[1:]
+print(word)</code></pre>
+      <pre class="out">bat</pre>
+      <div class="note small">The old string <code class="inl">"cat"</code> is not changed. A <b>new</b> string <code class="inl">"bat"</code> is created, and the name <code class="inl">word</code> now refers to it.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13. IN ============ -->
+<section class="slide">
+  <h2>Searching with <code class="inl">in</code> and <code class="inl">not in</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>email = "sara@ku.edu.kw"
+print("@" in email)
+print("ku.edu" in email)
+print("gmail" in email)
+print(" " not in email)
+print("KU" in email)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">True
+True
+False
+True
+False</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">a in b</code> is True if text <code class="inl">a</code> appears <b>anywhere</b> inside <code class="inl">b</code>.</li>
+        <li>It can find a single character or a longer part (a <b>substring</b>).</li>
+        <li>The search is <b>case-sensitive</b>: <code class="inl">"KU"</code> is not <code class="inl">"ku"</code>.</li>
+      </ul>
+      <pre class="code"><code>email = "sara@ku.edu.kw"
+if "@" not in email:
+    print("Invalid email")
+else:
+    print("Looks OK")</code></pre>
+      <pre class="out">Looks OK</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. COMPARING ============ -->
+<section class="slide">
+  <h2>Comparing Strings</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>print("Kuwait" == "Kuwait")
+print("Kuwait" == "kuwait")
+print("Doha" != "Dubai")
+print("apple" &lt; "banana")
+print("Zebra" &lt; "apple")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">True
+False
+True
+True
+True</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">==</code> is True only if <b>every</b> character matches, including case and spaces.</li>
+        <li><code class="inl">&lt;</code> and <code class="inl">&gt;</code> compare in <b>dictionary order</b>, character by character.</li>
+        <li><b>All uppercase letters come before all lowercase letters</b>, so <code class="inl">"Zebra" &lt; "apple"</code> is True.</li>
+      </ul>
+      <div class="note">To compare without caring about case, convert both sides first: <code class="inl">a.lower() == b.lower()</code> (next slide).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15. METHODS INTRO / CASE ============ -->
+<section class="slide">
+  <h2>String Methods: Changing Case</h2>
+  <p>A <b>method</b> is a function that belongs to a value. Write the string, a <b>dot</b>, the method name, and <code class="inl">()</code>.</p>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>name = "fawaz ALAZEMI"
+print(name.upper())
+print(name.lower())
+print(name.title())
+print(name.capitalize())
+print(name)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">FAWAZ ALAZEMI
+fawaz alazemi
+Fawaz Alazemi
+Fawaz alazemi
+fawaz ALAZEMI</pre>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:19px">
+        <tr><th>Method</th><th>Gives</th></tr>
+        <tr><td><code>upper()</code></td><td>all capitals</td></tr>
+        <tr><td><code>lower()</code></td><td>all small letters</td></tr>
+        <tr><td><code>title()</code></td><td>Each Word Capitalized</td></tr>
+        <tr><td><code>capitalize()</code></td><td>First letter only</td></tr>
+      </table>
+      <div class="warn" style="margin-top:12px">Methods <b>never change</b> the original string (it is immutable). They give back a <b>new</b> string. Save it: <code class="inl">name = name.title()</code></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16. STRIP AND REPLACE ============ -->
+<section class="slide">
+  <h2>Cleaning Text: <code class="inl">strip()</code> and <code class="inl">replace()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <h3>strip() removes spaces at the ends</h3>
+      <pre class="code"><code>raw = "   Ali   "
+print("[" + raw + "]")
+print("[" + raw.strip() + "]")
+print("[" + raw.lstrip() + "]")
+print("[" + raw.rstrip() + "]")</code></pre>
+      <pre class="out">[   Ali   ]
+[Ali]
+[Ali   ]
+[   Ali]</pre>
+      <p class="small">Spaces in the <b>middle</b> are kept. Very useful for text typed by users.</p>
+    </div>
+    <div class="col">
+      <h3>replace(old, new)</h3>
+      <pre class="code"><code>phone = "965-5123-4567"
+print(phone.replace("-", ""))
+print(phone.replace("-", " "))
+msg = "Hello Ali, bye Ali"
+print(msg.replace("Ali", "Sara"))</code></pre>
+      <pre class="out">96551234567
+965 5123 4567
+Hello Sara, bye Sara</pre>
+      <p class="small">Replaces <b>every</b> match. <code class="inl">""</code> as the new text deletes the old text.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17. FIND AND COUNT ============ -->
+<section class="slide">
+  <h2>Searching: <code class="inl">find()</code> and <code class="inl">count()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>email = "sara@ku.edu.kw"
+print(email.find("@"))
+print(email.find("."))
+print(email.find("gmail"))
+print(email.count("."))
+print("banana".count("an"))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">4
+7
+-1
+2
+2</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">s.find(x)</code> gives the index where <code class="inl">x</code> <b>first</b> appears.</li>
+        <li>If <code class="inl">x</code> is not found, <code class="inl">find()</code> gives <b>−1</b> (not an error).</li>
+        <li><code class="inl">s.count(x)</code> counts how many times <code class="inl">x</code> appears.</li>
+      </ul>
+      <h3 style="margin-top:6px">find() + slicing</h3>
+      <pre class="code"><code>email = "sara@ku.edu.kw"
+at = email.find("@")
+print(email[:at])
+print(email[at + 1:])</code></pre>
+      <pre class="out">sara
+ku.edu.kw</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18. CHECKING METHODS ============ -->
+<section class="slide">
+  <h2>Methods That Answer True or False</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>file = "report.pdf"
+print(file.endswith(".pdf"))
+print(file.startswith("rep"))
+print("2026".isdigit())
+print("20 26".isdigit())
+print("Kuwait".isalpha())
+print("CS126".isalpha())</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">True
+True
+True
+False
+True
+False</pre>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:18px">
+        <tr><th>Method</th><th>True when…</th></tr>
+        <tr><td><code>startswith(x)</code></td><td>the string begins with <code>x</code></td></tr>
+        <tr><td><code>endswith(x)</code></td><td>the string ends with <code>x</code></td></tr>
+        <tr><td><code>isdigit()</code></td><td>all characters are digits 0–9</td></tr>
+        <tr><td><code>isalpha()</code></td><td>all characters are letters</td></tr>
+        <tr><td><code>isupper()</code></td><td>all letters are capitals</td></tr>
+        <tr><td><code>islower()</code></td><td>all letters are small</td></tr>
+      </table>
+      <div class="note small" style="margin-top:12px">These are perfect inside <code class="inl">if</code> statements: <code class="inl">if pin.isdigit():</code></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19. QUICK REFERENCE ============ -->
+<section class="slide">
+  <h2>Quick Reference</h2>
+  <div class="cols" style="gap:24px">
+    <div class="col">
+      <table class="t" style="font-size:17px">
+        <tr><th>Tool</th><th><code>s = "Kuwait City"</code></th></tr>
+        <tr><td><code>len(s)</code></td><td><code>11</code></td></tr>
+        <tr><td><code>s[0]</code>, <code>s[-1]</code></td><td><code>'K'</code>, <code>'y'</code></td></tr>
+        <tr><td><code>s[:6]</code></td><td><code>'Kuwait'</code></td></tr>
+        <tr><td><code>s[::-1]</code></td><td><code>'ytiC tiawuK'</code></td></tr>
+        <tr><td><code>s + "!"</code></td><td><code>'Kuwait City!'</code></td></tr>
+        <tr><td><code>"-" * 3</code></td><td><code>'---'</code></td></tr>
+        <tr><td><code>"City" in s</code></td><td><code>True</code></td></tr>
+        <tr><td><code>str(5)</code>, <code>int("5")</code></td><td><code>'5'</code>, <code>5</code></td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:17px">
+        <tr><th>Method</th><th>Result</th></tr>
+        <tr><td><code>s.upper()</code></td><td><code>'KUWAIT CITY'</code></td></tr>
+        <tr><td><code>s.lower()</code></td><td><code>'kuwait city'</code></td></tr>
+        <tr><td><code>s.replace("City", "Bay")</code></td><td><code>'Kuwait Bay'</code></td></tr>
+        <tr><td><code>"  a ".strip()</code></td><td><code>'a'</code></td></tr>
+        <tr><td><code>s.find("i")</code></td><td><code>4</code></td></tr>
+        <tr><td><code>s.count("i")</code></td><td><code>2</code></td></tr>
+        <tr><td><code>s.startswith("Ku")</code></td><td><code>True</code></td></tr>
+        <tr><td><code>"123".isdigit()</code></td><td><code>True</code></td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="note" style="margin-top:12px">No tool changes <code class="inl">s</code>. Every one gives back a <b>new</b> value.</div>
+</section>
+
+<!-- ============ 20. STRINGS WITH IF ============ -->
+<section class="slide">
+  <h2>Putting It Together: Strings with <code class="inl">if</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — check a new password</div>
+      <pre class="code"><code>password = "kuwait2026"
+if len(password) &lt; 8:
+    print("Too short")
+elif password.isalpha() or password.isdigit():
+    print("Use letters AND digits")
+elif password.lower() == password:
+    print("Add a capital letter")
+else:
+    print("Strong password")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Add a capital letter</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li><code class="inl">len</code> is 10 → not too short.</li>
+        <li>It has letters <b>and</b> digits → both <code class="inl">isalpha()</code> and <code class="inl">isdigit()</code> are False.</li>
+        <li><code class="inl">password.lower()</code> is the same as <code class="inl">password</code> → there are no capitals.</li>
+      </ol>
+      <div class="q">What is printed for <code class="inl">"Kuwait2026"</code>?</div>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">Strong password</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21. MISTAKES 1 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (1): Strings and Numbers</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>total = 15
+print("Total: " + total + " KD")</code></pre>
+      <p class="why"><b>Why?</b> You cannot <code class="inl">+</code> a string and a number. <b>TypeError</b>.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>total = 15
+print("Total: " + str(total) + " KD")
+print("Total:", total, "KD")</code></pre>
+      <pre class="out">Total: 15 KD
+Total: 15 KD</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code>a = "10"
+b = "20"
+print(a + b)</code></pre>
+      <pre class="out">1020</pre>
+      <p class="why"><b>Why?</b> <code class="inl">a</code> and <code class="inl">b</code> are <b>strings</b>, so <code class="inl">+</code> joins them.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>a = "10"
+b = "20"
+print(int(a) + int(b))</code></pre>
+      <pre class="out">30</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22. MISTAKES 2 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (2): Methods and Case</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code>name = "sara"
+name.upper()
+print(name)</code></pre>
+      <pre class="out">sara</pre>
+      <p class="why"><b>Why?</b> <code class="inl">upper()</code> gives a <b>new</b> string, which was not saved. <code class="inl">name</code> is unchanged.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>name = "sara"
+name = name.upper()
+print(name)</code></pre>
+      <pre class="out">SARA</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code>answer = "Yes"
+if answer == "yes":
+    print("Confirmed")
+else:
+    print("Not confirmed")</code></pre>
+      <pre class="out">Not confirmed</pre>
+      <p class="why"><b>Why?</b> Comparison is case-sensitive: <code class="inl">"Yes" != "yes"</code>.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>answer = "Yes"
+if answer.lower() == "yes":
+    print("Confirmed")</code></pre>
+      <pre class="out">Confirmed</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23. MISTAKES 3 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (3): Positions</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code># goal: the first 3 letters
+s = "Kuwait"
+print(s[1:3])</code></pre>
+      <pre class="out">uw</pre>
+      <p class="why"><b>Why?</b> Index starts at 0, and the stop is not included.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>s = "Kuwait"
+print(s[0:3])
+print(s[:3])</code></pre>
+      <pre class="out">Kuw
+Kuw</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code>email = "sara.ku.edu"
+at = email.find("@")
+print(email[:at])</code></pre>
+      <pre class="out">sara.ku.ed</pre>
+      <p class="why"><b>Why?</b> <code class="inl">"@"</code> is missing, so <code class="inl">find()</code> gave <b>−1</b>, and <code class="inl">email[:-1]</code> was used by mistake.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>email = "sara.ku.edu"
+at = email.find("@")
+if at == -1:
+    print("No @ in email")
+else:
+    print(email[:at])</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24. WORKED EXAMPLE 1 ============ -->
+<section class="slide">
+  <h2>Worked Example 1: Checking an Email Address</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>email = "  Sara.Ali@KU.edu.kw "
+email = email.strip().lower()
+at = email.find("@")
+if at &lt;= 0 or email.count("@") != 1:
+    print("Invalid email")
+else:
+    user = email[:at]
+    domain = email[at + 1:]
+    print("Clean email:", email)
+    print("User:", user)
+    print("Domain:", domain)
+    if domain.endswith(".kw"):
+        print("This is a Kuwaiti address")</code></pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Output</div>
+      <pre class="out">Clean email: sara.ali@ku.edu.kw
+User: sara.ali
+Domain: ku.edu.kw
+This is a Kuwaiti address</pre>
+      <ol class="small">
+        <li><code class="inl">strip().lower()</code>: two methods in a row — remove spaces, then make small letters.</li>
+        <li><code class="inl">at &lt;= 0</code> catches a missing <code class="inl">@</code> (−1) or one at the very start (0).</li>
+        <li>Slices before and after the <code class="inl">@</code> give the two parts.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25. WORKED EXAMPLE 2 ============ -->
+<section class="slide">
+  <h2>Worked Example 2: A Kuwaiti Mobile Number</h2>
+  <div class="cols w70 tight">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>phone = " +965 5123-4567 "
+phone = phone.strip()
+phone = phone.replace(" ", "").replace("-", "")
+if phone.startswith("+965"):
+    phone = phone[4:]
+if len(phone) == 8 and phone.isdigit():
+    if phone[0] in "569":
+        print("Valid mobile:", phone[:4] + " " + phone[4:])
+    else:
+        print("Not a mobile number")
+else:
+    print("Wrong format")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Valid mobile: 5123 4567</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li>Remove outside spaces, then inner spaces and dashes → <code class="inl">"+96551234567"</code>.</li>
+        <li>Remove the country code with a slice → <code class="inl">"51234567"</code>.</li>
+        <li>Check: 8 characters, all digits.</li>
+        <li><code class="inl">phone[0] in "569"</code>: Kuwaiti mobiles start with 5, 6, or 9.</li>
+        <li>Print it in two groups of 4 using slices.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26. WORKED EXAMPLE 3 ============ -->
+<section class="slide">
+  <h2>Worked Example 3: Reading a Course Code</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — format: SUBJECT NUMBER - YEAR - TERM</div>
+      <pre class="code"><code>code = "CS126-2026-F"
+dash = code.find("-")
+subject = code[:2]
+number = code[2:dash]
+year = code[dash + 1:dash + 5]
+term = code[-1]
+print("Subject:", subject)
+print("Number:", number)
+print("Year:", year)
+if term == "F":
+    print("Term: Fall")
+elif term == "S":
+    print("Term: Spring")
+else:
+    print("Term: Summer")</code></pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Output</div>
+      <pre class="out">Subject: CS
+Number: 126
+Year: 2026
+Term: Fall</pre>
+      <div class="boxes" style="gap:2px;margin-top:10px">
+        <div class="box" style="min-width:30px"><div class="v" style="padding:3px 5px">C</div><div class="i">0</div></div>
+        <div class="box" style="min-width:30px"><div class="v" style="padding:3px 5px">S</div><div class="i">1</div></div>
+        <div class="box hi" style="min-width:30px"><div class="v" style="padding:3px 5px">1</div><div class="i">2</div></div>
+        <div class="box hi" style="min-width:30px"><div class="v" style="padding:3px 5px">2</div><div class="i">3</div></div>
+        <div class="box hi" style="min-width:30px"><div class="v" style="padding:3px 5px">6</div><div class="i">4</div></div>
+        <div class="box" style="min-width:30px"><div class="v" style="padding:3px 5px">-</div><div class="i">5</div></div>
+        <div class="box" style="min-width:30px"><div class="v" style="padding:3px 5px">2</div><div class="i">6</div></div>
+      </div>
+      <p class="small"><code class="inl">find("-")</code> is 5, so the number is <code class="inl">code[2:5]</code> and the year starts at index 6.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27. THINK ABOUT IT ============ -->
+<section class="slide">
+  <h2>Think About It</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="qa">
+        <div class="q">1. Why does <code class="inl">"5" + "5"</code> give <code class="inl">"55"</code> but <code class="inl">5 + 5</code> give <code class="inl">10</code>?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small">With strings, <code class="inl">+</code> <b>joins</b> text. With numbers, it <b>adds</b>.</div>
+      </div>
+      <div class="qa">
+        <div class="q">2. After <code class="inl">s = "abc"</code> and <code class="inl">s.upper()</code>, what is <code class="inl">s</code>?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small">Still <code class="inl">"abc"</code>. Strings are immutable; the method's new string was not saved.</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="qa">
+        <div class="q">3. What does this print?</div>
+        <pre class="code"><code>s = "Python"
+print(s[1:4], s[-2:], len(s[::2]))</code></pre>
+        <button class="reveal">Show Answer</button>
+        <div class="answer"><pre class="out">yth on 3</pre><p class="small"><code class="inl">s[::2]</code> is <code class="inl">"Pto"</code>, which has 3 characters.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 28. PRACTICE ============ -->
+<section class="slide">
+  <h2>Practice in Class (3 minutes)</h2>
+  <p>A customer typed their name badly: <code class="inl">name = "  aHMAD alsaleh   "</code></p>
+  <ol class="small">
+    <li>Clean it so it prints as <code class="inl">Ahmad Alsaleh</code>.</li>
+    <li>Print how many characters the clean name has.</li>
+    <li>Print a welcome line: <code class="inl">Welcome, Ahmad Alsaleh!</code></li>
+  </ol>
+  <button class="reveal">Show Answer</button>
+  <div class="answer">
+    <div class="cols" style="flex:none;grid-template-columns:1.3fr 1fr">
+      <pre class="code"><code>name = "  aHMAD alsaleh   "
+name = name.strip().title()
+print(name)
+print(len(name))
+print("Welcome, " + name + "!")</code></pre>
+      <pre class="out">Ahmad Alsaleh
+13
+Welcome, Ahmad Alsaleh!</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 29. REMEMBER ============ -->
+<section class="slide">
+  <h2>What You Should Remember</h2>
+  <ol>
+    <li>A string is text in quotes; <code class="inl">len()</code> counts <b>every</b> character, spaces included.</li>
+    <li><code class="inl">+</code> joins strings, <code class="inl">*</code> repeats them. Use <code class="inl">str()</code> / <code class="inl">int()</code> to mix with numbers.</li>
+    <li>Indexes start at 0; <code class="inl">s[-1]</code> is the last character.</li>
+    <li><code class="inl">s[start:stop]</code> — the stop is <b>not included</b>; <code class="inl">s[::-1]</code> reverses.</li>
+    <li>Strings are <b>immutable</b>: methods give back a <b>new</b> string — save it.</li>
+    <li><code class="inl">in</code>, <code class="inl">==</code>, and <code class="inl">&lt;</code> are <b>case-sensitive</b>; use <code class="inl">lower()</code> to compare safely.</li>
+    <li><code class="inl">find()</code> gives −1 when not found; check it before slicing.</li>
+  </ol>
+</section>
+
+<!-- ============ 30. EXERCISES L1 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 1 — Basic</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">1.</span>Predict the output.</p>
+        <pre class="code"><code>s = "Kuwait"
+print(s[0], s[-1], len(s))</code></pre></div>
+      <div class="ex"><p><span class="ex-num">2.</span>Predict the output.</p>
+        <pre class="code"><code>print("Ha" * 3 + "!")
+print("5" + "5")
+print(5 + 5)</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">3.</span>Find and fix the error.</p>
+        <pre class="code" data-skip><code>age = 20
+print("Age: " + age)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">4.</span>Predict the output.</p>
+        <pre class="code"><code>city = "Kuwait City"
+print(city[0:6])
+print(city[7:])
+print(city[-2:])</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 31. EXERCISES L2 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 2 — Apply</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">5.</span>Clean <code class="inl">name = "  fahad alazemi  "</code> so it prints as <code class="inl">Fahad Alazemi</code>, then print its length.</p></div>
+      <div class="ex"><p><span class="ex-num">6.</span>For <code class="inl">email = "sara@ku.edu.kw"</code>, print <code class="inl">Valid Kuwaiti email</code> if it contains <code class="inl">"@"</code> <b>and</b> ends with <code class="inl">".kw"</code>; otherwise print <code class="inl">Not valid</code>.</p></div>
+      <div class="ex"><p><span class="ex-num">7.</span>Remove the dashes from <code class="inl">phone = "965-5123-4567"</code>, then print the result and its number of digits.</p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">8.</span>Explain what each part does and give the output.</p>
+        <pre class="code"><code>s = "banana"
+print(s.count("a"), s.find("n"), s.upper())</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 32. EXERCISES L3 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 3 — Challenge</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">9.</span>Print the initials of <code class="inl">full = "Mona Alsabah"</code> as <code class="inl">M.A.</code> Use <code class="inl">find(" ")</code> so it works for any first and last name.</p></div>
+      <div class="ex"><p><span class="ex-num">10.</span>A word is a <b>palindrome</b> if it reads the same backwards. Check <code class="inl">word = "Level"</code> without caring about capitals, and print <code class="inl">Level is a palindrome</code> or <code class="inl">Level is not a palindrome</code>.</p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">11.</span>Predict the output.</p>
+        <pre class="code"><code>s = "Kuwait University"
+print(s.find("U"), s.count("i"))
+print(s[s.find(" ") + 1:].lower())
+print(s.replace("i", "!")[:6])</code></pre></div>
+      <div class="ex"><p><span class="ex-num">12.</span>A Kuwaiti mobile number must have 8 characters, all digits, and start with 5, 6, or 9. Check <code class="inl">num = "6512345A"</code> and print <code class="inl">Valid</code> or <code class="inl">Invalid</code>.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 33. SOLUTIONS DIVIDER ============ -->
+<section class="slide">
+  <div class="s-body section-body" style="padding:0">
+    <div class="title-rule" style="margin:0 auto 24px"></div>
+    <h1>Exercise Solutions</h1>
+    <p class="muted" style="font-size:26px">Try every exercise first. Then compare your answers.</p>
+  </div>
+</section>
+
+<!-- ============ 34. SOLUTIONS 1-4 ============ -->
+<section class="slide">
+  <h2>Solutions 1 – 4 <span class="level">Level 1</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">1.</span>First character, last character, length.</p>
+      <pre class="out">K t 6</pre>
+      <p><span class="ex-num">2.</span>Strings repeat and join; numbers add.</p>
+      <pre class="out">HaHaHa!
+55
+10</pre>
+      <p><span class="ex-num">4.</span>Indexes 0–5; from 7 to the end; last two.</p>
+      <pre class="out">Kuwait
+City
+ty</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">3.</span><code class="inl">age</code> is a number, and <code class="inl">+</code> cannot join a string and a number (TypeError). Convert it:</p>
+      <pre class="code"><code>age = 20
+print("Age: " + str(age))</code></pre>
+      <pre class="out">Age: 20</pre>
+      <p class="small">Or use commas: <code class="inl">print("Age:", age)</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 35. SOLUTIONS 5-8 ============ -->
+<section class="slide">
+  <h2>Solutions 5 – 8 <span class="level">Level 2</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">5.</span></p>
+      <pre class="code"><code>name = "  fahad alazemi  "
+name = name.strip().title()
+print(name)
+print(len(name))</code></pre>
+      <pre class="out">Fahad Alazemi
+13</pre>
+      <p><span class="ex-num">6.</span></p>
+      <pre class="code"><code>email = "sara@ku.edu.kw"
+if "@" in email and email.endswith(".kw"):
+    print("Valid Kuwaiti email")
+else:
+    print("Not valid")</code></pre>
+      <pre class="out">Valid Kuwaiti email</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">7.</span></p>
+      <pre class="code"><code>phone = "965-5123-4567"
+digits = phone.replace("-", "")
+print(digits)
+print(len(digits))</code></pre>
+      <pre class="out">96551234567
+11</pre>
+      <p><span class="ex-num">8.</span><code class="inl">count("a")</code>: "a" appears 3 times. <code class="inl">find("n")</code>: the first "n" is at index 2. <code class="inl">upper()</code>: a new capital-letter string.</p>
+      <pre class="out">3 2 BANANA</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 36. SOLUTIONS 9-10 ============ -->
+<section class="slide">
+  <h2>Solutions 9 – 10 <span class="level">Level 3</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">9.</span>The last name starts one place after the space.</p>
+      <pre class="code"><code>full = "Mona Alsabah"
+space = full.find(" ")
+initials = full[0] + "." + full[space + 1] + "."
+print(initials)</code></pre>
+      <pre class="out">M.A.</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">10.</span>Compare the small-letter word with its reverse.</p>
+      <pre class="code"><code>word = "Level"
+w = word.lower()
+if w == w[::-1]:
+    print(word, "is a palindrome")
+else:
+    print(word, "is not a palindrome")</code></pre>
+      <pre class="out">Level is a palindrome</pre>
+      <p class="small">Without <code class="inl">lower()</code>, <code class="inl">"Level"</code> and <code class="inl">"leveL"</code> would not be equal.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 37. SOLUTIONS 11-12 ============ -->
+<section class="slide">
+  <h2>Solutions 11 – 12 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">11.</span></p>
+      <pre class="out">7 3
+university
+Kuwa!t</pre>
+      <ul class="small">
+        <li>"U" is at index 7; there are 3 small "i" letters (1 in Kuwait, 2 in University).</li>
+        <li>The slice starts after the space: <code class="inl">"University"</code>, then <code class="inl">lower()</code>.</li>
+        <li><code class="inl">replace()</code> first, then the first 6 characters.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">12.</span></p>
+      <pre class="code"><code>num = "6512345A"
+ok = len(num) == 8 and num.isdigit()
+if ok and num[0] in "569":
+    print("Valid")
+else:
+    print("Invalid")</code></pre>
+      <pre class="out">Invalid</pre>
+      <p class="small">The length is 8 and it starts with 6, but <code class="inl">"A"</code> is not a digit, so <code class="inl">isdigit()</code> is False.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="btnPrev" title="Previous (Left Arrow)">◀ Previous</button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button id="btnNext" title="Next (Right Arrow)">Next ▶</button>
+  <div class="spacer"></div>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="spacer"></div>
+  <button id="btnFull">Full Screen</button>
+  <button id="btnTheme">Dark Mode</button>
+  <button id="btnPdf">Export PDF</button>
+</div>
+
+<script>
+(function () {
+  var COURSE = "CS126 – Introduction to Python";
+  var TOPIC = "Introduction to Strings";
+
+  /* ---------- Theme (restore before anything paints) ---------- */
+  var root = document.documentElement;
+  try { if (localStorage.getItem("cs126-theme") === "dark") root.classList.add("dark"); } catch (e) {}
+
+  /* ---------- Build slide chrome ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length;
+  slides.forEach(function (s, i) {
+    if (!s.querySelector(".s-body")) {
+      var body = document.createElement("div");
+      body.className = "s-body";
+      while (s.firstChild) body.appendChild(s.firstChild);
+      s.appendChild(body);
+    }
+    var head = document.createElement("div");
+    head.className = "s-head";
+    head.innerHTML = '<span class="course">' + COURSE + '</span><span>' + TOPIC + '</span>';
+    var foot = document.createElement("div");
+    foot.className = "s-foot";
+    foot.innerHTML = '<span>Dr. Fawaz Alazemi</span><span>Slide ' + (i + 1) + ' of ' + N + '</span>';
+    s.insertBefore(head, s.firstChild);
+    s.appendChild(foot);
+  });
+
+  /* ---------- Python syntax highlighting (no libraries) ---------- */
+  var KW = "for|in|if|elif|else|and|or|not|True|False|None|while|def|return|import";
+  var FN = "print|range|len|list|str|int|float|sum|max|min|round|append|input|type";
+  var re = new RegExp(
+    "(#[^\\n]*)|(\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(" + FN + ")(?=\\()|\\b(\\d+(?:\\.\\d+)?)\\b",
+    "g");
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code code").forEach(function (el) {
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "tk-com" : m[2] ? "tk-str" : m[3] ? "tk-kw" : m[4] ? "tk-fn" : "tk-num";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = re.lastIndex;
+    }
+    out += esc(src.slice(last));
+    el.innerHTML = out;
+  });
+
+  /* ---------- Show Answer buttons ---------- */
+  document.querySelectorAll(".reveal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.nextElementSibling;
+      var shown = a.classList.toggle("shown");
+      b.textContent = shown ? "Hide Answer" : "Show Answer";
+      b.blur();
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  var cur = 0;
+  var counter = document.getElementById("counter");
+  var bar = document.getElementById("bar");
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    counter.textContent = (cur + 1) + " / " + N;
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+  function btn(id, fn) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () { fn(); b.blur(); });
+    return b;
+  }
+  btn("btnPrev", function () { go(cur - 1); });
+  btn("btnNext", function () { go(cur + 1); });
+
+  /* ---------- Full screen ---------- */
+  var fullBtn = btn("btnFull", function () {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el);
+    }
+  });
+  function onFs() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fullBtn.textContent = on ? "Exit Full Screen" : "Full Screen";
+    fit();
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+
+  /* ---------- Dark / light ---------- */
+  var themeBtn = btn("btnTheme", function () {
+    var dark = root.classList.toggle("dark");
+    try { localStorage.setItem("cs126-theme", dark ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  });
+  function themeLabel() { themeBtn.textContent = root.classList.contains("dark") ? "Light Mode" : "Dark Mode"; }
+  themeLabel();
+
+  /* ---------- Export PDF ---------- */
+  btn("btnPdf", function () { window.print(); });
+
+  /* ---------- Scale the 1280x720 canvas to fit ---------- */
+  var stage = document.getElementById("stage");
+  var vp = document.getElementById("viewport");
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight;
+    var s = Math.min(w / 1280, h / 720) * 0.98;
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>
