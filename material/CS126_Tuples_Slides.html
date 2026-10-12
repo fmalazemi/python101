@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS126 – Tuples</title>
+<style>
+/* ===================== THEME ===================== */
+:root {
+  --bg: #f4f6f8;
+  --slide-bg: #fbfbfc;
+  --text: #1f2933;
+  --muted: #5b6875;
+  --navy: #1b365d;
+  --teal: #0f7c74;
+  --teal-soft: #e3f2f0;
+  --line: #d5dbe1;
+  --code-bg: #f1f3f5;
+  --code-text: #1f2933;
+  --out-bg: #ffffff;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --good: #1a7f37;
+  --good-soft: #e8f5ec;
+  --amber: #a15c00;
+  --tok-kw: #7a2bb5;
+  --tok-str: #a5481a;
+  --tok-num: #0b6bcb;
+  --tok-fn: #0f7c74;
+  --tok-com: #6b7785;
+  --bar-bg: #ffffff;
+}
+html.dark {
+  --bg: #0b1120;
+  --slide-bg: #111827;
+  --text: #e8edf3;
+  --muted: #a3afbd;
+  --navy: #9cc4ff;
+  --teal: #34d1bf;
+  --teal-soft: #12302e;
+  --line: #334155;
+  --code-bg: #0b1220;
+  --code-text: #e8edf3;
+  --out-bg: #0f172a;
+  --bad: #ff8a80;
+  --bad-soft: #3a1717;
+  --good: #7ee2a0;
+  --good-soft: #13301f;
+  --amber: #ffc46b;
+  --tok-kw: #d7a8ff;
+  --tok-str: #ffb38a;
+  --tok-num: #8fc8ff;
+  --tok-fn: #5fe3d2;
+  --tok-com: #8b98a8;
+  --bar-bg: #0f172a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* ===================== STAGE ===================== */
+.viewport {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 56px;
+  overflow: hidden;
+}
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: center center;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--slide-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+.s-head {
+  height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--teal);
+  font-size: 16px; color: var(--muted);
+}
+.s-head .course { color: var(--navy); font-weight: 600; }
+.s-body {
+  flex: 1; min-height: 0;
+  padding: 22px 56px 10px;
+  display: flex; flex-direction: column;
+  font-size: 24px; line-height: 1.4;
+}
+.s-foot {
+  height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; font-size: 15px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+h1 { color: var(--navy); font-size: 56px; margin: 0 0 12px; line-height: 1.15; }
+h2 { color: var(--navy); font-size: 36px; margin: 0 0 16px; line-height: 1.2; }
+h3 { color: var(--teal); font-size: 24px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 30px; }
+li { margin-bottom: 6px; }
+.small { font-size: 20px; }
+.muted { color: var(--muted); }
+.teal { color: var(--teal); font-weight: 600; }
+.navy { color: var(--navy); font-weight: 600; }
+.mono, code.inl {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols.w60 { grid-template-columns: 1.25fr 1fr; }
+.cols.w40 { grid-template-columns: 1fr 1.25fr; }
+.cols.w70 { grid-template-columns: 1.6fr 1fr; }
+.tight pre { font-size: 18px; line-height: 1.38; margin-bottom: 8px; }
+.tight p { margin-bottom: 6px; }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.col { min-width: 0; }
+
+/* ===================== CODE ===================== */
+pre {
+  margin: 0 0 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 20px; line-height: 1.45;
+  white-space: pre; overflow: hidden;
+  border-radius: 6px;
+}
+pre.code {
+  background: var(--code-bg); color: var(--code-text);
+  border: 1px solid var(--line); border-left: 5px solid var(--teal);
+  padding: 10px 16px;
+}
+pre.code.bad  { border-left-color: var(--bad); }
+pre.code.good { border-left-color: var(--good); }
+pre.out {
+  background: var(--out-bg); color: var(--text);
+  border: 1px dashed var(--line); border-left: 5px solid var(--navy);
+  padding: 8px 16px;
+}
+.lbl {
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.tk-kw { color: var(--tok-kw); font-weight: 600; }
+.tk-str { color: var(--tok-str); }
+.tk-num { color: var(--tok-num); }
+.tk-fn { color: var(--tok-fn); }
+.tk-com { color: var(--tok-com); font-style: italic; }
+
+/* ===================== BOXES ===================== */
+.note {
+  border-left: 5px solid var(--teal); background: var(--teal-soft);
+  padding: 10px 16px; border-radius: 4px; margin: 0 0 12px; font-size: 21px;
+}
+.warn {
+  border-left: 5px solid var(--amber); padding: 10px 16px; margin: 0 0 12px;
+  font-size: 21px; background: transparent; border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+}
+.tag-bad, .tag-good {
+  display: inline-block; font-weight: 700; font-size: 17px;
+  padding: 2px 10px; border-radius: 4px; margin-bottom: 4px;
+}
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-good { color: var(--good); background: var(--good-soft); }
+.why { font-size: 19px; margin: 0 0 10px; }
+
+table.t {
+  border-collapse: collapse; font-size: 20px; width: 100%;
+}
+table.t th, table.t td {
+  border: 1px solid var(--line); padding: 6px 12px; text-align: left;
+}
+table.t th { background: var(--teal-soft); color: var(--navy); }
+table.t td.c, table.t th.c { text-align: center; }
+table.t code { font-family: Consolas, Monaco, monospace; }
+
+/* ===================== Q & A ===================== */
+.qa { margin: 0 0 10px; }
+.reveal {
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--teal); background: transparent;
+  border: 1.5px solid var(--teal); border-radius: 4px;
+  padding: 3px 12px; cursor: pointer; margin: 0 0 6px;
+}
+.reveal:hover { background: var(--teal-soft); }
+.answer { visibility: hidden; }
+.answer.shown { visibility: visible; }
+.q { font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+
+/* ===================== TITLE / SECTION ===================== */
+.title-body { justify-content: center; padding-left: 90px; }
+.title-body .sub { font-size: 30px; color: var(--teal); margin-bottom: 36px; }
+.title-body .meta { font-size: 24px; color: var(--muted); line-height: 1.6; }
+.title-rule { width: 120px; height: 5px; background: var(--teal); margin: 0 0 28px; }
+.section-body { justify-content: center; align-items: center; text-align: center; }
+
+/* ===================== DIAGRAMS ===================== */
+.anat {
+  font-family: Consolas, Monaco, monospace; font-size: 40px;
+  background: var(--code-bg); border: 1px solid var(--line);
+  border-left: 5px solid var(--teal); border-radius: 6px;
+  padding: 18px 28px; margin: 0 0 16px; line-height: 1.6;
+}
+.anat .a1 { color: var(--tok-kw); font-weight: 700; }
+.anat .a2 { color: var(--tok-num); font-weight: 700; }
+.anat .a3 { color: var(--tok-str); font-weight: 700; }
+.anat .a4 { color: var(--bad); font-weight: 700; }
+.anat .a5 { color: var(--tok-fn); font-weight: 700; }
+.anat .ind { background: var(--teal-soft); outline: 1px dashed var(--teal); }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 36px; font-size: 21px; }
+.legend b { font-family: Consolas, Monaco, monospace; }
+
+.boxes { display: flex; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap; }
+.box {
+  min-width: 64px; text-align: center;
+  font-family: Consolas, Monaco, monospace; font-size: 22px;
+}
+.box .v {
+  border: 2px solid var(--navy); border-radius: 4px; padding: 6px 10px;
+  background: var(--slide-bg);
+}
+.box .i { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.box .n { font-size: 16px; color: var(--tok-num); margin-bottom: 3px; font-weight: 600; }
+.box.off .v { border-style: dashed; border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.box.hi .v { background: var(--teal-soft); border-color: var(--teal); }
+
+svg text { font-family: "Segoe UI", Arial, sans-serif; }
+.sv-box { fill: var(--slide-bg); stroke: var(--navy); stroke-width: 2; }
+.sv-dec { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.sv-t { fill: var(--text); font-size: 19px; }
+.sv-m { fill: var(--muted); font-size: 16px; font-weight: 600; }
+.sv-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.sv-arrow { fill: var(--muted); }
+
+.ex-num {
+  display: inline-block; min-width: 38px; font-weight: 700; color: var(--teal);
+}
+.level {
+  display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--teal); border: 1.5px solid var(--teal);
+  border-radius: 4px; padding: 1px 10px; margin-left: 12px; vertical-align: middle;
+}
+.ex { margin-bottom: 10px; }
+.ex p { margin: 0 0 6px; }
+
+/* ===================== CONTROLS ===================== */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: var(--bar-bg); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  font-size: 15px;
+}
+.controls button {
+  font: inherit; font-size: 15px; color: var(--navy);
+  background: transparent; border: 1px solid var(--line); border-radius: 4px;
+  padding: 6px 14px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--teal); color: var(--teal); }
+.controls .counter { color: var(--muted); min-width: 64px; text-align: center; }
+.progress {
+  flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.progress div { height: 100%; width: 0; background: var(--teal); }
+.spacer { width: 8px; }
+
+/* Code size for this deck */
+pre { font-size: 19px; }
+.tight pre { font-size: 17px; }
+
+/* ===================== PRINT ===================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  :root, html.dark {
+    --bg: #ffffff; --slide-bg: #ffffff; --text: #1f2933; --muted: #5b6875;
+    --navy: #1b365d; --teal: #0f7c74; --teal-soft: #e3f2f0; --line: #d5dbe1;
+    --code-bg: #f1f3f5; --code-text: #1f2933; --out-bg: #ffffff;
+    --bad: #b42318; --bad-soft: #fdecea; --good: #1a7f37; --good-soft: #e8f5ec;
+    --amber: #a15c00; --tok-kw: #7a2bb5; --tok-str: #a5481a; --tok-num: #0b6bcb;
+    --tok-fn: #0f7c74; --tok-com: #6b7785;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .controls, .reveal { display: none !important; }
+  .answer { visibility: visible !important; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; inset: auto;
+    width: 1280px; height: 720px; zoom: 0.82;
+    margin: 0 auto; border: none; transform: translateY(120px);
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- ============ 1. TITLE ============ -->
+<section class="slide">
+  <div class="s-body title-body">
+    <div class="muted" style="font-size:22px;margin-bottom:10px">CS126 – Introduction to Python</div>
+    <h1>Tuples</h1>
+    <div class="sub">Ordered collections that cannot change — and how they differ from lists</div>
+    <div class="title-rule"></div>
+    <div class="meta">Dr. Fawaz Alazemi</div>
+  </div>
+</section>
+
+<!-- ============ 2. OBJECTIVES ============ -->
+<section class="slide">
+  <h2>Learning Objectives</h2>
+  <p>By the end of this lecture, you will be able to:</p>
+  <ol>
+    <li>Explain what a <b>tuple</b> is and create tuples, including empty and one-item tuples.</li>
+    <li>Read tuple items with indexing and slicing, and use <code class="inl">len()</code>, <code class="inl">in</code>, and <code class="inl">==</code>.</li>
+    <li>Explain what <b>immutable</b> means and what happens when you try to change a tuple.</li>
+    <li>Build new tuples with <code class="inl">+</code> and <code class="inl">*</code>, and convert with <code class="inl">tuple()</code> and <code class="inl">list()</code>.</li>
+    <li>Use the tuple methods <code class="inl">count()</code> and <code class="inl">index()</code>.</li>
+    <li><b>Unpack</b> a tuple into variables and swap two values.</li>
+    <li>Compare tuples with lists and choose the right one for a task.</li>
+  </ol>
+</section>
+
+<!-- ============ 3. MOTIVATION ============ -->
+<section class="slide">
+  <h2>Why Do We Need Tuples?</h2>
+  <p>Some data should <b>never change</b> while the program runs:</p>
+  <div class="cols">
+    <div class="col">
+      <ul class="small">
+        <li>The days of the week</li>
+        <li>The six GCC countries</li>
+        <li>The location of Kuwait City: (29.37, 47.98)</li>
+        <li>A date of birth: (15, 3, 2006)</li>
+      </ul>
+      <p class="small">With a list, one wrong line can change it by mistake:</p>
+      <pre class="code bad"><code>days = ["Sun", "Mon", "Tue"]
+days[0] = "Funday"     # oops!
+print(days)</code></pre>
+      <pre class="out">['Funday', 'Mon', 'Tue']</pre>
+    </div>
+    <div class="col">
+      <div class="note">A <b>tuple</b> is like a list that is <b>locked</b>. Once it is created, no one can change, add, or remove its items.</div>
+      <p class="small">Python will <b>stop</b> the program with an error if code tries to change a tuple — so mistakes are found early, not hidden.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. WHAT IS A TUPLE ============ -->
+<section class="slide">
+  <h2>What Is a Tuple?</h2>
+  <p>A <b>tuple</b> is an <b>ordered</b> collection of values that <b>cannot be changed</b> (immutable).</p>
+  <div class="anat" style="font-size:34px">gcc = <span class="a4">(</span><span class="a3">"Kuwait"</span><span class="a4">,</span> <span class="a3">"Qatar"</span><span class="a4">,</span> <span class="a3">"Oman"</span><span class="a4">)</span></div>
+  <div class="legend">
+    <div><b style="color:var(--bad)">( )</b> — round brackets (parentheses)</div>
+    <div><b style="color:var(--bad)">,</b> — commas separate the items</div>
+    <div><b style="color:var(--tok-str)">items</b> — any values, like in a list</div>
+    <div><b>locked</b> — items cannot be changed</div>
+  </div>
+  <div class="cols" style="margin-top:18px;flex:none">
+    <div class="col">
+      <div class="lbl">List</div>
+      <pre class="code"><code>gcc = ["Kuwait", "Qatar", "Oman"]</code></pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Tuple</div>
+      <pre class="code"><code>gcc = ("Kuwait", "Qatar", "Oman")</code></pre>
+    </div>
+  </div>
+  <div class="note">Same items, same order. The only visible difference is <code class="inl">[ ]</code> versus <code class="inl">( )</code> — but the behavior is different.</div>
+</section>
+
+<!-- ============ 5. CREATING TUPLES ============ -->
+<section class="slide">
+  <h2>Creating Tuples</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>location = (29.37, 47.98)
+student = ("Sara", 20, "CS")
+empty = ()
+nums = 1, 2, 3          # brackets optional
+print(location)
+print(student)
+print(empty)
+print(nums)
+print(type(nums))</code></pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Output</div>
+      <pre class="out">(29.37, 47.98)
+('Sara', 20, 'CS')
+()
+(1, 2, 3)
+&lt;class 'tuple'&gt;</pre>
+      <ul class="small">
+        <li>Python always <b>prints</b> a tuple with round brackets.</li>
+        <li><code class="inl">()</code> is an <b>empty tuple</b>.</li>
+        <li>The <b>commas</b> make the tuple. Brackets are optional, but they make code clearer — use them.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. ONE-ITEM TUPLE ============ -->
+<section class="slide">
+  <h2>A Tuple with One Item Needs a Comma</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>a = (5)
+b = (5,)
+print(a, type(a))
+print(b, type(b))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">5 &lt;class 'int'&gt;
+(5,) &lt;class 'tuple'&gt;</pre>
+    </div>
+    <div class="col">
+      <div class="warn"><code class="inl">(5)</code> is just the number 5 in brackets, like in math: <code class="inl">(2 + 3) * 4</code>.<br>A one-item tuple <b>must</b> have a comma: <code class="inl">(5,)</code></div>
+      <div class="q" style="margin-top:14px">Which of these are tuples?</div>
+      <pre class="code" data-skip><code>x = ("Kuwait")
+y = ("Kuwait",)
+z = "Kuwait",</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer small"><b>y</b> and <b>z</b> are tuples. <b>x</b> is just the string <code class="inl">"Kuwait"</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. INDEXING ============ -->
+<section class="slide">
+  <h2>Reading Items: Same as Lists</h2>
+  <div class="boxes" style="margin:6px 0 16px">
+    <div class="box"><div class="n">-4</div><div class="v">"Sun"</div><div class="i">0</div></div>
+    <div class="box"><div class="n">-3</div><div class="v">"Mon"</div><div class="i">1</div></div>
+    <div class="box"><div class="n">-2</div><div class="v">"Tue"</div><div class="i">2</div></div>
+    <div class="box"><div class="n">-1</div><div class="v">"Wed"</div><div class="i">3</div></div>
+    <div style="align-self:center;font-size:19px;margin-left:16px;line-height:1.7"><span style="color:var(--tok-num)">top: negative index</span><br><span class="muted">bottom: positive index</span></div>
+  </div>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>days = ("Sun", "Mon", "Tue", "Wed")
+print(days[0])
+print(days[-1])
+print(len(days))
+print(days[1:3])</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Sun
+Wed
+4
+('Mon', 'Tue')</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li>Indexes start at <b>0</b>; <code class="inl">-1</code> is the last item.</li>
+        <li><code class="inl">len()</code> counts the items.</li>
+        <li>A <b>slice</b> of a tuple is a new <b>tuple</b>.</li>
+        <li>A missing index → <b>IndexError</b>, as with lists.</li>
+      </ul>
+      <div class="note">Reading a tuple works exactly like reading a list.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. IMMUTABLE ============ -->
+<section class="slide">
+  <h2>The Big Difference: Tuples Cannot Change</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-good">List: allowed</span>
+      <pre class="code good"><code>scores = [80, 90, 70]
+scores[0] = 85
+print(scores)</code></pre>
+      <pre class="out">[85, 90, 70]</pre>
+      <span class="tag-bad">Tuple: error</span>
+      <pre class="code bad" data-skip><code>scores = (80, 90, 70)
+scores[0] = 85</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: 'tuple' object does not support item assignment</pre>
+    </div>
+    <div class="col">
+      <p class="small">Tuples have <b>no methods</b> to add or remove items:</p>
+      <pre class="code bad" data-skip><code>scores = (80, 90, 70)
+scores.append(60)</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">AttributeError: 'tuple' object has no attribute 'append'</pre>
+      <div class="note">A tuple is <b>immutable</b>, like a string. A list is <b>mutable</b>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. NEW TUPLES ============ -->
+<section class="slide">
+  <h2>"Changing" a Tuple = Making a New One</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Join with <code class="inl">+</code>, repeat with <code class="inl">*</code></h3>
+      <pre class="code"><code>a = (1, 2)
+b = (3, 4)
+print(a + b)
+print(a * 3)
+print(a)</code></pre>
+      <pre class="out">(1, 2, 3, 4)
+(1, 2, 1, 2, 1, 2)
+(1, 2)</pre>
+      <p class="small"><code class="inl">a</code> did not change. <code class="inl">+</code> and <code class="inl">*</code> create <b>new</b> tuples.</p>
+    </div>
+    <div class="col">
+      <h3>Build a new tuple and reuse the name</h3>
+      <pre class="code"><code>days = ("Sun", "Mon", "Tue")
+days = days + ("Wed",)
+print(days)
+days = ("Sat",) + days[1:]
+print(days)</code></pre>
+      <pre class="out">('Sun', 'Mon', 'Tue', 'Wed')
+('Sat', 'Mon', 'Tue', 'Wed')</pre>
+      <div class="note small">The <b>old</b> tuple is not changed. The name <code class="inl">days</code> now refers to a <b>new</b> tuple.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. IN AND COMPARE ============ -->
+<section class="slide">
+  <h2>Membership and Comparison</h2>
+  <div class="cols">
+    <div class="col">
+      <h3><code class="inl">in</code> and <code class="inl">not in</code></h3>
+      <pre class="code"><code>weekend = ("Fri", "Sat")
+day = "Fri"
+if day in weekend:
+    print(day, "is a weekend day")
+print("Sun" not in weekend)</code></pre>
+      <pre class="out">Fri is a weekend day
+True</pre>
+    </div>
+    <div class="col">
+      <h3><code class="inl">==</code> and <code class="inl">&lt;</code></h3>
+      <pre class="code"><code>print((1, 2) == (1, 2))
+print((1, 2) == (2, 1))
+print((1, 2) == [1, 2])
+print((2, 9) &lt; (2, 10))</code></pre>
+      <pre class="out">True
+False
+False
+True</pre>
+      <ul class="small">
+        <li>Equal = same items, same order, and both are tuples.</li>
+        <li><code class="inl">&lt;</code> compares item by item, like words in a dictionary.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. FUNCTIONS AND METHODS ============ -->
+<section class="slide">
+  <h2>Functions and the Two Tuple Methods</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Functions that read a tuple</h3>
+      <pre class="code"><code>prices = (2.5, 1.25, 4, 0.75)
+print(len(prices))
+print(min(prices), max(prices))
+print(sum(prices))</code></pre>
+      <pre class="out">4
+0.75 4
+8.5</pre>
+      <p class="small">They only <b>read</b> the tuple, so they work on both lists and tuples.</p>
+    </div>
+    <div class="col">
+      <h3><code class="inl">count()</code> and <code class="inl">index()</code></h3>
+      <pre class="code"><code>votes = ("yes", "no", "yes", "yes")
+print(votes.count("yes"))
+print(votes.index("no"))</code></pre>
+      <pre class="out">3
+1</pre>
+      <ul class="small">
+        <li><code class="inl">count(x)</code>: how many times <code class="inl">x</code> appears.</li>
+        <li><code class="inl">index(x)</code>: position of the <b>first</b> <code class="inl">x</code>. If <code class="inl">x</code> is missing → <b>ValueError</b>.</li>
+        <li>These are the <b>only</b> tuple methods — neither one changes the tuple.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. CONVERTING ============ -->
+<section class="slide">
+  <h2>Converting: <code class="inl">tuple()</code> and <code class="inl">list()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>t = (255, 128, 0)
+lst = list(t)          # tuple -&gt; list
+lst[1] = 200           # lists can change
+t = tuple(lst)         # list -&gt; tuple
+print(t)
+print(tuple("KWT"))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">(255, 200, 0)
+('K', 'W', 'T')</pre>
+    </div>
+    <div class="col">
+      <h3>The 3-step pattern</h3>
+      <ol class="small">
+        <li>Convert the tuple to a <b>list</b> with <code class="inl">list()</code>.</li>
+        <li>Change the list.</li>
+        <li>Convert back to a <b>tuple</b> with <code class="inl">tuple()</code>.</li>
+      </ol>
+      <div class="note small">Use this when you really must change locked data. If you need to change it often, a list is probably the better choice.</div>
+      <p class="small"><code class="inl">tuple("KWT")</code> makes one item per character.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13. UNPACKING ============ -->
+<section class="slide">
+  <h2>Unpacking: One Tuple, Many Variables</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>student = ("Sara", 20, "CS")
+name, age, major = student
+print(name)
+print(age)
+print(major)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Sara
+20
+CS</pre>
+    </div>
+    <div class="col">
+      <svg viewBox="0 0 460 150" width="100%" height="150" role="img" aria-label="Unpacking a tuple into three variables">
+        <defs><marker id="ah3" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+        <rect x="20" y="10" width="130" height="40" class="sv-dec"/><text x="85" y="37" text-anchor="middle" class="sv-t">"Sara"</text>
+        <rect x="150" y="10" width="130" height="40" class="sv-dec"/><text x="215" y="37" text-anchor="middle" class="sv-t">20</text>
+        <rect x="280" y="10" width="130" height="40" class="sv-dec"/><text x="345" y="37" text-anchor="middle" class="sv-t">"CS"</text>
+        <line x1="85" y1="50" x2="85" y2="92" class="sv-line" marker-end="url(#ah3)"/>
+        <line x1="215" y1="50" x2="215" y2="92" class="sv-line" marker-end="url(#ah3)"/>
+        <line x1="345" y1="50" x2="345" y2="92" class="sv-line" marker-end="url(#ah3)"/>
+        <rect x="35" y="96" width="100" height="40" rx="4" class="sv-box"/><text x="85" y="122" text-anchor="middle" class="sv-t">name</text>
+        <rect x="165" y="96" width="100" height="40" rx="4" class="sv-box"/><text x="215" y="122" text-anchor="middle" class="sv-t">age</text>
+        <rect x="295" y="96" width="100" height="40" rx="4" class="sv-box"/><text x="345" y="122" text-anchor="middle" class="sv-t">major</text>
+      </svg>
+      <ul class="small">
+        <li>Each variable gets the item at the <b>same position</b>.</li>
+        <li>The number of variables must <b>equal</b> the number of items, otherwise → <b>ValueError</b>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. SWAP ============ -->
+<section class="slide">
+  <h2>A Neat Trick: Swapping Two Variables</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>With a temporary variable</h3>
+      <pre class="code"><code>a = 3
+b = 8
+temp = a
+a = b
+b = temp
+print(a, b)</code></pre>
+      <pre class="out">8 3</pre>
+    </div>
+    <div class="col">
+      <h3>With a tuple (one line)</h3>
+      <pre class="code"><code>a = 3
+b = 8
+a, b = b, a
+print(a, b)</code></pre>
+      <pre class="out">8 3</pre>
+      <ol class="small">
+        <li>The right side <code class="inl">b, a</code> builds the tuple <code class="inl">(8, 3)</code> <b>first</b>.</li>
+        <li>Then it is unpacked: <code class="inl">a</code> gets 8, <code class="inl">b</code> gets 3.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15. NESTED ============ -->
+<section class="slide">
+  <h2>Tuples Inside Tuples (and Lists)</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — GCC capitals and country codes</div>
+      <pre class="code"><code>capitals = (("Kuwait City", 965),
+            ("Riyadh", 966),
+            ("Doha", 974))
+print(capitals[1])
+print(capitals[2][0])
+city, code = capitals[0]
+print(city, "+" + str(code))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">('Riyadh', 966)
+Doha
+Kuwait City +965</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li>Two indexes: <code class="inl">t[row][item]</code>, as with nested lists.</li>
+        <li>You can unpack one inner tuple into variables.</li>
+      </ul>
+      <h3>A list of tuples</h3>
+      <pre class="code"><code>points = [(29, 47), (25, 51)]
+points[1] = (24, 54)   # new tuple
+print(points)</code></pre>
+      <pre class="out">[(29, 47), (24, 54)]</pre>
+      <p class="small">The <b>list</b> can change; each <b>tuple</b> inside it cannot.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16. LIST VS TUPLE TABLE ============ -->
+<section class="slide">
+  <h2>Lists vs Tuples</h2>
+  <table class="t">
+    <tr><th style="width:28%"></th><th>List</th><th>Tuple</th></tr>
+    <tr><td><b>Brackets</b></td><td><code>[1, 2, 3]</code></td><td><code>(1, 2, 3)</code></td></tr>
+    <tr><td><b>One item</b></td><td><code>[5]</code></td><td><code>(5,)</code> — comma needed</td></tr>
+    <tr><td><b>Can change?</b></td><td>Yes — mutable</td><td>No — immutable</td></tr>
+    <tr><td><b>Index, slice, <code>len</code>, <code>in</code></b></td><td>✔</td><td>✔</td></tr>
+    <tr><td><b><code>min</code>, <code>max</code>, <code>sum</code></b></td><td>✔</td><td>✔</td></tr>
+    <tr><td><b><code>+</code> and <code>*</code></b></td><td>✔ new list</td><td>✔ new tuple</td></tr>
+    <tr><td><b><code>x[i] = value</code></b></td><td>✔</td><td>✘ TypeError</td></tr>
+    <tr><td><b>Methods</b></td><td>many (<code>append</code>, <code>remove</code>, <code>sort</code>, …)</td><td>only <code>count</code> and <code>index</code></td></tr>
+    <tr><td><b>Typical use</b></td><td>a collection that grows or changes</td><td>a fixed group of related values</td></tr>
+  </table>
+</section>
+
+<!-- ============ 17. WHEN TO USE ============ -->
+<section class="slide">
+  <h2>Which One Should I Use?</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Use a <b>tuple</b> when…</h3>
+      <ul class="small">
+        <li>The data must <b>not change</b>: months, GCC countries.</li>
+        <li>The values belong together as <b>one record</b>: a date <code class="inl">(12, 10, 2026)</code>, a location <code class="inl">(29.37, 47.98)</code>.</li>
+        <li>You want Python to <b>protect</b> the data from mistakes.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Use a <b>list</b> when…</h3>
+      <ul class="small">
+        <li>Items will be <b>added, removed, or changed</b>: a shopping cart.</li>
+        <li>The number of items is <b>not fixed</b>: registered students.</li>
+        <li>You want to <b>sort</b> or edit the items.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="q" style="margin-top:10px">List or tuple? (a) RGB color of the Kuwait flag green (b) a to-do list</div>
+  <button class="reveal">Show Answer</button>
+  <div class="answer small">(a) <b>Tuple</b> — three fixed values that form one color. (b) <b>List</b> — tasks are added and removed.</div>
+</section>
+
+<!-- ============ 18. QUICK REFERENCE ============ -->
+<section class="slide">
+  <h2>Quick Reference</h2>
+  <table class="t" style="font-size:19px">
+    <tr><th>Task</th><th>Code</th><th>Result for <code>t = (10, 20, 30, 20)</code></th></tr>
+    <tr><td>Create</td><td><code>t = (10, 20, 30, 20)</code></td><td>a tuple of 4 items</td></tr>
+    <tr><td>Empty / one item</td><td><code>()</code> / <code>(5,)</code></td><td>empty tuple / one-item tuple</td></tr>
+    <tr><td>Read</td><td><code>t[0]</code>, <code>t[-1]</code>, <code>t[1:3]</code></td><td><code>10</code>, <code>20</code>, <code>(20, 30)</code></td></tr>
+    <tr><td>Length / search</td><td><code>len(t)</code>, <code>30 in t</code></td><td><code>4</code>, <code>True</code></td></tr>
+    <tr><td>Methods</td><td><code>t.count(20)</code>, <code>t.index(30)</code></td><td><code>2</code>, <code>2</code></td></tr>
+    <tr><td>New tuples</td><td><code>t + (40,)</code>, <code>(0,) * 2</code></td><td><code>(10, 20, 30, 20, 40)</code>, <code>(0, 0)</code></td></tr>
+    <tr><td>Convert</td><td><code>list(t)</code>, <code>tuple([1, 2])</code></td><td><code>[10, 20, 30, 20]</code>, <code>(1, 2)</code></td></tr>
+    <tr><td>Unpack</td><td><code>a, b, c, d = t</code></td><td><code>a</code> is 10 … <code>d</code> is 20</td></tr>
+    <tr><td>Change an item</td><td><code>t[0] = 5</code></td><td>✘ TypeError</td></tr>
+  </table>
+</section>
+
+<!-- ============ 19. MISTAKES 1 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (1): Creating Tuples</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code>colors = ("red")
+print(type(colors))
+print(len(colors))</code></pre>
+      <pre class="out">&lt;class 'str'&gt;
+3</pre>
+      <p class="why"><b>Why?</b> Without a comma, <code class="inl">("red")</code> is just a string. <code class="inl">len()</code> counted its letters.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>colors = ("red",)
+print(type(colors))
+print(len(colors))</code></pre>
+      <pre class="out">&lt;class 'tuple'&gt;
+1</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>days = ("Sun", "Mon")
+days = days + "Tue"</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: can only concatenate tuple (not "str") to tuple</pre>
+      <p class="why"><b>Why?</b> <code class="inl">+</code> joins a tuple with another <b>tuple</b> only.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>days = ("Sun", "Mon")
+days = days + ("Tue",)
+print(days)</code></pre>
+      <pre class="out">('Sun', 'Mon', 'Tue')</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20. MISTAKES 2 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (2): Changing and Unpacking</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>date = (12, 10, 2026)
+date[0] = 13</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: 'tuple' object does not support item assignment</pre>
+      <span class="tag-good">Correct — build a new tuple</span>
+      <pre class="code good"><code>date = (12, 10, 2026)
+date = (13,) + date[1:]
+print(date)</code></pre>
+      <pre class="out">(13, 10, 2026)</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>student = ("Sara", 20, "CS")
+name, age = student</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">ValueError: too many values to unpack (expected 2)</pre>
+      <p class="why"><b>Why?</b> 3 items, but only 2 variables.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>student = ("Sara", 20, "CS")
+name, age, major = student
+print(name, age, major)</code></pre>
+      <pre class="out">Sara 20 CS</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21. MISTAKES 3 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (3): Methods</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>cart = ("rice", "tea")
+cart.append("milk")</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">AttributeError: 'tuple' object has no attribute 'append'</pre>
+      <p class="why"><b>Why?</b> Tuples cannot grow. A shopping cart changes, so it should be a <b>list</b>.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>cart = ["rice", "tea"]
+cart.append("milk")
+print(cart)</code></pre>
+      <pre class="out">['rice', 'tea', 'milk']</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>gcc = ("Kuwait", "Qatar", "Oman")
+print(gcc.index("Egypt"))</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">ValueError: tuple.index(x): x not in tuple</pre>
+      <span class="tag-good">Correct — check first</span>
+      <pre class="code good"><code>gcc = ("Kuwait", "Qatar", "Oman")
+if "Egypt" in gcc:
+    print(gcc.index("Egypt"))
+else:
+    print("Egypt is not in the tuple")</code></pre>
+      <pre class="out">Egypt is not in the tuple</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22. WORKED EXAMPLE 1 ============ -->
+<section class="slide">
+  <h2>Worked Example 1: A Location</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code># (latitude, longitude)
+kuwait_city = (29.37, 47.98)
+lat, lon = kuwait_city
+print("Latitude:", lat)
+print("Longitude:", lon)
+if lat &gt; 0:
+    print("North of the equator")
+else:
+    print("South of the equator")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Latitude: 29.37
+Longitude: 47.98
+North of the equator</pre>
+    </div>
+    <div class="col small">
+      <h3>Why a tuple?</h3>
+      <ul>
+        <li>A location is <b>two values that belong together</b>.</li>
+        <li>The city does not move, so the data should <b>not change</b>.</li>
+        <li>The <b>position</b> gives the meaning: first latitude, then longitude.</li>
+      </ul>
+      <h3>Step by step</h3>
+      <ol>
+        <li>Unpacking puts 29.37 in <code class="inl">lat</code> and 47.98 in <code class="inl">lon</code>.</li>
+        <li><code class="inl">29.37 &gt; 0</code> is True.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23. WORKED EXAMPLE 2 ============ -->
+<section class="slide">
+  <h2>Worked Example 2: Updating a Student Record</h2>
+  <div class="cols tight">
+    <div class="col">
+      <div class="lbl">Code — (ID, name, major)</div>
+      <pre class="code"><code>record = (2026014, "Ali", "Math")
+print("Before:", record)
+# Ali changed his major to CS
+record = record[:2] + ("CS",)
+print("After:", record)
+sid, name, major = record
+print(name, "(" + str(sid) + ") studies", major)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Before: (2026014, 'Ali', 'Math')
+After: (2026014, 'Ali', 'CS')
+Ali (2026014) studies CS</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li><code class="inl">record[:2]</code> is <code class="inl">(2026014, 'Ali')</code> — a new tuple.</li>
+        <li><code class="inl">+ ("CS",)</code> joins a one-item tuple to it.</li>
+        <li>The name <code class="inl">record</code> now refers to the <b>new</b> tuple.</li>
+        <li>Unpacking gives three variables for a clear message.</li>
+      </ol>
+      <div class="note">The record can still be "updated" — but only on purpose, by building a new tuple. It cannot change by accident.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24. WORKED EXAMPLE 3 ============ -->
+<section class="slide">
+  <h2>Worked Example 3: Days of the Week</h2>
+  <div class="cols w70 tight">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>WEEK = ("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+WEEKEND = ("Fri", "Sat")
+today = "Thu"
+num = WEEK.index(today)
+tomorrow = WEEK[num + 1]
+print(today, "is day", num + 1, "of", len(WEEK))
+print("Tomorrow is", tomorrow)
+if tomorrow in WEEKEND:
+    print("Tomorrow is the weekend!")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Thu is day 5 of 7
+Tomorrow is Fri
+Tomorrow is the weekend!</pre>
+    </div>
+    <div class="col small">
+      <ol>
+        <li><code class="inl">index("Thu")</code> is 4.</li>
+        <li>The next day is at index 5 → <code class="inl">"Fri"</code>.</li>
+        <li><code class="inl">"Fri" in WEEKEND</code> is True.</li>
+      </ol>
+      <div class="note">Names in CAPITAL letters are a common way to show values that are <b>not meant to change</b>. A tuple makes sure they <b>cannot</b>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25. THINK ABOUT IT ============ -->
+<section class="slide">
+  <h2>Think About It</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="qa">
+        <div class="q">1. If tuples cannot change, how does <code class="inl">t = t + (4,)</code> work?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small">It does not change the old tuple. It builds a <b>new</b> tuple and gives it the name <code class="inl">t</code>.</div>
+      </div>
+      <div class="qa">
+        <div class="q">2. Why do tuples have only two methods, while lists have many?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small">Most list methods <b>change</b> the list (<code class="inl">append</code>, <code class="inl">sort</code>, …). Tuples cannot change, so only the "read" methods remain.</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="qa">
+        <div class="q">3. What does this print?</div>
+        <pre class="code"><code>t = (4, 5, 6)
+x, y, z = t
+print(z, x + y, t[1:])</code></pre>
+        <button class="reveal">Show Answer</button>
+        <div class="answer"><pre class="out">6 9 (5, 6)</pre></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26. PRACTICE ============ -->
+<section class="slide">
+  <h2>Practice in Class (3 minutes)</h2>
+  <p>A football match result is stored as a tuple: <code class="inl">match = ("Qadsia", 2, "Kuwait SC", 3)</code></p>
+  <ol class="small">
+    <li>Unpack it into four variables.</li>
+    <li>Print the score as <code class="inl">Qadsia 2 - 3 Kuwait SC</code>.</li>
+    <li>Print the name of the winner, or <code class="inl">Draw</code>.</li>
+  </ol>
+  <button class="reveal">Show Answer</button>
+  <div class="answer">
+    <div class="cols" style="flex:none;grid-template-columns:1.4fr 1fr">
+      <pre class="code"><code>match = ("Qadsia", 2, "Kuwait SC", 3)
+home, hg, away, ag = match
+print(home, hg, "-", ag, away)
+if hg &gt; ag:
+    print(home)
+elif ag &gt; hg:
+    print(away)
+else:
+    print("Draw")</code></pre>
+      <pre class="out">Qadsia 2 - 3 Kuwait SC
+Kuwait SC</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27. REMEMBER ============ -->
+<section class="slide">
+  <h2>What You Should Remember</h2>
+  <ol>
+    <li>A tuple is an ordered collection in round brackets: <code class="inl">(1, 2, 3)</code>. One item needs a comma: <code class="inl">(5,)</code>.</li>
+    <li>Tuples are <b>immutable</b>: no <code class="inl">t[i] = x</code>, no <code class="inl">append</code>, no <code class="inl">remove</code>.</li>
+    <li>Reading works like lists: indexes, slices, <code class="inl">len</code>, <code class="inl">in</code>, <code class="inl">min</code>, <code class="inl">max</code>, <code class="inl">sum</code>.</li>
+    <li><code class="inl">+</code>, <code class="inl">*</code>, and slicing build <b>new</b> tuples.</li>
+    <li>Only two methods: <code class="inl">count()</code> and <code class="inl">index()</code>.</li>
+    <li><b>Unpacking</b>: <code class="inl">a, b = (1, 2)</code>; swap with <code class="inl">a, b = b, a</code>.</li>
+    <li>Tuple for <b>fixed</b> data; list for data that <b>changes</b>.</li>
+  </ol>
+</section>
+
+<!-- ============ 28. EXERCISES L1 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 1 — Basic</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">1.</span>Predict the output.</p>
+        <pre class="code"><code>t = (10, 20, 30, 40)
+print(t[1], t[-1], len(t))
+print(t[1:3])</code></pre></div>
+      <div class="ex"><p><span class="ex-num">2.</span>Predict the output.</p>
+        <pre class="code"><code>a = (5)
+b = (5,)
+c = 5, 6
+print(type(a), type(b), type(c))</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">3.</span>This should make <code class="inl">"Sat"</code> the first day. Find the error and fix it <b>without</b> changing the tuple into a list.</p>
+        <pre class="code" data-skip><code>days = ("Sun", "Mon", "Tue")
+days[0] = "Sat"</code></pre></div>
+      <div class="ex"><p><span class="ex-num">4.</span>Predict the output.</p>
+        <pre class="code"><code>t = (3, 1, 3, 2, 3)
+print(t.count(3), t.index(2), 3 in t)</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 29. EXERCISES L2 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 2 — Apply</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">5.</span>Store Kuwait's information in a tuple: <code class="inl">("Kuwait", "Kuwait City", "KWD", 965)</code>. Unpack it and print:<br><code class="inl">Kuwait: capital Kuwait City, currency KWD, code +965</code></p></div>
+      <div class="ex"><p><span class="ex-num">6.</span>For <code class="inl">prices = (2.5, 1.25, 4, 0.75)</code>, print the lowest, the highest, the total, and the average.</p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">7.</span>A color is stored as <code class="inl">rgb = (255, 128, 0)</code>. Use <code class="inl">list()</code> and <code class="inl">tuple()</code> to change the middle value to 200, then print the new tuple.</p></div>
+      <div class="ex"><p><span class="ex-num">8.</span>Explain what this code does and give its output.</p>
+        <pre class="code"><code>a, b = 3, 8
+a, b = b, a
+print(a, b)</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 30. EXERCISES L3 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 3 — Challenge</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">9.</span>Join the two tuples into <code class="inl">week</code>. Print <code class="inl">week</code>, its length, the index of <code class="inl">"Fri"</code>, and the last two days.</p>
+        <pre class="code" data-skip><code>weekdays = ("Sun", "Mon", "Tue", "Wed", "Thu")
+weekend = ("Fri", "Sat")</code></pre></div>
+      <div class="ex"><p><span class="ex-num">10.</span>Print Mona's mark. Then explain why <code class="inl">students[0][1] = 85</code> fails, and give Ali 85 by building a <b>new</b> <code class="inl">students</code> tuple.</p>
+        <pre class="code" data-skip><code>students = (("Ali", 80), ("Mona", 95))</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">11.</span>Predict the output.</p>
+        <pre class="code"><code>t = (1, 2) * 2 + (3,)
+print(t, len(t), t.count(2))</code></pre></div>
+      <div class="ex"><p><span class="ex-num">12.</span>List or tuple? Choose for each and give a reason:</p>
+        <ol class="small" type="a" style="margin:0">
+          <li>The names of the 12 months</li>
+          <li>A shopping cart</li>
+          <li>The GPS location of Jaber Al-Ahmad Stadium</li>
+          <li>Students currently registered in CS126</li>
+        </ol></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 31. SOLUTIONS DIVIDER ============ -->
+<section class="slide">
+  <div class="s-body section-body" style="padding:0">
+    <div class="title-rule" style="margin:0 auto 24px"></div>
+    <h1>Exercise Solutions</h1>
+    <p class="muted" style="font-size:26px">Try every exercise first. Then compare your answers.</p>
+  </div>
+</section>
+
+<!-- ============ 32. SOLUTIONS 1-4 ============ -->
+<section class="slide">
+  <h2>Solutions 1 – 4 <span class="level">Level 1</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">1.</span>Index 1, last item, length, then a slice (a new tuple).</p>
+      <pre class="out">20 40 4
+(20, 30)</pre>
+      <p><span class="ex-num">2.</span><code class="inl">(5)</code> has no comma, so it is an integer.</p>
+      <pre class="out">&lt;class 'int'&gt; &lt;class 'tuple'&gt; &lt;class 'tuple'&gt;</pre>
+      <p><span class="ex-num">4.</span>3 appears 3 times; 2 is at index 3.</p>
+      <pre class="out">3 3 True</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">3.</span>A tuple cannot be changed (TypeError). Build a new tuple instead:</p>
+      <pre class="code"><code>days = ("Sun", "Mon", "Tue")
+days = ("Sat",) + days[1:]
+print(days)</code></pre>
+      <pre class="out">('Sat', 'Mon', 'Tue')</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 33. SOLUTIONS 5-8 ============ -->
+<section class="slide">
+  <h2>Solutions 5 – 8 <span class="level">Level 2</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">5.</span></p>
+      <pre class="code"><code>info = ("Kuwait", "Kuwait City", "KWD", 965)
+country, capital, currency, code = info
+msg = country + ": capital " + capital
+msg = msg + ", currency " + currency
+print(msg + ", code +" + str(code))</code></pre>
+      <pre class="out" style="white-space:pre-wrap">Kuwait: capital Kuwait City, currency KWD, code +965</pre>
+      <p><span class="ex-num">6.</span></p>
+      <pre class="code"><code>prices = (2.5, 1.25, 4, 0.75)
+print(min(prices), max(prices), sum(prices))
+print(sum(prices) / len(prices))</code></pre>
+      <pre class="out">0.75 4 8.5
+2.125</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">7.</span>tuple → list → change → tuple.</p>
+      <pre class="code"><code>rgb = (255, 128, 0)
+temp = list(rgb)
+temp[1] = 200
+rgb = tuple(temp)
+print(rgb)</code></pre>
+      <pre class="out">(255, 200, 0)</pre>
+      <p><span class="ex-num">8.</span>It swaps the values. The right side <code class="inl">b, a</code> makes the tuple <code class="inl">(8, 3)</code>, which is unpacked into <code class="inl">a</code> and <code class="inl">b</code>.</p>
+      <pre class="out">8 3</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 34. SOLUTIONS 9-10 ============ -->
+<section class="slide">
+  <h2>Solutions 9 – 10 <span class="level">Level 3</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">9.</span></p>
+      <pre class="code"><code>weekdays = ("Sun", "Mon", "Tue", "Wed", "Thu")
+weekend = ("Fri", "Sat")
+week = weekdays + weekend
+print(week)
+print(len(week), week.index("Fri"))
+print(week[-2:])</code></pre>
+      <pre class="out" style="white-space:pre-wrap">('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat')
+7 5
+('Fri', 'Sat')</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">10.</span><code class="inl">students[0]</code> is the tuple <code class="inl">("Ali", 80)</code>, and tuples cannot be changed → TypeError. Build new tuples:</p>
+      <pre class="code"><code>students = (("Ali", 80), ("Mona", 95))
+print(students[1][1])
+students = (("Ali", 85), students[1])
+print(students)</code></pre>
+      <pre class="out">95
+(('Ali', 85), ('Mona', 95))</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 35. SOLUTIONS 11-12 ============ -->
+<section class="slide">
+  <h2>Solutions 11 – 12 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">11.</span><code class="inl">*</code> first: <code class="inl">(1, 2, 1, 2)</code>, then <code class="inl">+ (3,)</code>.</p>
+      <pre class="out">(1, 2, 1, 2, 3) 5 2</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">12.</span></p>
+      <table class="t" style="font-size:18px">
+        <tr><th></th><th>Choice</th><th>Reason</th></tr>
+        <tr><td>a</td><td><b>Tuple</b></td><td>the months never change</td></tr>
+        <tr><td>b</td><td><b>List</b></td><td>items are added and removed</td></tr>
+        <tr><td>c</td><td><b>Tuple</b></td><td>two fixed values forming one location</td></tr>
+        <tr><td>d</td><td><b>List</b></td><td>students add and drop the course</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="btnPrev" title="Previous (Left Arrow)">◀ Previous</button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button id="btnNext" title="Next (Right Arrow)">Next ▶</button>
+  <div class="spacer"></div>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="spacer"></div>
+  <button id="btnFull">Full Screen</button>
+  <button id="btnTheme">Dark Mode</button>
+  <button id="btnPdf">Export PDF</button>
+</div>
+
+<script>
+(function () {
+  var COURSE = "CS126 – Introduction to Python";
+  var TOPIC = "Tuples";
+
+  /* ---------- Theme (restore before anything paints) ---------- */
+  var root = document.documentElement;
+  try { if (localStorage.getItem("cs126-theme") === "dark") root.classList.add("dark"); } catch (e) {}
+
+  /* ---------- Build slide chrome ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length;
+  slides.forEach(function (s, i) {
+    if (!s.querySelector(".s-body")) {
+      var body = document.createElement("div");
+      body.className = "s-body";
+      while (s.firstChild) body.appendChild(s.firstChild);
+      s.appendChild(body);
+    }
+    var head = document.createElement("div");
+    head.className = "s-head";
+    head.innerHTML = '<span class="course">' + COURSE + '</span><span>' + TOPIC + '</span>';
+    var foot = document.createElement("div");
+    foot.className = "s-foot";
+    foot.innerHTML = '<span>Dr. Fawaz Alazemi</span><span>Slide ' + (i + 1) + ' of ' + N + '</span>';
+    s.insertBefore(head, s.firstChild);
+    s.appendChild(foot);
+  });
+
+  /* ---------- Python syntax highlighting (no libraries) ---------- */
+  var KW = "for|in|if|elif|else|and|or|not|True|False|None|while|def|return|import";
+  var FN = "print|range|len|list|str|int|float|sum|max|min|round|append|input|type|tuple";
+  var re = new RegExp(
+    "(#[^\\n]*)|(\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(" + FN + ")(?=\\()|\\b(\\d+(?:\\.\\d+)?)\\b",
+    "g");
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code code").forEach(function (el) {
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "tk-com" : m[2] ? "tk-str" : m[3] ? "tk-kw" : m[4] ? "tk-fn" : "tk-num";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = re.lastIndex;
+    }
+    out += esc(src.slice(last));
+    el.innerHTML = out;
+  });
+
+  /* ---------- Show Answer buttons ---------- */
+  document.querySelectorAll(".reveal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.nextElementSibling;
+      var shown = a.classList.toggle("shown");
+      b.textContent = shown ? "Hide Answer" : "Show Answer";
+      b.blur();
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  var cur = 0;
+  var counter = document.getElementById("counter");
+  var bar = document.getElementById("bar");
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    counter.textContent = (cur + 1) + " / " + N;
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+  function btn(id, fn) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () { fn(); b.blur(); });
+    return b;
+  }
+  btn("btnPrev", function () { go(cur - 1); });
+  btn("btnNext", function () { go(cur + 1); });
+
+  /* ---------- Full screen ---------- */
+  var fullBtn = btn("btnFull", function () {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el);
+    }
+  });
+  function onFs() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fullBtn.textContent = on ? "Exit Full Screen" : "Full Screen";
+    fit();
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+
+  /* ---------- Dark / light ---------- */
+  var themeBtn = btn("btnTheme", function () {
+    var dark = root.classList.toggle("dark");
+    try { localStorage.setItem("cs126-theme", dark ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  });
+  function themeLabel() { themeBtn.textContent = root.classList.contains("dark") ? "Light Mode" : "Dark Mode"; }
+  themeLabel();
+
+  /* ---------- Export PDF ---------- */
+  btn("btnPdf", function () { window.print(); });
+
+  /* ---------- Scale the 1280x720 canvas to fit ---------- */
+  var stage = document.getElementById("stage");
+  var vp = document.getElementById("viewport");
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight;
+    var s = Math.min(w / 1280, h / 720) * 0.98;
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>
