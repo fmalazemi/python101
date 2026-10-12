@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS126 – Dictionaries</title>
+<style>
+/* ===================== THEME ===================== */
+:root {
+  --bg: #f4f6f8;
+  --slide-bg: #fbfbfc;
+  --text: #1f2933;
+  --muted: #5b6875;
+  --navy: #1b365d;
+  --teal: #0f7c74;
+  --teal-soft: #e3f2f0;
+  --line: #d5dbe1;
+  --code-bg: #f1f3f5;
+  --code-text: #1f2933;
+  --out-bg: #ffffff;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --good: #1a7f37;
+  --good-soft: #e8f5ec;
+  --amber: #a15c00;
+  --tok-kw: #7a2bb5;
+  --tok-str: #a5481a;
+  --tok-num: #0b6bcb;
+  --tok-fn: #0f7c74;
+  --tok-com: #6b7785;
+  --bar-bg: #ffffff;
+}
+html.dark {
+  --bg: #0b1120;
+  --slide-bg: #111827;
+  --text: #e8edf3;
+  --muted: #a3afbd;
+  --navy: #9cc4ff;
+  --teal: #34d1bf;
+  --teal-soft: #12302e;
+  --line: #334155;
+  --code-bg: #0b1220;
+  --code-text: #e8edf3;
+  --out-bg: #0f172a;
+  --bad: #ff8a80;
+  --bad-soft: #3a1717;
+  --good: #7ee2a0;
+  --good-soft: #13301f;
+  --amber: #ffc46b;
+  --tok-kw: #d7a8ff;
+  --tok-str: #ffb38a;
+  --tok-num: #8fc8ff;
+  --tok-fn: #5fe3d2;
+  --tok-com: #8b98a8;
+  --bar-bg: #0f172a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* ===================== STAGE ===================== */
+.viewport {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 56px;
+  overflow: hidden;
+}
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: center center;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--slide-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+.s-head {
+  height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--teal);
+  font-size: 16px; color: var(--muted);
+}
+.s-head .course { color: var(--navy); font-weight: 600; }
+.s-body {
+  flex: 1; min-height: 0;
+  padding: 22px 56px 10px;
+  display: flex; flex-direction: column;
+  font-size: 24px; line-height: 1.4;
+}
+.s-foot {
+  height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; font-size: 15px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+h1 { color: var(--navy); font-size: 56px; margin: 0 0 12px; line-height: 1.15; }
+h2 { color: var(--navy); font-size: 36px; margin: 0 0 16px; line-height: 1.2; }
+h3 { color: var(--teal); font-size: 24px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 30px; }
+li { margin-bottom: 6px; }
+.small { font-size: 20px; }
+.muted { color: var(--muted); }
+.teal { color: var(--teal); font-weight: 600; }
+.navy { color: var(--navy); font-weight: 600; }
+.mono, code.inl {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols.w60 { grid-template-columns: 1.25fr 1fr; }
+.cols.w40 { grid-template-columns: 1fr 1.25fr; }
+.cols.w70 { grid-template-columns: 1.6fr 1fr; }
+.tight pre { font-size: 18px; line-height: 1.38; margin-bottom: 8px; }
+.tight p { margin-bottom: 6px; }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.col { min-width: 0; }
+
+/* ===================== CODE ===================== */
+pre {
+  margin: 0 0 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 20px; line-height: 1.45;
+  white-space: pre; overflow: hidden;
+  border-radius: 6px;
+}
+pre.code {
+  background: var(--code-bg); color: var(--code-text);
+  border: 1px solid var(--line); border-left: 5px solid var(--teal);
+  padding: 10px 16px;
+}
+pre.code.bad  { border-left-color: var(--bad); }
+pre.code.good { border-left-color: var(--good); }
+pre.out {
+  background: var(--out-bg); color: var(--text);
+  border: 1px dashed var(--line); border-left: 5px solid var(--navy);
+  padding: 8px 16px;
+}
+.lbl {
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.tk-kw { color: var(--tok-kw); font-weight: 600; }
+.tk-str { color: var(--tok-str); }
+.tk-num { color: var(--tok-num); }
+.tk-fn { color: var(--tok-fn); }
+.tk-com { color: var(--tok-com); font-style: italic; }
+
+/* ===================== BOXES ===================== */
+.note {
+  border-left: 5px solid var(--teal); background: var(--teal-soft);
+  padding: 10px 16px; border-radius: 4px; margin: 0 0 12px; font-size: 21px;
+}
+.warn {
+  border-left: 5px solid var(--amber); padding: 10px 16px; margin: 0 0 12px;
+  font-size: 21px; background: transparent; border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+}
+.tag-bad, .tag-good {
+  display: inline-block; font-weight: 700; font-size: 17px;
+  padding: 2px 10px; border-radius: 4px; margin-bottom: 4px;
+}
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-good { color: var(--good); background: var(--good-soft); }
+.why { font-size: 19px; margin: 0 0 10px; }
+
+table.t {
+  border-collapse: collapse; font-size: 20px; width: 100%;
+}
+table.t th, table.t td {
+  border: 1px solid var(--line); padding: 6px 12px; text-align: left;
+}
+table.t th { background: var(--teal-soft); color: var(--navy); }
+table.t td.c, table.t th.c { text-align: center; }
+table.t code { font-family: Consolas, Monaco, monospace; }
+
+/* ===================== Q & A ===================== */
+.qa { margin: 0 0 10px; }
+.reveal {
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--teal); background: transparent;
+  border: 1.5px solid var(--teal); border-radius: 4px;
+  padding: 3px 12px; cursor: pointer; margin: 0 0 6px;
+}
+.reveal:hover { background: var(--teal-soft); }
+.answer { visibility: hidden; }
+.answer.shown { visibility: visible; }
+.q { font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+
+/* ===================== TITLE / SECTION ===================== */
+.title-body { justify-content: center; padding-left: 90px; }
+.title-body .sub { font-size: 30px; color: var(--teal); margin-bottom: 36px; }
+.title-body .meta { font-size: 24px; color: var(--muted); line-height: 1.6; }
+.title-rule { width: 120px; height: 5px; background: var(--teal); margin: 0 0 28px; }
+.section-body { justify-content: center; align-items: center; text-align: center; }
+
+/* ===================== DIAGRAMS ===================== */
+.anat {
+  font-family: Consolas, Monaco, monospace; font-size: 40px;
+  background: var(--code-bg); border: 1px solid var(--line);
+  border-left: 5px solid var(--teal); border-radius: 6px;
+  padding: 18px 28px; margin: 0 0 16px; line-height: 1.6;
+}
+.anat .a1 { color: var(--tok-kw); font-weight: 700; }
+.anat .a2 { color: var(--tok-num); font-weight: 700; }
+.anat .a3 { color: var(--tok-str); font-weight: 700; }
+.anat .a4 { color: var(--bad); font-weight: 700; }
+.anat .a5 { color: var(--tok-fn); font-weight: 700; }
+.anat .ind { background: var(--teal-soft); outline: 1px dashed var(--teal); }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 36px; font-size: 21px; }
+.legend b { font-family: Consolas, Monaco, monospace; }
+
+.boxes { display: flex; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap; }
+.box {
+  min-width: 64px; text-align: center;
+  font-family: Consolas, Monaco, monospace; font-size: 22px;
+}
+.box .v {
+  border: 2px solid var(--navy); border-radius: 4px; padding: 6px 10px;
+  background: var(--slide-bg);
+}
+.box .i { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.box .n { font-size: 16px; color: var(--tok-num); margin-bottom: 3px; font-weight: 600; }
+.box.off .v { border-style: dashed; border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.box.hi .v { background: var(--teal-soft); border-color: var(--teal); }
+
+svg text { font-family: "Segoe UI", Arial, sans-serif; }
+.sv-box { fill: var(--slide-bg); stroke: var(--navy); stroke-width: 2; }
+.sv-dec { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.sv-t { fill: var(--text); font-size: 19px; }
+.sv-m { fill: var(--muted); font-size: 16px; font-weight: 600; }
+.sv-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.sv-arrow { fill: var(--muted); }
+
+.ex-num {
+  display: inline-block; min-width: 38px; font-weight: 700; color: var(--teal);
+}
+.level {
+  display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--teal); border: 1.5px solid var(--teal);
+  border-radius: 4px; padding: 1px 10px; margin-left: 12px; vertical-align: middle;
+}
+.ex { margin-bottom: 10px; }
+.ex p { margin: 0 0 6px; }
+
+/* ===================== CONTROLS ===================== */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: var(--bar-bg); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  font-size: 15px;
+}
+.controls button {
+  font: inherit; font-size: 15px; color: var(--navy);
+  background: transparent; border: 1px solid var(--line); border-radius: 4px;
+  padding: 6px 14px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--teal); color: var(--teal); }
+.controls .counter { color: var(--muted); min-width: 64px; text-align: center; }
+.progress {
+  flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.progress div { height: 100%; width: 0; background: var(--teal); }
+.spacer { width: 8px; }
+
+/* Code size for this deck */
+pre { font-size: 19px; }
+.tight pre { font-size: 17px; }
+
+/* ===================== PRINT ===================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  :root, html.dark {
+    --bg: #ffffff; --slide-bg: #ffffff; --text: #1f2933; --muted: #5b6875;
+    --navy: #1b365d; --teal: #0f7c74; --teal-soft: #e3f2f0; --line: #d5dbe1;
+    --code-bg: #f1f3f5; --code-text: #1f2933; --out-bg: #ffffff;
+    --bad: #b42318; --bad-soft: #fdecea; --good: #1a7f37; --good-soft: #e8f5ec;
+    --amber: #a15c00; --tok-kw: #7a2bb5; --tok-str: #a5481a; --tok-num: #0b6bcb;
+    --tok-fn: #0f7c74; --tok-com: #6b7785;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .controls, .reveal { display: none !important; }
+  .answer { visibility: visible !important; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; inset: auto;
+    width: 1280px; height: 720px; zoom: 0.82;
+    margin: 0 auto; border: none; transform: translateY(120px);
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- ============ 1. TITLE ============ -->
+<section class="slide">
+  <div class="s-body title-body">
+    <div class="muted" style="font-size:22px;margin-bottom:10px">CS126 – Introduction to Python</div>
+    <h1>Dictionaries</h1>
+    <div class="sub">Looking up values by key — and how dictionaries differ from lists, tuples, and sets</div>
+    <div class="title-rule"></div>
+    <div class="meta">Dr. Fawaz Alazemi</div>
+  </div>
+</section>
+
+<!-- ============ 2. OBJECTIVES ============ -->
+<section class="slide">
+  <h2>Learning Objectives</h2>
+  <p>By the end of this lecture, you will be able to:</p>
+  <ol>
+    <li>Explain what a <b>dictionary</b> is: a collection of <b>key → value</b> pairs.</li>
+    <li>Create dictionaries and read values with <code class="inl">d[key]</code> and <code class="inl">d.get(key)</code>.</li>
+    <li>Add, change, and remove pairs with <code class="inl">d[key] = value</code>, <code class="inl">del</code>, and <code class="inl">pop()</code>.</li>
+    <li>Use <code class="inl">in</code>, <code class="inl">len()</code>, <code class="inl">keys()</code>, <code class="inl">values()</code>, <code class="inl">items()</code>, and <code class="inl">update()</code>.</li>
+    <li>Know which values can be <b>keys</b>, and store lists or dictionaries as <b>values</b>.</li>
+    <li>Avoid a <b>KeyError</b>.</li>
+    <li>Choose between a list, tuple, set, and dictionary for a task.</li>
+  </ol>
+</section>
+
+<!-- ============ 3. MOTIVATION ============ -->
+<section class="slide">
+  <h2>Why Do We Need Dictionaries?</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>With two lists</h3>
+      <pre class="code"><code>names = ["Ali", "Sara", "Mona"]
+phones = ["55512345", "66698765", "99911122"]
+i = names.index("Sara")
+print(phones[i])</code></pre>
+      <pre class="out">66698765</pre>
+      <p class="small">We must find the <b>position</b> first, and keep both lists in the <b>same order</b> forever. One mistake and the numbers belong to the wrong people.</p>
+    </div>
+    <div class="col">
+      <h3>With a dictionary</h3>
+      <pre class="code"><code>phones = {"Ali": "55512345",
+          "Sara": "66698765",
+          "Mona": "99911122"}
+print(phones["Sara"])</code></pre>
+      <pre class="out">66698765</pre>
+      <div class="note small">Look up the value <b>directly by name</b>. Each name is tied to its own number — like a real phone book.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. WHAT IS A DICT ============ -->
+<section class="slide">
+  <h2>What Is a Dictionary?</h2>
+  <p>A <b>dictionary</b> stores <b>pairs</b>. Each pair has a <b>key</b> and a <b>value</b>. You use the key to find the value.</p>
+  <div class="anat" style="font-size:30px">caps = <span class="a4">{</span><span class="a2">"Kuwait"</span><span class="a4">:</span> <span class="a3">"Kuwait City"</span><span class="a4">,</span> <span class="a2">"Qatar"</span><span class="a4">:</span> <span class="a3">"Doha"</span><span class="a4">}</span></div>
+  <div class="cols">
+    <div class="col">
+      <ul class="small">
+        <li><b>Curly brackets</b> <code class="inl">{ }</code>.</li>
+        <li>Each pair is written <code class="inl"><span style="color:var(--tok-num)">key</span>: <span style="color:var(--tok-str)">value</span></code> with a <b>colon</b>.</li>
+        <li><b>Commas</b> separate the pairs.</li>
+        <li>Keys are <b>unique</b>; values can repeat.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:20px">
+        <tr><th>Key</th><th></th><th>Value</th></tr>
+        <tr><td><code>"Kuwait"</code></td><td class="c">→</td><td><code>"Kuwait City"</code></td></tr>
+        <tr><td><code>"Qatar"</code></td><td class="c">→</td><td><code>"Doha"</code></td></tr>
+      </table>
+      <div class="note small" style="margin-top:12px">A real dictionary: look up a <b>word</b> (key) to find its <b>meaning</b> (value).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. CREATING ============ -->
+<section class="slide">
+  <h2>Creating Dictionaries</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>menu = {"tea": 0.25, "coffee": 1.0,
+        "juice": 0.75}
+student = {"name": "Sara", "age": 20,
+           "major": "CS"}
+codes = {965: "Kuwait", 966: "Saudi Arabia"}
+empty = {}
+print(menu)
+print(student)
+print(codes)
+print(empty, type(empty))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out" style="white-space:pre-wrap">{'tea': 0.25, 'coffee': 1.0, 'juice': 0.75}
+{'name': 'Sara', 'age': 20, 'major': 'CS'}
+{965: 'Kuwait', 966: 'Saudi Arabia'}
+{} &lt;class 'dict'&gt;</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li>Keys are often <b>strings</b>, but numbers work too.</li>
+        <li>Values can be <b>any</b> type, mixed freely.</li>
+        <li><code class="inl">{}</code> is the <b>empty dictionary</b> (now you know why an empty set must be <code class="inl">set()</code>!).</li>
+        <li>The type name is <code class="inl">dict</code>.</li>
+        <li>Python keeps the pairs in the order you <b>added</b> them.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. ACCESSING ============ -->
+<section class="slide">
+  <h2>Reading a Value: <code class="inl">d[key]</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>student = {"name": "Sara", "age": 20,
+           "major": "CS"}
+print(student["name"])
+print(student["age"] + 1)
+print("Major: " + student["major"])</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Sara
+21
+Major: CS</pre>
+      <span class="tag-bad">Error</span>
+      <pre class="code bad" data-skip><code>print(student["gpa"])</code></pre>
+      <pre class="out">KeyError: 'gpa'</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li>Put the <b>key</b> in square brackets — not a position.</li>
+        <li>A key that does not exist → <b>KeyError</b>.</li>
+        <li>Keys are <b>case-sensitive</b>: <code class="inl">"Name"</code> is not <code class="inl">"name"</code>.</li>
+      </ul>
+      <div class="warn"><b>No positions!</b> <code class="inl">student[0]</code> is a KeyError — Python looks for a <b>key</b> equal to 0, not the "first" pair.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. GET ============ -->
+<section class="slide">
+  <h2>Safe Reading: <code class="inl">get()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>stock = {"rice": 10, "tea": 4}
+print(stock.get("rice"))
+print(stock.get("milk"))
+print(stock.get("milk", 0))
+print(stock.get("tea", 0))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">10
+None
+0
+4</pre>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:19px">
+        <tr><th>Code</th><th>Key exists</th><th>Key missing</th></tr>
+        <tr><td><code>d[k]</code></td><td>the value</td><td><b>KeyError</b></td></tr>
+        <tr><td><code>d.get(k)</code></td><td>the value</td><td><code>None</code></td></tr>
+        <tr><td><code>d.get(k, x)</code></td><td>the value</td><td><code>x</code></td></tr>
+      </table>
+      <p class="small" style="margin-top:12px"><code class="inl">None</code> is Python's special value for "nothing".</p>
+      <div class="note small">Use <code class="inl">d[k]</code> when the key <b>must</b> be there. Use <code class="inl">get()</code> when it might not be.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. IN AND LEN ============ -->
+<section class="slide">
+  <h2><code class="inl">in</code> and <code class="inl">len()</code> Work on Keys</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>caps = {"Kuwait": "Kuwait City",
+        "Qatar": "Doha",
+        "Oman": "Muscat"}
+print(len(caps))
+print("Qatar" in caps)
+print("Doha" in caps)
+print("Doha" in caps.values())</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">3
+True
+False
+True</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">len(d)</code> counts the <b>pairs</b>.</li>
+        <li><code class="inl">x in d</code> checks the <b>keys only</b>.</li>
+        <li>To search the values, use <code class="inl">x in d.values()</code>.</li>
+      </ul>
+      <pre class="code" data-skip><code>country = "Bahrain"
+if country in caps:
+    print(caps[country])
+else:
+    print(country, "is not in the dictionary")</code></pre>
+      <pre class="out">Bahrain is not in the dictionary</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. ADD AND CHANGE ============ -->
+<section class="slide">
+  <h2>Adding and Changing Pairs</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>menu = {"tea": 0.25, "coffee": 1.0}
+menu["juice"] = 0.75      # new key: added
+menu["tea"] = 0.3         # old key: changed
+print(menu)
+print(len(menu))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out" style="white-space:pre-wrap">{'tea': 0.3, 'coffee': 1.0, 'juice': 0.75}
+3</pre>
+    </div>
+    <div class="col">
+      <div class="note"><code class="inl">d[key] = value</code> does <b>two jobs</b>:<br>
+        • key <b>not</b> there → <b>add</b> a new pair<br>
+        • key already there → <b>replace</b> its value</div>
+      <p class="small">Compare: a list <b>cannot</b> grow with <code class="inl">lst[5] = x</code> (IndexError). A dictionary can.</p>
+      <div class="q">What does this print?</div>
+      <pre class="code"><code>d = {"a": 1}
+d["b"] = 2
+d["a"] = d["a"] + 10
+print(d)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">{'a': 11, 'b': 2}</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. REMOVING ============ -->
+<section class="slide">
+  <h2>Removing Pairs: <code class="inl">del</code> and <code class="inl">pop()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>cart = {"rice": 2, "tea": 1, "milk": 3}
+del cart["tea"]
+print(cart)
+qty = cart.pop("milk")
+print(qty, cart)
+print(cart.pop("bread", 0))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">{'rice': 2, 'milk': 3}
+3 {'rice': 2}
+0</pre>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:19px">
+        <tr><th>Code</th><th>Effect</th><th>Key missing</th></tr>
+        <tr><td><code>del d[k]</code></td><td>removes the pair</td><td>KeyError</td></tr>
+        <tr><td><code>d.pop(k)</code></td><td>removes it and <b>gives back</b> the value</td><td>KeyError</td></tr>
+        <tr><td><code>d.pop(k, x)</code></td><td>same</td><td>gives <code>x</code></td></tr>
+        <tr><td><code>d.clear()</code></td><td>removes all pairs</td><td>—</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. KEY RULES ============ -->
+<section class="slide">
+  <h2>Rules for Keys</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>1. Keys are unique — the last one wins</h3>
+      <pre class="code"><code>d = {"x": 1, "y": 2, "x": 3}
+print(d)
+print(len(d))</code></pre>
+      <pre class="out">{'x': 3, 'y': 2}
+2</pre>
+      <h3>2. Values may repeat</h3>
+      <pre class="code"><code>grades = {"Ali": "A", "Sara": "A"}
+print(len(grades))</code></pre>
+      <pre class="out">2</pre>
+    </div>
+    <div class="col">
+      <h3>3. Keys must be immutable</h3>
+      <p class="small">Strings, numbers, and <b>tuples</b> can be keys — like set items.</p>
+      <pre class="code good"><code>places = {(29, 47): "Kuwait City"}
+print(places[(29, 47)])</code></pre>
+      <pre class="out">Kuwait City</pre>
+      <pre class="code bad" data-skip><code>places = {[29, 47]: "Kuwait City"}</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: unhashable type: 'list'</pre>
+      <p class="small"><b>Values</b> have no such rule: they can be anything, even lists.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. KEYS VALUES ITEMS ============ -->
+<section class="slide">
+  <h2>Looking Inside: <code class="inl">keys()</code>, <code class="inl">values()</code>, <code class="inl">items()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>prices = {"tea": 0.25, "coffee": 1.0,
+          "juice": 0.75}
+print(list(prices.keys()))
+print(list(prices.values()))
+print(list(prices.items()))
+print(sum(prices.values()))
+print(max(prices.values()))
+print(sorted(prices))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out" style="white-space:pre-wrap">['tea', 'coffee', 'juice']
+[0.25, 1.0, 0.75]
+[('tea', 0.25), ('coffee', 1.0), ('juice', 0.75)]
+2.0
+1.0
+['coffee', 'juice', 'tea']</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">keys()</code> → all keys; <code class="inl">values()</code> → all values.</li>
+        <li><code class="inl">items()</code> → all pairs as <b>tuples</b> <code class="inl">(key, value)</code>.</li>
+        <li>Wrap them in <code class="inl">list()</code> to print them clearly or use indexes.</li>
+        <li><code class="inl">sum()</code>, <code class="inl">max()</code>, <code class="inl">min()</code> work on <code class="inl">values()</code>.</li>
+        <li><code class="inl">sorted(d)</code> gives the <b>keys</b> as a sorted list.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13. UPDATE ============ -->
+<section class="slide">
+  <h2>Merging Dictionaries: <code class="inl">update()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — a price change and new items</div>
+      <pre class="code"><code>menu = {"tea": 0.25, "coffee": 1.0}
+changes = {"coffee": 1.25, "karak": 0.15}
+menu.update(changes)
+print(menu)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out" style="white-space:pre-wrap">{'tea': 0.25, 'coffee': 1.25, 'karak': 0.15}</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">a.update(b)</code> copies every pair of <code class="inl">b</code> into <code class="inl">a</code>.</li>
+        <li>Keys only in <code class="inl">b</code> are <b>added</b> (karak).</li>
+        <li>Keys in both are <b>replaced</b> by <code class="inl">b</code>'s value (coffee).</li>
+        <li><code class="inl">a</code> changes; <code class="inl">b</code> does not.</li>
+      </ul>
+      <div class="note">It works like many <code class="inl">a[key] = value</code> lines at once.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. NESTED ============ -->
+<section class="slide">
+  <h2>Values Can Be Lists or Dictionaries</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — a full student record</div>
+      <pre class="code"><code>student = {
+    "name": "Ali",
+    "courses": ["CS126", "MATH101"],
+    "grades": {"CS126": 88, "MATH101": 75}
+}
+print(student["courses"][0])
+print(student["grades"]["MATH101"])
+student["courses"].append("ENG110")
+student["grades"]["ENG110"] = 90
+print(len(student["courses"]))
+print(student["grades"])</code></pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Output</div>
+      <pre class="out" style="white-space:pre-wrap">CS126
+75
+3
+{'CS126': 88, 'MATH101': 75, 'ENG110': 90}</pre>
+      <ul class="small">
+        <li><code class="inl">student["courses"]</code> is a <b>list</b> → then <code class="inl">[0]</code> is an index.</li>
+        <li><code class="inl">student["grades"]</code> is a <b>dictionary</b> → then <code class="inl">["MATH101"]</code> is a key.</li>
+        <li>Read the brackets from <b>left to right</b>, one step at a time.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15. LOOKUP TABLES ============ -->
+<section class="slide">
+  <h2>Dictionaries as Lookup Tables</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Instead of a long if / elif chain…</h3>
+      <pre class="code"><code>code = "QA"
+if code == "KW":
+    country = "Kuwait"
+elif code == "QA":
+    country = "Qatar"
+elif code == "OM":
+    country = "Oman"
+else:
+    country = "Unknown"
+print(country)</code></pre>
+      <pre class="out">Qatar</pre>
+    </div>
+    <div class="col">
+      <h3>…use a dictionary</h3>
+      <pre class="code"><code>names = {"KW": "Kuwait",
+         "QA": "Qatar",
+         "OM": "Oman"}
+code = "QA"
+print(names.get(code, "Unknown"))
+print(names.get("XX", "Unknown"))</code></pre>
+      <pre class="out">Qatar
+Unknown</pre>
+      <div class="note small">Shorter, and adding a new country means adding <b>one pair</b> — not another <code class="inl">elif</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16. COUNTING ============ -->
+<section class="slide">
+  <h2>A Useful Pattern: Counting with <code class="inl">get()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — recording votes one by one</div>
+      <pre class="code"><code>votes = {}
+vote = "yes"
+votes[vote] = votes.get(vote, 0) + 1
+vote = "no"
+votes[vote] = votes.get(vote, 0) + 1
+vote = "yes"
+votes[vote] = votes.get(vote, 0) + 1
+print(votes)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">{'yes': 2, 'no': 1}</pre>
+    </div>
+    <div class="col small">
+      <h3>How the key line works</h3>
+      <ol>
+        <li><code class="inl">votes.get(vote, 0)</code>: the current count, or <b>0</b> if this is the first time.</li>
+        <li><code class="inl">+ 1</code>: one more vote.</li>
+        <li><code class="inl">votes[vote] = …</code>: store the new count (adds the key if needed).</li>
+      </ol>
+      <div class="note">With loops (later), this one line will count thousands of votes.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17. COMPARISON TABLE ============ -->
+<section class="slide">
+  <h2>List vs Tuple vs Set vs Dictionary</h2>
+  <table class="t" style="font-size:18px">
+    <tr><th style="width:22%"></th><th>List</th><th>Tuple</th><th>Set</th><th>Dictionary</th></tr>
+    <tr><td><b>Written as</b></td><td><code>[1, 2]</code></td><td><code>(1, 2)</code></td><td><code>{1, 2}</code></td><td><code>{"a": 1}</code></td></tr>
+    <tr><td><b>Empty</b></td><td><code>[]</code></td><td><code>()</code></td><td><code>set()</code></td><td><code>{}</code></td></tr>
+    <tr><td><b>Stores</b></td><td>items</td><td>items</td><td>unique items</td><td>key → value pairs</td></tr>
+    <tr><td><b>Access by</b></td><td>index <code>[0]</code></td><td>index <code>[0]</code></td><td>— (only <code>in</code>)</td><td>key <code>["a"]</code></td></tr>
+    <tr><td><b>Ordered?</b></td><td>Yes</td><td>Yes</td><td>No</td><td>Keeps insertion order</td></tr>
+    <tr><td><b>Duplicates?</b></td><td>Yes</td><td>Yes</td><td>No</td><td>Keys: no · Values: yes</td></tr>
+    <tr><td><b>Can change?</b></td><td>Yes</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td><b><code>in</code> checks</b></td><td>items</td><td>items</td><td>items</td><td><b>keys</b></td></tr>
+    <tr><td><b>Missing access</b></td><td>IndexError</td><td>IndexError</td><td>—</td><td>KeyError</td></tr>
+  </table>
+</section>
+
+<!-- ============ 18. WHICH TO USE ============ -->
+<section class="slide">
+  <h2>Which One Should I Use?</h2>
+  <table class="t" style="font-size:19px">
+    <tr><th>If you need…</th><th>Use</th><th>Example</th></tr>
+    <tr><td>an ordered collection that changes</td><td><b>List</b></td><td>a queue at the bank</td></tr>
+    <tr><td>a fixed record that must not change</td><td><b>Tuple</b></td><td>a date (12, 10, 2026)</td></tr>
+    <tr><td>unique items, fast "is it in?"</td><td><b>Set</b></td><td>countries a traveler visited</td></tr>
+    <tr><td>to <b>look up</b> a value by a name or ID</td><td><b>Dictionary</b></td><td>student ID → student name</td></tr>
+  </table>
+  <div class="note" style="margin-top:16px">Ask: <i>"Do I find things by <b>position</b>, or by a <b>name/ID</b>?"</i> By position → list or tuple. By name/ID → dictionary.</div>
+  <div class="q">Which one for: the price of each item in a supermarket?</div>
+  <button class="reveal">Show Answer</button>
+  <div class="answer small"><b>Dictionary</b> — item name (key) → price (value). You look prices up by name.</div>
+</section>
+
+<!-- ============ 19. QUICK REFERENCE ============ -->
+<section class="slide">
+  <h2>Quick Reference</h2>
+  <table class="t" style="font-size:18px">
+    <tr><th>Task</th><th>Code</th><th>Note</th></tr>
+    <tr><td>Create / empty</td><td><code>d = {"a": 1, "b": 2}</code> · <code>{}</code></td><td>key: value pairs</td></tr>
+    <tr><td>Read</td><td><code>d["a"]</code></td><td>KeyError if missing</td></tr>
+    <tr><td>Read safely</td><td><code>d.get("z", 0)</code></td><td>default if missing</td></tr>
+    <tr><td>Add or change</td><td><code>d["c"] = 3</code></td><td>adds new / replaces old</td></tr>
+    <tr><td>Remove</td><td><code>del d["a"]</code> · <code>d.pop("a")</code></td><td><code>pop</code> gives the value back</td></tr>
+    <tr><td>Size / key check</td><td><code>len(d)</code> · <code>"a" in d</code></td><td><code>in</code> checks keys</td></tr>
+    <tr><td>Value check</td><td><code>1 in d.values()</code></td><td></td></tr>
+    <tr><td>All keys / values / pairs</td><td><code>list(d.keys())</code>, <code>list(d.values())</code>, <code>list(d.items())</code></td><td>pairs are tuples</td></tr>
+    <tr><td>Merge</td><td><code>d.update(other)</code></td><td>other's values win</td></tr>
+    <tr><td>Count</td><td><code>d[k] = d.get(k, 0) + 1</code></td><td>counting pattern</td></tr>
+  </table>
+</section>
+
+<!-- ============ 20. MISTAKES 1 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (1): KeyError</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>prices = {"tea": 0.25, "coffee": 1.0}
+print(prices["juice"])</code></pre>
+      <pre class="out">KeyError: 'juice'</pre>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>prices = {"tea": 0.25, "coffee": 1.0}
+print(prices.get("juice", "not on the menu"))</code></pre>
+      <pre class="out">not on the menu</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>student = {"name": "Sara", "age": 20}
+print(student[0])</code></pre>
+      <pre class="out">KeyError: 0</pre>
+      <p class="why"><b>Why?</b> Dictionaries use <b>keys</b>, not positions. There is no key 0.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>student = {"name": "Sara", "age": 20}
+print(student["name"])</code></pre>
+      <pre class="out">Sara</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21. MISTAKES 2 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (2): <code class="inl">in</code> and Duplicate Keys</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code># goal: is Doha one of the capitals?
+caps = {"Kuwait": "Kuwait City",
+        "Qatar": "Doha"}
+print("Doha" in caps)</code></pre>
+      <pre class="out">False</pre>
+      <p class="why"><b>Why?</b> <code class="inl">in</code> checks the <b>keys</b>. "Doha" is a <b>value</b>.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>caps = {"Kuwait": "Kuwait City",
+        "Qatar": "Doha"}
+print("Doha" in caps.values())</code></pre>
+      <pre class="out">True</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code># goal: two phone numbers for Ali
+phones = {"Ali": "555", "Ali": "666"}
+print(phones)</code></pre>
+      <pre class="out">{'Ali': '666'}</pre>
+      <p class="why"><b>Why?</b> Keys are unique. The second <code class="inl">"Ali"</code> <b>replaced</b> the first.</p>
+      <span class="tag-good">Correct — make the value a list</span>
+      <pre class="code good"><code>phones = {"Ali": ["555", "666"]}
+print(phones["Ali"][1])</code></pre>
+      <pre class="out">666</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22. MISTAKES 3 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (3): Keys and Views</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>prices = {"tea": 0.25, "coffee": 1.0}
+print(prices.keys()[0])</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: 'dict_keys' object is not subscriptable</pre>
+      <p class="why"><b>Why?</b> <code class="inl">keys()</code> is not a list. Convert it first.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>prices = {"tea": 0.25, "coffee": 1.0}
+print(list(prices.keys())[0])</code></pre>
+      <pre class="out">tea</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code>user = {"Name": "Sara"}
+print(user.get("name"))</code></pre>
+      <pre class="out">None</pre>
+      <p class="why"><b>Why?</b> Keys are case-sensitive: <code class="inl">"Name"</code> ≠ <code class="inl">"name"</code>. <code class="inl">get()</code> hides the problem by giving <code class="inl">None</code>.</p>
+      <div class="note small">Choose one style for keys (for example, all small letters) and use it everywhere.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23. WORKED EXAMPLE 1 ============ -->
+<section class="slide">
+  <h2>Worked Example 1: A Restaurant Order</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — prices in KD</div>
+      <pre class="code"><code>menu = {"machboos": 3.5, "tea": 0.25,
+        "juice": 0.75}
+order = {"machboos": 2, "tea": 3}
+total = menu["machboos"] * order["machboos"]
+total = total + menu["tea"] * order["tea"]
+print("Items ordered:", list(order.keys()))
+print("Total:", total, "KD")
+item = "kunafa"
+if item not in menu:
+    print(item, "is not on the menu")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out" style="white-space:pre-wrap">Items ordered: ['machboos', 'tea']
+Total: 7.75 KD
+kunafa is not on the menu</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li><code class="inl">menu</code>: item → <b>price</b>. <code class="inl">order</code>: item → <b>quantity</b>.</li>
+        <li>The same key reads both: 3.5 × 2 = 7.0.</li>
+        <li>0.25 × 3 = 0.75, so the total is 7.75.</li>
+        <li><code class="inl">not in</code> checks the keys before using an unknown item.</li>
+      </ol>
+      <div class="note">The item name connects the two dictionaries — no positions needed.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24. WORKED EXAMPLE 2 ============ -->
+<section class="slide">
+  <h2>Worked Example 2: Updating a Student Record</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>student = {"id": 2026014, "name": "Noor",
+           "credits": 45}
+student["major"] = "CS"          # add
+student["credits"] = student["credits"] + 15
+old = student.pop("id")          # remove
+print(student)
+print("Removed ID:", old)
+if student["credits"] &gt;= 60:
+    print(student["name"], "is a sophomore")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out" style="white-space:pre-wrap">{'name': 'Noor', 'credits': 60, 'major': 'CS'}
+Removed ID: 2026014
+Noor is a sophomore</pre>
+    </div>
+    <div class="col small">
+      <ol>
+        <li>A new key <code class="inl">"major"</code> is added at the end.</li>
+        <li><code class="inl">"credits"</code> already exists, so its value is replaced: 45 + 15 = 60.</li>
+        <li><code class="inl">pop("id")</code> removes the pair and returns 2026014.</li>
+        <li>The <code class="inl">if</code> reads a value by its key.</li>
+      </ol>
+      <div class="note">A record with <b>named fields</b> is clearer than a tuple: <code class="inl">student["credits"]</code> instead of <code class="inl">student[2]</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25. WORKED EXAMPLE 3 ============ -->
+<section class="slide">
+  <h2>Worked Example 3: Currency Converter</h2>
+  <div class="cols tight">
+    <div class="col">
+      <div class="lbl">Code — how many KWD for 1 unit (example rates)</div>
+      <pre class="code"><code>to_kwd = {"USD": 0.3, "SAR": 0.08, "EUR": 0.35}
+amount = 200
+currency = "SAR"
+if currency in to_kwd:
+    result = amount * to_kwd[currency]
+    print(amount, currency, "=", result, "KWD")
+else:
+    print("Unknown currency:", currency)
+to_kwd["AED"] = 0.085
+print(len(to_kwd), "currencies")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">200 SAR = 16.0 KWD
+4 currencies</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li>The dictionary is a <b>lookup table</b>: currency code → rate.</li>
+        <li><code class="inl">in</code> protects against a KeyError for unknown codes.</li>
+        <li>Adding a new currency is one line — no new <code class="inl">elif</code>.</li>
+      </ul>
+      <p class="muted">Rates here are simple examples, not today's real rates.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26. THINK ABOUT IT ============ -->
+<section class="slide">
+  <h2>Think About It</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="qa">
+        <div class="q">1. Why can a tuple be a key, but a list cannot?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small">Keys must be <b>immutable</b>. If a key could change, Python could no longer find its value.</div>
+      </div>
+      <div class="qa">
+        <div class="q">2. What is the difference between <code class="inl">d["x"] = 5</code> on a dictionary and <code class="inl">lst[9] = 5</code> on a short list?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small">The dictionary <b>adds</b> a new key if needed. The list gives an <b>IndexError</b> — it cannot grow this way.</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="qa">
+        <div class="q">3. What does this print?</div>
+        <pre class="code"><code>d = {"a": 1, "b": 2}
+d["c"] = d.get("a", 0) + d.get("z", 10)
+print(d["c"], len(d), "z" in d)</code></pre>
+        <button class="reveal">Show Answer</button>
+        <div class="answer"><pre class="out">11 3 False</pre><p class="small"><code class="inl">get()</code> never adds a key; it only reads.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27. PRACTICE ============ -->
+<section class="slide">
+  <h2>Practice in Class (3 minutes)</h2>
+  <p>Mobile packages and their monthly prices (KD):</p>
+  <pre class="code" data-skip><code>packages = {"Basic": 5, "Plus": 9, "Max": 15}</code></pre>
+  <ol class="small">
+    <li>Add a new package <code class="inl">"Student"</code> for 4 KD.</li>
+    <li>The price of <code class="inl">"Plus"</code> goes up by 2 KD.</li>
+    <li>Print the cheapest price and the number of packages.</li>
+    <li>Print the price of <code class="inl">"Gold"</code>, or <code class="inl">Not available</code>.</li>
+  </ol>
+  <button class="reveal">Show Answer</button>
+  <div class="answer">
+    <div class="cols" style="flex:none;grid-template-columns:1.4fr 1fr">
+      <pre class="code"><code>packages = {"Basic": 5, "Plus": 9, "Max": 15}
+packages["Student"] = 4
+packages["Plus"] = packages["Plus"] + 2
+print(min(packages.values()), len(packages))
+print(packages.get("Gold", "Not available"))</code></pre>
+      <pre class="out">4 4
+Not available</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 28. REMEMBER ============ -->
+<section class="slide">
+  <h2>What You Should Remember</h2>
+  <ol>
+    <li>A dictionary stores <b>key: value</b> pairs in <code class="inl">{ }</code>. Empty: <code class="inl">{}</code>.</li>
+    <li>Read with <code class="inl">d[key]</code> (KeyError if missing) or <code class="inl">d.get(key, default)</code>.</li>
+    <li><code class="inl">d[key] = value</code> adds a new pair or replaces an old value.</li>
+    <li>Remove with <code class="inl">del d[key]</code> or <code class="inl">d.pop(key)</code>.</li>
+    <li><code class="inl">in</code> and <code class="inl">len()</code> work on <b>keys</b>. Use <code class="inl">d.values()</code> to search values.</li>
+    <li>Keys are <b>unique</b> and <b>immutable</b>; values can be anything.</li>
+    <li>List/tuple: find by <b>position</b>. Set: <b>unique</b> items. Dictionary: find by <b>key</b>.</li>
+  </ol>
+</section>
+
+<!-- ============ 29. EXERCISES L1 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 1 — Basic</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">1.</span>Predict the output.</p>
+        <pre class="code"><code>caps = {"Kuwait": "Kuwait City",
+        "Qatar": "Doha", "Oman": "Muscat"}
+print(caps["Qatar"])
+print(len(caps))
+print("Doha" in caps)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">2.</span>Predict the output.</p>
+        <pre class="code"><code>d = {"a": 1, "b": 2}
+d["c"] = 3
+d["a"] = 10
+print(d)</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">3.</span>Find the error and fix it so the program prints 0 for a missing item.</p>
+        <pre class="code" data-skip><code>prices = {"tea": 0.25, "coffee": 1}
+print(prices["juice"])</code></pre></div>
+      <div class="ex"><p><span class="ex-num">4.</span>Predict the output.</p>
+        <pre class="code"><code>d = {"x": 1, "y": 2, "x": 3}
+print(d, len(d))</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 30. EXERCISES L2 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 2 — Apply</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">5.</span>Start with <code class="inl">book = {"Ali": "55512345", "Sara": "66698765"}</code>. Add Mona (<code class="inl">"99911122"</code>), change Ali's number to <code class="inl">"55500000"</code>, delete Sara, then print the dictionary.</p></div>
+      <div class="ex"><p><span class="ex-num">6.</span>Using the menu and order below, print the total price.</p>
+        <pre class="code" data-skip><code>menu = {"machboos": 3.5, "tea": 0.25,
+        "juice": 0.75}
+order = {"machboos": 2, "juice": 3}</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">7.</span>For <code class="inl">student = {"name": "Noor", "credits": 45}</code>: add <code class="inl">"major": "CS"</code>, add 15 credits, then print the dictionary.</p></div>
+      <div class="ex"><p><span class="ex-num">8.</span>Explain each value and give the output.</p>
+        <pre class="code"><code>stock = {"rice": 10}
+print(stock.get("rice", 0))
+print(stock.get("milk", 0))
+print(stock.get("milk"))</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 31. EXERCISES L3 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 3 — Challenge</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">9.</span>Start with <code class="inl">votes = {}</code>. Using the <code class="inl">get()</code> counting pattern, record three votes: <code class="inl">"yes"</code>, <code class="inl">"no"</code>, <code class="inl">"yes"</code>. Print <code class="inl">votes</code>.</p></div>
+      <div class="ex"><p><span class="ex-num">10.</span>For the record below, print Ali's MATH101 grade. Then add <code class="inl">"ENG110"</code> to his courses with grade 90. Print the number of courses and the grades.</p>
+        <pre class="code" data-skip><code>ali = {"courses": ["CS126", "MATH101"],
+       "grades": {"CS126": 88, "MATH101": 75}}</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">11.</span>Predict the output. Be careful!</p>
+        <pre class="code"><code>d = {"a": 1}
+e = d
+e["b"] = 2
+d.pop("a")
+print(d, e, "a" in e)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">12.</span>List, tuple, set, or dictionary? Give a reason:</p>
+        <ol class="small" type="a" style="margin:0">
+          <li>Each GCC country and its capital</li>
+          <li>The IDs of students present today</li>
+          <li>This week's temperatures, in order</li>
+          <li>A date of birth</li>
+        </ol></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 32. SOLUTIONS DIVIDER ============ -->
+<section class="slide">
+  <div class="s-body section-body" style="padding:0">
+    <div class="title-rule" style="margin:0 auto 24px"></div>
+    <h1>Exercise Solutions</h1>
+    <p class="muted" style="font-size:26px">Try every exercise first. Then compare your answers.</p>
+  </div>
+</section>
+
+<!-- ============ 33. SOLUTIONS 1-4 ============ -->
+<section class="slide">
+  <h2>Solutions 1 – 4 <span class="level">Level 1</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">1.</span><code class="inl">in</code> checks keys; "Doha" is a value.</p>
+      <pre class="out">Doha
+3
+False</pre>
+      <p><span class="ex-num">2.</span>"c" is added; "a" is replaced.</p>
+      <pre class="out">{'a': 10, 'b': 2, 'c': 3}</pre>
+      <p><span class="ex-num">4.</span>Keys are unique: the last "x" wins.</p>
+      <pre class="out">{'x': 3, 'y': 2} 2</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">3.</span><code class="inl">"juice"</code> is not a key → KeyError. Use <code class="inl">get()</code> with a default:</p>
+      <pre class="code"><code>prices = {"tea": 0.25, "coffee": 1}
+print(prices.get("juice", 0))</code></pre>
+      <pre class="out">0</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 34. SOLUTIONS 5-8 ============ -->
+<section class="slide">
+  <h2>Solutions 5 – 8 <span class="level">Level 2</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">5.</span></p>
+      <pre class="code"><code>book = {"Ali": "55512345", "Sara": "66698765"}
+book["Mona"] = "99911122"
+book["Ali"] = "55500000"
+del book["Sara"]
+print(book)</code></pre>
+      <pre class="out" style="white-space:pre-wrap">{'Ali': '55500000', 'Mona': '99911122'}</pre>
+      <p><span class="ex-num">6.</span>3.5 × 2 + 0.75 × 3 = 7.0 + 2.25</p>
+      <pre class="code"><code>menu = {"machboos": 3.5, "tea": 0.25,
+        "juice": 0.75}
+order = {"machboos": 2, "juice": 3}
+total = menu["machboos"] * order["machboos"]
+total = total + menu["juice"] * order["juice"]
+print(total)</code></pre>
+      <pre class="out">9.25</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">7.</span></p>
+      <pre class="code"><code>student = {"name": "Noor", "credits": 45}
+student["major"] = "CS"
+student["credits"] = student["credits"] + 15
+print(student)</code></pre>
+      <pre class="out" style="white-space:pre-wrap">{'name': 'Noor', 'credits': 60, 'major': 'CS'}</pre>
+      <p><span class="ex-num">8.</span>"rice" exists → 10. "milk" is missing → the default 0. With no default, <code class="inl">get()</code> gives <code class="inl">None</code>.</p>
+      <pre class="out">10
+0
+None</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 35. SOLUTIONS 9-10 ============ -->
+<section class="slide">
+  <h2>Solutions 9 – 10 <span class="level">Level 3</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">9.</span>The first time a key is seen, <code class="inl">get()</code> gives 0.</p>
+      <pre class="code"><code>votes = {}
+votes["yes"] = votes.get("yes", 0) + 1
+votes["no"] = votes.get("no", 0) + 1
+votes["yes"] = votes.get("yes", 0) + 1
+print(votes)</code></pre>
+      <pre class="out">{'yes': 2, 'no': 1}</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">10.</span>The course list grows with <code class="inl">append</code>; the grades dictionary with a new key.</p>
+      <pre class="code"><code>ali = {"courses": ["CS126", "MATH101"],
+       "grades": {"CS126": 88, "MATH101": 75}}
+print(ali["grades"]["MATH101"])
+ali["courses"].append("ENG110")
+ali["grades"]["ENG110"] = 90
+print(len(ali["courses"]))
+print(ali["grades"])</code></pre>
+      <pre class="out" style="white-space:pre-wrap">75
+3
+{'CS126': 88, 'MATH101': 75, 'ENG110': 90}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 36. SOLUTIONS 11-12 ============ -->
+<section class="slide">
+  <h2>Solutions 11 – 12 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">11.</span><code class="inl">e = d</code> does not copy: both names refer to the <b>same</b> dictionary (like lists). Every change shows through both names.</p>
+      <pre class="out">{'b': 2} {'b': 2} False</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">12.</span></p>
+      <table class="t" style="font-size:18px">
+        <tr><th></th><th>Choice</th><th>Reason</th></tr>
+        <tr><td>a</td><td><b>Dictionary</b></td><td>look up a capital by country</td></tr>
+        <tr><td>b</td><td><b>Set</b></td><td>unique IDs; fast "is present?"</td></tr>
+        <tr><td>c</td><td><b>List</b></td><td>order matters; values may repeat</td></tr>
+        <tr><td>d</td><td><b>Tuple</b></td><td>a fixed record (day, month, year)</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="btnPrev" title="Previous (Left Arrow)">◀ Previous</button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button id="btnNext" title="Next (Right Arrow)">Next ▶</button>
+  <div class="spacer"></div>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="spacer"></div>
+  <button id="btnFull">Full Screen</button>
+  <button id="btnTheme">Dark Mode</button>
+  <button id="btnPdf">Export PDF</button>
+</div>
+
+<script>
+(function () {
+  var COURSE = "CS126 – Introduction to Python";
+  var TOPIC = "Dictionaries";
+
+  /* ---------- Theme (restore before anything paints) ---------- */
+  var root = document.documentElement;
+  try { if (localStorage.getItem("cs126-theme") === "dark") root.classList.add("dark"); } catch (e) {}
+
+  /* ---------- Build slide chrome ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length;
+  slides.forEach(function (s, i) {
+    if (!s.querySelector(".s-body")) {
+      var body = document.createElement("div");
+      body.className = "s-body";
+      while (s.firstChild) body.appendChild(s.firstChild);
+      s.appendChild(body);
+    }
+    var head = document.createElement("div");
+    head.className = "s-head";
+    head.innerHTML = '<span class="course">' + COURSE + '</span><span>' + TOPIC + '</span>';
+    var foot = document.createElement("div");
+    foot.className = "s-foot";
+    foot.innerHTML = '<span>Dr. Fawaz Alazemi</span><span>Slide ' + (i + 1) + ' of ' + N + '</span>';
+    s.insertBefore(head, s.firstChild);
+    s.appendChild(foot);
+  });
+
+  /* ---------- Python syntax highlighting (no libraries) ---------- */
+  var KW = "for|in|if|elif|else|and|or|not|True|False|None|while|def|return|import|del";
+  var FN = "print|range|len|list|str|int|float|sum|max|min|round|append|input|type|tuple|set|sorted|dict";
+  var re = new RegExp(
+    "(#[^\\n]*)|(\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(" + FN + ")(?=\\()|\\b(\\d+(?:\\.\\d+)?)\\b",
+    "g");
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code code").forEach(function (el) {
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "tk-com" : m[2] ? "tk-str" : m[3] ? "tk-kw" : m[4] ? "tk-fn" : "tk-num";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = re.lastIndex;
+    }
+    out += esc(src.slice(last));
+    el.innerHTML = out;
+  });
+
+  /* ---------- Show Answer buttons ---------- */
+  document.querySelectorAll(".reveal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.nextElementSibling;
+      var shown = a.classList.toggle("shown");
+      b.textContent = shown ? "Hide Answer" : "Show Answer";
+      b.blur();
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  var cur = 0;
+  var counter = document.getElementById("counter");
+  var bar = document.getElementById("bar");
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    counter.textContent = (cur + 1) + " / " + N;
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+  function btn(id, fn) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () { fn(); b.blur(); });
+    return b;
+  }
+  btn("btnPrev", function () { go(cur - 1); });
+  btn("btnNext", function () { go(cur + 1); });
+
+  /* ---------- Full screen ---------- */
+  var fullBtn = btn("btnFull", function () {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el);
+    }
+  });
+  function onFs() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fullBtn.textContent = on ? "Exit Full Screen" : "Full Screen";
+    fit();
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+
+  /* ---------- Dark / light ---------- */
+  var themeBtn = btn("btnTheme", function () {
+    var dark = root.classList.toggle("dark");
+    try { localStorage.setItem("cs126-theme", dark ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  });
+  function themeLabel() { themeBtn.textContent = root.classList.contains("dark") ? "Light Mode" : "Dark Mode"; }
+  themeLabel();
+
+  /* ---------- Export PDF ---------- */
+  btn("btnPdf", function () { window.print(); });
+
+  /* ---------- Scale the 1280x720 canvas to fit ---------- */
+  var stage = document.getElementById("stage");
+  var vp = document.getElementById("viewport");
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight;
+    var s = Math.min(w / 1280, h / 720) * 0.98;
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>
