@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS126 – Casting and eval</title>
+<style>
+/* ===================== THEME ===================== */
+:root {
+  --bg: #f4f6f8;
+  --slide-bg: #fbfbfc;
+  --text: #1f2933;
+  --muted: #5b6875;
+  --navy: #1b365d;
+  --teal: #0f7c74;
+  --teal-soft: #e3f2f0;
+  --line: #d5dbe1;
+  --code-bg: #f1f3f5;
+  --code-text: #1f2933;
+  --out-bg: #ffffff;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --good: #1a7f37;
+  --good-soft: #e8f5ec;
+  --amber: #a15c00;
+  --tok-kw: #7a2bb5;
+  --tok-str: #a5481a;
+  --tok-num: #0b6bcb;
+  --tok-fn: #0f7c74;
+  --tok-com: #6b7785;
+  --bar-bg: #ffffff;
+}
+html.dark {
+  --bg: #0b1120;
+  --slide-bg: #111827;
+  --text: #e8edf3;
+  --muted: #a3afbd;
+  --navy: #9cc4ff;
+  --teal: #34d1bf;
+  --teal-soft: #12302e;
+  --line: #334155;
+  --code-bg: #0b1220;
+  --code-text: #e8edf3;
+  --out-bg: #0f172a;
+  --bad: #ff8a80;
+  --bad-soft: #3a1717;
+  --good: #7ee2a0;
+  --good-soft: #13301f;
+  --amber: #ffc46b;
+  --tok-kw: #d7a8ff;
+  --tok-str: #ffb38a;
+  --tok-num: #8fc8ff;
+  --tok-fn: #5fe3d2;
+  --tok-com: #8b98a8;
+  --bar-bg: #0f172a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* ===================== STAGE ===================== */
+.viewport {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 56px;
+  overflow: hidden;
+}
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: center center;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--slide-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+.s-head {
+  height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--teal);
+  font-size: 16px; color: var(--muted);
+}
+.s-head .course { color: var(--navy); font-weight: 600; }
+.s-body {
+  flex: 1; min-height: 0;
+  padding: 22px 56px 10px;
+  display: flex; flex-direction: column;
+  font-size: 24px; line-height: 1.4;
+}
+.s-foot {
+  height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; font-size: 15px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+h1 { color: var(--navy); font-size: 56px; margin: 0 0 12px; line-height: 1.15; }
+h2 { color: var(--navy); font-size: 36px; margin: 0 0 16px; line-height: 1.2; }
+h3 { color: var(--teal); font-size: 24px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 30px; }
+li { margin-bottom: 6px; }
+.small { font-size: 20px; }
+.muted { color: var(--muted); }
+.teal { color: var(--teal); font-weight: 600; }
+.navy { color: var(--navy); font-weight: 600; }
+.mono, code.inl {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols.w60 { grid-template-columns: 1.25fr 1fr; }
+.cols.w40 { grid-template-columns: 1fr 1.25fr; }
+.cols.w70 { grid-template-columns: 1.6fr 1fr; }
+.tight pre { font-size: 18px; line-height: 1.38; margin-bottom: 8px; }
+.tight p { margin-bottom: 6px; }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.col { min-width: 0; }
+
+/* ===================== CODE ===================== */
+pre {
+  margin: 0 0 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 20px; line-height: 1.45;
+  white-space: pre; overflow: hidden;
+  border-radius: 6px;
+}
+pre.code {
+  background: var(--code-bg); color: var(--code-text);
+  border: 1px solid var(--line); border-left: 5px solid var(--teal);
+  padding: 10px 16px;
+}
+pre.code.bad  { border-left-color: var(--bad); }
+pre.code.good { border-left-color: var(--good); }
+pre.out {
+  background: var(--out-bg); color: var(--text);
+  border: 1px dashed var(--line); border-left: 5px solid var(--navy);
+  padding: 8px 16px;
+}
+.lbl {
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.tk-kw { color: var(--tok-kw); font-weight: 600; }
+.tk-str { color: var(--tok-str); }
+.tk-num { color: var(--tok-num); }
+.tk-fn { color: var(--tok-fn); }
+.tk-com { color: var(--tok-com); font-style: italic; }
+
+/* ===================== BOXES ===================== */
+.note {
+  border-left: 5px solid var(--teal); background: var(--teal-soft);
+  padding: 10px 16px; border-radius: 4px; margin: 0 0 12px; font-size: 21px;
+}
+.warn {
+  border-left: 5px solid var(--amber); padding: 10px 16px; margin: 0 0 12px;
+  font-size: 21px; background: transparent; border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+}
+.tag-bad, .tag-good {
+  display: inline-block; font-weight: 700; font-size: 17px;
+  padding: 2px 10px; border-radius: 4px; margin-bottom: 4px;
+}
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-good { color: var(--good); background: var(--good-soft); }
+.why { font-size: 19px; margin: 0 0 10px; }
+
+table.t {
+  border-collapse: collapse; font-size: 20px; width: 100%;
+}
+table.t th, table.t td {
+  border: 1px solid var(--line); padding: 6px 12px; text-align: left;
+}
+table.t th { background: var(--teal-soft); color: var(--navy); }
+table.t td.c, table.t th.c { text-align: center; }
+table.t code { font-family: Consolas, Monaco, monospace; }
+
+/* ===================== Q & A ===================== */
+.qa { margin: 0 0 10px; }
+.reveal {
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--teal); background: transparent;
+  border: 1.5px solid var(--teal); border-radius: 4px;
+  padding: 3px 12px; cursor: pointer; margin: 0 0 6px;
+}
+.reveal:hover { background: var(--teal-soft); }
+.answer { visibility: hidden; }
+.answer.shown { visibility: visible; }
+.q { font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+
+/* ===================== TITLE / SECTION ===================== */
+.title-body { justify-content: center; padding-left: 90px; }
+.title-body .sub { font-size: 30px; color: var(--teal); margin-bottom: 36px; }
+.title-body .meta { font-size: 24px; color: var(--muted); line-height: 1.6; }
+.title-rule { width: 120px; height: 5px; background: var(--teal); margin: 0 0 28px; }
+.section-body { justify-content: center; align-items: center; text-align: center; }
+
+/* ===================== DIAGRAMS ===================== */
+.anat {
+  font-family: Consolas, Monaco, monospace; font-size: 40px;
+  background: var(--code-bg); border: 1px solid var(--line);
+  border-left: 5px solid var(--teal); border-radius: 6px;
+  padding: 18px 28px; margin: 0 0 16px; line-height: 1.6;
+}
+.anat .a1 { color: var(--tok-kw); font-weight: 700; }
+.anat .a2 { color: var(--tok-num); font-weight: 700; }
+.anat .a3 { color: var(--tok-str); font-weight: 700; }
+.anat .a4 { color: var(--bad); font-weight: 700; }
+.anat .a5 { color: var(--tok-fn); font-weight: 700; }
+.anat .ind { background: var(--teal-soft); outline: 1px dashed var(--teal); }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 36px; font-size: 21px; }
+.legend b { font-family: Consolas, Monaco, monospace; }
+
+.boxes { display: flex; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap; }
+.box {
+  min-width: 64px; text-align: center;
+  font-family: Consolas, Monaco, monospace; font-size: 22px;
+}
+.box .v {
+  border: 2px solid var(--navy); border-radius: 4px; padding: 6px 10px;
+  background: var(--slide-bg);
+}
+.box .i { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.box .n { font-size: 16px; color: var(--tok-num); margin-bottom: 3px; font-weight: 600; }
+.box.off .v { border-style: dashed; border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.box.hi .v { background: var(--teal-soft); border-color: var(--teal); }
+
+svg text { font-family: "Segoe UI", Arial, sans-serif; }
+.sv-box { fill: var(--slide-bg); stroke: var(--navy); stroke-width: 2; }
+.sv-dec { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.sv-t { fill: var(--text); font-size: 19px; }
+.sv-m { fill: var(--muted); font-size: 16px; font-weight: 600; }
+.sv-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.sv-arrow { fill: var(--muted); }
+
+.ex-num {
+  display: inline-block; min-width: 38px; font-weight: 700; color: var(--teal);
+}
+.level {
+  display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--teal); border: 1.5px solid var(--teal);
+  border-radius: 4px; padding: 1px 10px; margin-left: 12px; vertical-align: middle;
+}
+.ex { margin-bottom: 10px; }
+.ex p { margin: 0 0 6px; }
+
+/* ===================== CONTROLS ===================== */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: var(--bar-bg); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  font-size: 15px;
+}
+.controls button {
+  font: inherit; font-size: 15px; color: var(--navy);
+  background: transparent; border: 1px solid var(--line); border-radius: 4px;
+  padding: 6px 14px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--teal); color: var(--teal); }
+.controls .counter { color: var(--muted); min-width: 64px; text-align: center; }
+.progress {
+  flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.progress div { height: 100%; width: 0; background: var(--teal); }
+.spacer { width: 8px; }
+
+/* Code size for this deck */
+pre { font-size: 19px; }
+.tight pre { font-size: 17px; }
+
+/* ===================== PRINT ===================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  :root, html.dark {
+    --bg: #ffffff; --slide-bg: #ffffff; --text: #1f2933; --muted: #5b6875;
+    --navy: #1b365d; --teal: #0f7c74; --teal-soft: #e3f2f0; --line: #d5dbe1;
+    --code-bg: #f1f3f5; --code-text: #1f2933; --out-bg: #ffffff;
+    --bad: #b42318; --bad-soft: #fdecea; --good: #1a7f37; --good-soft: #e8f5ec;
+    --amber: #a15c00; --tok-kw: #7a2bb5; --tok-str: #a5481a; --tok-num: #0b6bcb;
+    --tok-fn: #0f7c74; --tok-com: #6b7785;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .controls, .reveal { display: none !important; }
+  .answer { visibility: visible !important; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; inset: auto;
+    width: 1280px; height: 720px; zoom: 0.82;
+    margin: 0 auto; border: none; transform: translateY(120px);
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- ============ 1. TITLE ============ -->
+<section class="slide">
+  <div class="s-body title-body">
+    <div class="muted" style="font-size:22px;margin-bottom:10px">CS126 – Introduction to Python</div>
+    <h1>Casting and the <span style="font-family:Consolas,Monaco,monospace">eval()</span> Function</h1>
+    <div class="sub">Changing values from one type to another</div>
+    <div class="title-rule"></div>
+    <div class="meta">Dr. Fawaz Alazemi</div>
+  </div>
+</section>
+
+<!-- ============ 2. OBJECTIVES ============ -->
+<section class="slide">
+  <h2>Learning Objectives</h2>
+  <p>By the end of this lecture, you will be able to:</p>
+  <ol>
+    <li>Explain what <b>casting</b> (type conversion) means, and the difference between <b>automatic</b> and <b>explicit</b> conversion.</li>
+    <li>Use <code class="inl">int()</code>, <code class="inl">float()</code>, <code class="inl">str()</code>, and <code class="inl">bool()</code> correctly.</li>
+    <li>Convert between collections with <code class="inl">list()</code>, <code class="inl">tuple()</code>, and <code class="inl">set()</code>.</li>
+    <li>Recognize casting errors (<b>ValueError</b>, <b>TypeError</b>).</li>
+    <li>Use <code class="inl">eval(input())</code> to read numbers, expressions, several values, and collections.</li>
+    <li>Compare <code class="inl">eval()</code> with casting, and explain why <code class="inl">eval()</code> is <b>unsafe</b>.</li>
+  </ol>
+</section>
+
+<!-- ============ 3. THE PROBLEM ============ -->
+<section class="slide">
+  <h2>Why Do We Need to Convert Types?</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="5|3"><code>a = input("First number: ")
+b = input("Second number: ")
+print(a + b)
+print(type(a))</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">First number: 5
+Second number: 3
+53
+&lt;class 'str'&gt;</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li><code class="inl">input()</code> always returns <b>text</b> (a string), even when the user types digits.</li>
+        <li><code class="inl">"5" + "3"</code> joins two strings: <code class="inl">"53"</code>, not 8.</li>
+        <li>Every value in Python has a <b>type</b>, and the type decides what operations do.</li>
+      </ul>
+      <div class="note">To do math with typed numbers, we must <b>change the type</b> of the value. This lecture shows two ways: <b>casting</b> and <b><code class="inl">eval()</code></b>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. WHAT IS CASTING ============ -->
+<section class="slide">
+  <h2>What Is Casting?</h2>
+  <p><b>Casting</b> means creating a value of a <b>new type</b> from an existing value. We call the type's name like a function.</p>
+  <div class="anat" style="font-size:34px">new_value = <span class="a5">int</span>(<span class="a3">"25"</span>)</div>
+  <div class="cols">
+    <div class="col">
+      <svg viewBox="0 0 520 170" width="100%" height="170" role="img" aria-label="Casting diagram">
+        <defs><marker id="ah4" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+        <rect x="10" y="30" width="130" height="60" rx="6" class="sv-box"/><text x="75" y="58" text-anchor="middle" class="sv-t">"25"</text><text x="75" y="80" text-anchor="middle" class="sv-m">str</text>
+        <line x1="140" y1="60" x2="190" y2="60" class="sv-line" marker-end="url(#ah4)"/>
+        <rect x="194" y="30" width="130" height="60" rx="6" class="sv-dec"/><text x="259" y="66" text-anchor="middle" class="sv-t">int( )</text>
+        <line x1="324" y1="60" x2="374" y2="60" class="sv-line" marker-end="url(#ah4)"/>
+        <rect x="378" y="30" width="130" height="60" rx="6" class="sv-box"/><text x="443" y="58" text-anchor="middle" class="sv-t">25</text><text x="443" y="80" text-anchor="middle" class="sv-m">int</text>
+        <text x="260" y="135" text-anchor="middle" class="sv-m">The original "25" is not changed — a new value is made.</text>
+      </svg>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:19px">
+        <tr><th>Function</th><th>Makes a…</th></tr>
+        <tr><td><code>int()</code></td><td>whole number</td></tr>
+        <tr><td><code>float()</code></td><td>decimal number</td></tr>
+        <tr><td><code>str()</code></td><td>string (text)</td></tr>
+        <tr><td><code>bool()</code></td><td>True / False</td></tr>
+        <tr><td><code>list()</code>, <code>tuple()</code>, <code>set()</code></td><td>collection</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. IMPLICIT VS EXPLICIT ============ -->
+<section class="slide">
+  <h2>Automatic vs Explicit Conversion</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Automatic (implicit) — Python does it</h3>
+      <pre class="code"><code>print(5 + 2.0)     # int + float
+print(10 / 2)      # / always gives float
+print(True + 1)    # True counts as 1</code></pre>
+      <pre class="out">7.0
+5.0
+2</pre>
+      <p class="small">Python converts <b>only</b> when it is safe: an int becomes a float, never the other way.</p>
+    </div>
+    <div class="col">
+      <h3>Explicit — you do it (casting)</h3>
+      <pre class="code bad" data-skip><code>print("Age: " + 19)</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: can only concatenate str (not "int") to str</pre>
+      <p class="small">Python will <b>not</b> mix text and numbers by itself. You must cast:</p>
+      <pre class="code good"><code>print("Age: " + str(19))</code></pre>
+      <pre class="out">Age: 19</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. INT ============ -->
+<section class="slide">
+  <h2><code class="inl">int()</code>: Convert to a Whole Number</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>print(int("42"))      # from text
+print(int(" 42 "))    # spaces are ignored
+print(int(7.9))       # from a float
+print(int(-7.9))
+print(int(True))      # from a bool</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">42
+42
+7
+-7
+1</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li>From a <b>string</b>: the text must be a whole number, like <code class="inl">"42"</code>.</li>
+        <li>From a <b>float</b>: the decimal part is <b>cut off</b> (not rounded). <code class="inl">int(7.9)</code> is <code class="inl">7</code>.</li>
+        <li>From a <b>bool</b>: <code class="inl">True</code> → 1, <code class="inl">False</code> → 0.</li>
+      </ul>
+      <div class="warn small"><code class="inl">int("7.9")</code> is a <b>ValueError</b>: the text has a dot. Use <code class="inl">int(float("7.9"))</code> → <code class="inl">7</code>.</div>
+      <div class="note small">To round instead: <code class="inl">round(7.9)</code> → <code class="inl">8</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. FLOAT ============ -->
+<section class="slide">
+  <h2><code class="inl">float()</code>: Convert to a Decimal Number</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>print(float("3.75"))   # from text
+print(float("3"))      # whole number text
+print(float(8))        # from an int
+print(float(False))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">3.75
+3.0
+8.0
+0.0</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li><code class="inl">float()</code> accepts text with or without a dot.</li>
+        <li>The result always has a decimal part, even <code class="inl">3.0</code>.</li>
+        <li>It is the best choice for prices, temperatures, and distances.</li>
+      </ul>
+      <div class="lbl">With input</div>
+      <pre class="code" data-input="1.250"><code>price = float(input("Price (KD): "))
+print(price * 2)</code></pre>
+      <pre class="out">Price (KD): 1.250
+2.5</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. STR ============ -->
+<section class="slide">
+  <h2><code class="inl">str()</code>: Convert to Text</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>age = 19
+gpa = 3.5
+msg = "Age " + str(age) + ", GPA " + str(gpa)
+print(msg)
+print(str(3) + str(4))
+print(len(str(2026)))   # count the digits</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Age 19, GPA 3.5
+34
+4</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li><code class="inl">str()</code> works on <b>any</b> value: numbers, bools, lists, …</li>
+        <li>Needed when you join numbers with text using <code class="inl">+</code>.</li>
+        <li>Once a number is text, string tools work on it: <code class="inl">len</code>, indexing, slicing.</li>
+      </ul>
+      <div class="note small"><code class="inl">print("Age", 19)</code> does not need <code class="inl">str()</code> — commas in <code class="inl">print</code> handle any type. <code class="inl">str()</code> is needed for <code class="inl">+</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. QUESTIONS (CASTING) ============ -->
+<section class="slide">
+  <h2>What Will This Code Print?</h2>
+  <div class="cols tight">
+    <div class="col">
+      <h3>Question 1</h3>
+      <pre class="code" data-skip><code>print(int(9.99), float(9))</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">9 9.0</pre><p class="small"><code class="inl">int</code> cuts off the decimals; it does not round.</p></div>
+      <h3 style="margin-top:8px">Question 2</h3>
+      <pre class="code" data-skip><code>print(str(5) + str(5), 5 + 5)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">55 10</pre></div>
+    </div>
+    <div class="col">
+      <h3>Question 3</h3>
+      <pre class="code" data-skip><code>print(int("8") * 2, "8" * 2)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">16 88</pre><p class="small">A string times a number repeats the text.</p></div>
+      <h3 style="margin-top:8px">Question 4</h3>
+      <pre class="code" data-skip><code>print(int("8.5"))</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out" style="white-space:pre-wrap;font-size:16px">ValueError: invalid literal for int() with base 10: '8.5'</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. BOOL ============ -->
+<section class="slide">
+  <h2><code class="inl">bool()</code>: Convert to True or False</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>print(bool(0), bool(25), bool(-3))
+print(bool(""), bool("Ali"))
+print(bool([]), bool([0]))
+print(bool("0"), bool("False"))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">False True True
+False True
+False True
+True True</pre>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:19px">
+        <tr><th>Gives <code>False</code></th><th>Gives <code>True</code></th></tr>
+        <tr><td><code>0</code>, <code>0.0</code></td><td>any other number</td></tr>
+        <tr><td><code>""</code> (empty string)</td><td>any non-empty string</td></tr>
+        <tr><td><code>[]</code>, <code>()</code>, <code>set()</code></td><td>a collection with items</td></tr>
+      </table>
+      <div class="warn small" style="margin-top:12px"><b>Surprise:</b> <code class="inl">bool("False")</code> and <code class="inl">bool("0")</code> are <b>True</b> — they are non-empty strings. <code class="inl">bool</code> does not read the meaning of the word.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. COLLECTIONS ============ -->
+<section class="slide">
+  <h2>Casting Collections: <code class="inl">list()</code>, <code class="inl">tuple()</code>, <code class="inl">set()</code></h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>codes = ["KWT", "UAE", "KWT", "QAT"]
+print(tuple(codes))
+print(len(set(codes)))   # different values
+print(list((10, 20, 30)))
+print(list("CS126"))
+print(sorted(set("banana")))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">('KWT', 'UAE', 'KWT', 'QAT')
+3
+[10, 20, 30]
+['C', 'S', '1', '2', '6']
+['a', 'b', 'n']</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li>Each function makes a <b>new</b> collection from the items of another.</li>
+        <li><code class="inl">set()</code> removes duplicates — useful for counting <b>different</b> values.</li>
+        <li><code class="inl">tuple()</code> makes a fixed copy that cannot be changed.</li>
+        <li>From a <b>string</b>, each <b>character</b> becomes one item.</li>
+      </ul>
+      <div class="warn small">A single number is not a collection: <code class="inl">list(5)</code> gives <b>TypeError: 'int' object is not iterable</b>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. CASTING TABLE ============ -->
+<section class="slide">
+  <h2>Casting Summary: What Works and What Fails</h2>
+  <table class="t" style="font-size:19px">
+    <tr><th>Code</th><th>Result</th><th>Note</th></tr>
+    <tr><td><code>int("12")</code></td><td><code>12</code></td><td>text of a whole number</td></tr>
+    <tr><td><code>int("12.5")</code></td><td>ValueError</td><td>int text cannot have a dot</td></tr>
+    <tr><td><code>int(12.5)</code></td><td><code>12</code></td><td>decimals cut off</td></tr>
+    <tr><td><code>int("1,000")</code></td><td>ValueError</td><td>commas not allowed</td></tr>
+    <tr><td><code>float("12")</code></td><td><code>12.0</code></td><td></td></tr>
+    <tr><td><code>float("abc")</code></td><td>ValueError</td><td>not a number</td></tr>
+    <tr><td><code>str(12.5)</code></td><td><code>'12.5'</code></td><td>always works</td></tr>
+    <tr><td><code>bool("False")</code></td><td><code>True</code></td><td>non-empty string</td></tr>
+    <tr><td><code>list("ab")</code></td><td><code>['a', 'b']</code></td><td>one item per character</td></tr>
+    <tr><td><code>list(12)</code></td><td>TypeError</td><td>a number is not a collection</td></tr>
+  </table>
+  <div class="note small" style="margin-top:12px"><b>ValueError</b> = right kind of value, wrong content. <b>TypeError</b> = this type cannot be used at all.</div>
+</section>
+
+<!-- ============ 13. CASTING WITH INPUT ============ -->
+<section class="slide">
+  <h2>Casting with <code class="inl">input()</code></h2>
+  <div class="cols w60 tight">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="Sara|20|3.6"><code>name = input("Name: ")           # text: no cast
+age = int(input("Age: "))         # whole number
+gpa = float(input("GPA: "))       # decimal number
+print(name + " will be " + str(age + 1) + " next year")
+print("GPA out of 100:", gpa / 4 * 100)</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Name: Sara
+Age: 20
+GPA: 3.6
+Sara will be 21 next year
+GPA out of 100: 90.0</pre>
+    </div>
+    <div class="col small">
+      <h3>How <code class="inl">int(input("Age: "))</code> runs</h3>
+      <ol>
+        <li>The <b>inner</b> call runs first: <code class="inl">input</code> returns <code class="inl">"20"</code>.</li>
+        <li><code class="inl">int("20")</code> makes the number <code class="inl">20</code>.</li>
+        <li><code class="inl">20</code> is stored in <code class="inl">age</code>.</li>
+      </ol>
+      <div class="note">Choose the cast by what the user should type: <b>text</b> → none, <b>whole number</b> → <code class="inl">int</code>, <b>decimal</b> → <code class="inl">float</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. WHAT IS EVAL ============ -->
+<section class="slide">
+  <h2>What Is <code class="inl">eval()</code>?</h2>
+  <p><code class="inl">eval(text)</code> reads a string <b>as if it were Python code</b>, calculates it, and returns the <b>value</b>.</p>
+  <div class="cols">
+    <div class="col">
+      <pre class="code"><code>x = eval("3 + 4")
+print(x, type(x))
+print(eval("7 / 2"))
+print(type(eval("[1, 2, 3]")))
+print(type(eval("(29, 47)")))
+print(type(eval("{1, 2, 2}")))</code></pre>
+      <pre class="out">7 &lt;class 'int'&gt;
+3.5
+&lt;class 'list'&gt;
+&lt;class 'tuple'&gt;
+&lt;class 'set'&gt;</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li>The name comes from <b>evaluate</b>: "work out the value".</li>
+        <li>The string must be a valid Python <b>expression</b> — something that has a value.</li>
+        <li>Casting functions choose the type <b>you</b> ask for. <code class="inl">eval</code> decides the type <b>from the text itself</b>.</li>
+      </ul>
+      <div class="note small">It is like typing the text directly into Python and seeing the answer.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15. EVAL WITH INPUT ============ -->
+<section class="slide">
+  <h2><code class="inl">eval(input())</code>: Reading Numbers</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="5|2.5"><code>a = eval(input("First number: "))
+b = eval(input("Second number: "))
+print(a + b)
+print(type(a), type(b))</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">First number: 5
+Second number: 2.5
+7.5
+&lt;class 'int'&gt; &lt;class 'float'&gt;</pre>
+    </div>
+    <div class="col">
+      <svg viewBox="0 0 440 200" width="100%" height="200" role="img" aria-label="From keyboard to value">
+        <defs><marker id="ah6" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+        <rect x="10" y="20" width="120" height="50" rx="6" class="sv-box"/><text x="70" y="51" text-anchor="middle" class="sv-t">user types 5</text>
+        <line x1="130" y1="45" x2="160" y2="45" class="sv-line" marker-end="url(#ah6)"/>
+        <rect x="164" y="20" width="120" height="50" rx="6" class="sv-box"/><text x="224" y="44" text-anchor="middle" class="sv-t">input()</text><text x="224" y="64" text-anchor="middle" class="sv-m">"5"  (str)</text>
+        <line x1="284" y1="45" x2="314" y2="45" class="sv-line" marker-end="url(#ah6)"/>
+        <rect x="318" y="20" width="112" height="50" rx="6" class="sv-dec"/><text x="374" y="44" text-anchor="middle" class="sv-t">eval()</text><text x="374" y="64" text-anchor="middle" class="sv-m">5  (int)</text>
+        <text x="220" y="120" text-anchor="middle" class="sv-t">input runs first (inner brackets),</text>
+        <text x="220" y="148" text-anchor="middle" class="sv-t">then eval converts its result</text>
+      </svg>
+      <div class="note small">The user can type a whole number <b>or</b> a decimal — <code class="inl">eval</code> gives an <code class="inl">int</code> or a <code class="inl">float</code> to match.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16. QUESTIONS EVAL ============ -->
+<section class="slide">
+  <h2>What Will This Code Print?</h2>
+  <div class="cols tight">
+    <div class="col">
+      <h3>Question 1 — user types <code class="inl">7</code></h3>
+      <pre class="code" data-skip><code>n = eval(input("n: "))
+print(n * 2, type(n))</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">n: 7
+14 &lt;class 'int'&gt;</pre></div>
+      <h3 style="margin-top:10px">Question 2 — user types <code class="inl">7</code></h3>
+      <pre class="code" data-skip><code>n = input("n: ")
+print(n * 2)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">n: 7
+77</pre></div>
+    </div>
+    <div class="col">
+      <h3>Question 3 — user types <code class="inl">10 / 4</code></h3>
+      <pre class="code" data-skip><code>x = eval(input("x: "))
+print(x, type(x))</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">x: 10 / 4
+2.5 &lt;class 'float'&gt;</pre><p class="small"><code class="inl">eval</code> calculates the expression. <code class="inl">float("10 / 4")</code> would be a ValueError.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17. SEVERAL VALUES ============ -->
+<section class="slide">
+  <h2>Reading Several Values in One Line</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="8, 3.5"><code>w, h = eval(input("Width, height: "))
+print("Area:", w * h)</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Width, height: 8, 3.5
+Area: 28.0</pre>
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="90, 85, 77"><code>a, b, c = eval(input("Three marks: "))
+print("Average:", (a + b + c) / 3)</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Three marks: 90, 85, 77
+Average: 84.0</pre>
+    </div>
+    <div class="col small">
+      <h3>How it works</h3>
+      <ol>
+        <li>The user types <code class="inl">8, 3.5</code>.</li>
+        <li><code class="inl">eval("8, 3.5")</code> gives the <b>tuple</b> <code class="inl">(8, 3.5)</code> — commas make a tuple.</li>
+        <li>The tuple is <b>unpacked</b> into <code class="inl">w</code> and <code class="inl">h</code>.</li>
+      </ol>
+      <div class="warn">Values must be separated by <b>commas</b>, not spaces. The number of values must match the number of variables, or you get a <b>ValueError</b>.</div>
+      <p>Casting cannot do this: <code class="inl">int("8, 3")</code> is a ValueError.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18. COLLECTIONS WITH EVAL ============ -->
+<section class="slide">
+  <h2>Reading a List — and Casting the Result</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="[44, 46, 48, 46, 47]"><code>temps = eval(input("Temperatures: "))
+print(type(temps), len(temps))
+print("Max:", max(temps), "Min:", min(temps))
+print("Different values:", len(set(temps)))
+print("Fixed copy:", tuple(temps))</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Temperatures: [44, 46, 48, 46, 47]
+&lt;class 'list'&gt; 5
+Max: 48 Min: 44
+Different values: 4
+Fixed copy: (44, 46, 48, 46, 47)</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li>The <b>brackets the user types</b> decide the type: <code class="inl">[ ]</code> list, <code class="inl">( )</code> tuple, <code class="inl">{ }</code> set.</li>
+        <li>After <code class="inl">eval</code> builds the list, <b>casting</b> converts it further: <code class="inl">set(temps)</code>, <code class="inl">tuple(temps)</code>.</li>
+      </ul>
+      <div class="warn small">Do not confuse them: <code class="inl">list(input())</code> gives a list of <b>characters</b>:<br><code class="inl">list("[4, 5]")</code> → <code class="inl">['[', '4', ',', ' ', '5', ']']</code></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19. EVAL VS CASTING ============ -->
+<section class="slide">
+  <h2><code class="inl">eval()</code> vs Casting</h2>
+  <table class="t" style="font-size:19px">
+    <tr><th>User types</th><th><code>int(text)</code></th><th><code>float(text)</code></th><th><code>eval(text)</code></th></tr>
+    <tr><td><code>5</code></td><td><code>5</code></td><td><code>5.0</code></td><td><code>5</code></td></tr>
+    <tr><td><code>5.5</code></td><td>ValueError</td><td><code>5.5</code></td><td><code>5.5</code></td></tr>
+    <tr><td><code>2+3</code></td><td>ValueError</td><td>ValueError</td><td><code>5</code></td></tr>
+    <tr><td><code>8, 3</code></td><td>ValueError</td><td>ValueError</td><td><code>(8, 3)</code></td></tr>
+    <tr><td><code>05</code></td><td><code>5</code></td><td><code>5.0</code></td><td>SyntaxError</td></tr>
+    <tr><td><code>hello</code></td><td>ValueError</td><td>ValueError</td><td>NameError</td></tr>
+  </table>
+  <div class="cols" style="margin-top:14px;flex:none">
+    <div class="note small"><b>Casting</b>: you choose the type; accepts <b>only</b> one value of that kind. Predictable and <b>safe</b>.</div>
+    <div class="note small"><b>eval</b>: the text chooses the type; accepts numbers, expressions, several values, lists… <b>Flexible</b> but risky.</div>
+  </div>
+</section>
+
+<!-- ============ 20. EVAL ERRORS ============ -->
+<section class="slide">
+  <h2>Errors <code class="inl">eval()</code> Can Cause</h2>
+  <table class="t" style="font-size:18px">
+    <tr><th>User types</th><th>Result</th><th>Why</th></tr>
+    <tr><td><code>hello</code></td><td>NameError: name 'hello' is not defined</td><td>without quotes, text is read as a <b>variable name</b></td></tr>
+    <tr><td><code>3 4</code></td><td>SyntaxError: invalid syntax</td><td>values must be separated by commas</td></tr>
+    <tr><td>(nothing)</td><td>SyntaxError</td><td>an empty string is not an expression</td></tr>
+    <tr><td><code>05</code></td><td>SyntaxError: leading zeros … not permitted</td><td>Python numbers cannot start with 0</td></tr>
+    <tr><td><code>1, 2, 3</code> into <code>a, b</code></td><td>ValueError: too many values to unpack</td><td>3 values, 2 variables</td></tr>
+  </table>
+  <div class="note" style="margin-top:14px">To read <b>text</b> (a name, a city), do <b>not</b> use <code class="inl">eval</code> — plain <code class="inl">input()</code> already gives a string.</div>
+</section>
+
+<!-- ============ 21. SAFETY ============ -->
+<section class="slide">
+  <h2>Warning: <code class="inl">eval()</code> Runs Whatever Is Typed</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — the user types a function call</div>
+      <pre class="code" data-input="print(&quot;I ran your code!&quot;)"><code>x = eval(input("Enter a number: "))
+print("You entered:", x)</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Enter a number: print("I ran your code!")
+I ran your code!
+You entered: None</pre>
+      <p class="small">The user did not type a number — and Python <b>ran</b> their code anyway.</p>
+    </div>
+    <div class="col">
+      <div class="warn">
+        <b>Why this matters</b>
+        <ul style="margin:6px 0 0">
+          <li>A user could type code that <b>deletes files</b>, <b>reads private data</b>, or <b>crashes</b> the program.</li>
+          <li>Real websites and apps <b>never</b> pass user input to <code class="inl">eval</code>.</li>
+        </ul>
+      </div>
+      <div class="note small" style="margin-top:12px"><b>Rule for this course:</b> <code class="inl">eval(input())</code> is fine for <b>your own practice programs</b>, where <b>you</b> are the user. Otherwise, use casting: <code class="inl">int()</code> or <code class="inl">float()</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22. WHICH TO USE ============ -->
+<section class="slide">
+  <h2>Which Should I Use?</h2>
+  <table class="t" style="font-size:20px">
+    <tr><th>You want…</th><th>Use</th></tr>
+    <tr><td>text from the user (a name, a city)</td><td><code>input()</code> alone</td></tr>
+    <tr><td>one whole number from the user</td><td><code>int(input())</code></td></tr>
+    <tr><td>one decimal number from the user</td><td><code>float(input())</code></td></tr>
+    <tr><td>to join a number with text using <code>+</code></td><td><code>str(number)</code></td></tr>
+    <tr><td>to remove duplicates / make a fixed copy</td><td><code>set()</code> / <code>tuple()</code></td></tr>
+    <tr><td>several numbers in one line, an expression, or a list — in a <b>practice</b> program</td><td><code>eval(input())</code></td></tr>
+  </table>
+  <div class="note" style="margin-top:16px">Good habit: choose the <b>simplest, safest</b> tool that does the job.</div>
+</section>
+
+<!-- ============ 23. MISTAKES 1 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (1): Mixing Text and Numbers</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>side = input("Side: ")
+print("Area:", side * side)</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: can't multiply sequence by non-int of type 'str'</pre>
+      <p class="why"><b>Why?</b> <code class="inl">side</code> is the string "4".</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good" data-input="4"><code>side = float(input("Side: "))
+print("Area:", side * side)</code></pre>
+      <pre class="out">Side: 4
+Area: 16.0</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>total = 2.5 * 4
+print("Total: " + total + " KD")</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">TypeError: can only concatenate str (not "float") to str</pre>
+      <p class="why"><b>Why?</b> <code class="inl">+</code> cannot join text and a number.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>total = 2.5 * 4
+print("Total: " + str(total) + " KD")</code></pre>
+      <pre class="out">Total: 10.0 KD</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24. MISTAKES 2 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (2): Wrong Cast for the Value</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>weight = int(input("Weight: "))
+# user types: 72.5</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">ValueError: invalid literal for int() with base 10: '72.5'</pre>
+      <p class="why"><b>Why?</b> <code class="inl">int()</code> accepts only whole-number text.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good" data-input="72.5"><code>weight = float(input("Weight: "))
+print(weight)</code></pre>
+      <pre class="out">Weight: 72.5
+72.5</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-input="False"><code>ans = bool(input("Agree? "))
+print(ans)</code></pre>
+      <pre class="out">Agree? False
+True</pre>
+      <p class="why"><b>Why?</b> Any non-empty text is <code class="inl">True</code>.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good" data-input="False"><code>ans = input("Agree? ") == "True"
+print(ans)</code></pre>
+      <pre class="out">Agree? False
+False</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25. MISTAKES 3 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (3): Casting and <code class="inl">eval</code></h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code>x = "5"
+int(x)          # result is not stored
+print(x + "1")</code></pre>
+      <pre class="out">51</pre>
+      <p class="why"><b>Why?</b> Casting makes a <b>new</b> value; it does not change <code class="inl">x</code>.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>x = "5"
+x = int(x)      # store the new value
+print(x + 1)</code></pre>
+      <pre class="out">6</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>city = eval(input("City: "))
+# user types: Kuwait</code></pre>
+      <pre class="out">NameError: name 'Kuwait' is not defined</pre>
+      <p class="why"><b>Why?</b> <code class="inl">eval</code> reads <code class="inl">Kuwait</code> as a variable name.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good" data-input="Kuwait"><code>city = input("City: ")
+print("Welcome to", city)</code></pre>
+      <pre class="out">City: Kuwait
+Welcome to Kuwait</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26. WORKED EXAMPLE 1 ============ -->
+<section class="slide">
+  <h2>Worked Example 1: Petrol Station Receipt</h2>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="Ahmad|40"><code>name = input("Customer name: ")
+litres = float(input("Litres pumped: "))
+price = 0.085                  # KD per litre
+total = round(litres * price, 3)
+print("Customer: " + name)
+print("Litres: " + str(litres))
+print("Total: " + str(total) + " KD")</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Customer name: Ahmad
+Litres pumped: 40
+Customer: Ahmad
+Litres: 40.0
+Total: 3.4 KD</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li><code class="inl">name</code> stays text — no cast needed.</li>
+        <li><code class="inl">float("40")</code> → <code class="inl">40.0</code>.</li>
+        <li>40.0 × 0.085 = 3.4 (rounded to 3 places for fils).</li>
+        <li><code class="inl">str()</code> turns the numbers into text so <code class="inl">+</code> can join them.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27. WORKED EXAMPLE 2 ============ -->
+<section class="slide">
+  <h2>Worked Example 2: Room Area and Flooring Cost</h2>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="4.5, 3|6.75"><code>length, width = eval(input("Length, width (m): "))
+price = float(input("Price per m² (KD): "))
+area = length * width
+cost = area * price
+print("Area:", area, "m²")
+print("Cost:", round(cost, 3), "KD")</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Length, width (m): 4.5, 3
+Price per m² (KD): 6.75
+Area: 13.5 m²
+Cost: 91.125 KD</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li><code class="inl">eval("4.5, 3")</code> → <code class="inl">(4.5, 3)</code>, unpacked into two variables.</li>
+        <li>One number only → <code class="inl">float()</code> is enough (and safer).</li>
+        <li>Area = 4.5 × 3 = 13.5.</li>
+        <li>Cost = 13.5 × 6.75 = 91.125 KD.</li>
+      </ol>
+      <div class="note">Use <code class="inl">eval</code> only where casting cannot do the job — here, two values in one line.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 28. WORKED EXAMPLE 3 ============ -->
+<section class="slide">
+  <h2>Worked Example 3: A Grade Report from a List</h2>
+  <div class="cols w70 tight">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="[72, 95, 58, 95, 61]"><code>marks = eval(input("Marks as a list: "))
+avg = sum(marks) / len(marks)
+print("Students: " + str(len(marks)))
+print("Different marks: " + str(len(set(marks))))
+print("Average: " + str(round(avg, 1)))
+print("Average (whole): " + str(int(avg)))
+if avg &gt;= 60:
+    print("Class passed on average")
+else:
+    print("Class needs support")</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Marks as a list: [72, 95, 58, 95, 61]
+Students: 5
+Different marks: 4
+Average: 76.2
+Average (whole): 76
+Class passed on average</pre>
+    </div>
+    <div class="col small">
+      <ol>
+        <li><code class="inl">eval</code> builds a real list from the typed text.</li>
+        <li><code class="inl">set(marks)</code> removes the repeated 95 → 4 different marks.</li>
+        <li>381 / 5 = 76.2; <code class="inl">int(76.2)</code> → 76.</li>
+        <li><code class="inl">str()</code> lets us join every number with text.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 29. THINK ABOUT IT ============ -->
+<section class="slide">
+  <h2>Think About It</h2>
+  <div class="qa"><div class="q">1. Why does <code class="inl">int(3.5)</code> work, but <code class="inl">int("3.5")</code> fails?</div>
+    <button class="reveal">Show Answer</button>
+    <div class="answer small">From a float, <code class="inl">int</code> just cuts off the decimals. From text, it only accepts the digits of a whole number, and a dot is not allowed.</div></div>
+  <div class="qa"><div class="q">2. A program reads a phone number like <code class="inl">96551234</code>. Should it cast it to <code class="inl">int</code>?</div>
+    <button class="reveal">Show Answer</button>
+    <div class="answer small">No. We never do math with phone numbers, and a number like <code class="inl">0096551234</code> would lose its zeros. Keep it as a string.</div></div>
+  <div class="qa"><div class="q">3. When is <code class="inl">eval(input())</code> better than <code class="inl">float(input())</code>?</div>
+    <button class="reveal">Show Answer</button>
+    <div class="answer small">When the user must type several values, an expression, or a list — and only in a practice program where the input is trusted.</div></div>
+</section>
+
+<!-- ============ 30. REMEMBER ============ -->
+<section class="slide">
+  <h2>What You Should Remember</h2>
+  <ol>
+    <li><code class="inl">input()</code> always returns a <b>string</b>.</li>
+    <li><b>Casting</b> makes a new value of another type: <code class="inl">int()</code>, <code class="inl">float()</code>, <code class="inl">str()</code>, <code class="inl">bool()</code>, <code class="inl">list()</code>, <code class="inl">tuple()</code>, <code class="inl">set()</code>.</li>
+    <li><code class="inl">int()</code> cuts off decimals; <code class="inl">int("3.5")</code> is a ValueError.</li>
+    <li>Use <code class="inl">str()</code> to join numbers with text using <code class="inl">+</code>.</li>
+    <li><code class="inl">bool()</code> is False only for "empty" values: <code class="inl">0</code>, <code class="inl">""</code>, <code class="inl">[]</code>, …</li>
+    <li><code class="inl">eval(text)</code> calculates text as Python; <code class="inl">a, b = eval(input())</code> reads two values.</li>
+    <li><code class="inl">eval</code> runs <b>any</b> code: prefer casting, and use <code class="inl">eval</code> only with input you trust.</li>
+  </ol>
+</section>
+
+<!-- ============ 31. EXERCISES L1 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 1 — Basic</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">1.</span>Predict the output.</p>
+        <pre class="code"><code>print(int(7.9), float(4))
+print(str(3) + str(4), int(True))</code></pre></div>
+      <div class="ex"><p><span class="ex-num">2.</span>Predict the output.</p>
+        <pre class="code"><code>print(bool(0), bool("0"))
+print(bool(""), bool([0]))</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">3.</span>Predict the output.</p>
+        <pre class="code"><code>print(eval("8 - 3 * 2"))
+print(eval("9 / 3"), type(eval("9 / 3")))</code></pre></div>
+      <div class="ex"><p><span class="ex-num">4.</span>The user types <code class="inl">6</code> both times. Predict the output.</p>
+        <pre class="code" data-skip><code>a = input("a: ")
+b = int(input("b: "))
+print(a * 2, b * 2)</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 32. EXERCISES L2 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 2 — Apply</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">5.</span>Find and fix the error.</p>
+        <pre class="code bad" data-skip><code>price = 2.5
+qty = 4
+print("Total: " + price * qty)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">6.</span>Read the user's age with casting, and print a message such as <code class="inl">You will be 24 in 5 years</code> using <code class="inl">+</code> to join the text.</p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">7.</span>Using <b>one</b> <code class="inl">input</code>, read a car's distance (km) and fuel used (litres), for example <code class="inl">420, 35</code>. Print the km per litre.</p></div>
+      <div class="ex"><p><span class="ex-num">8.</span>Read a list of temperatures with <code class="inl">eval(input())</code>. Print the highest, the lowest, and how many <b>different</b> temperatures there are.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 33. EXERCISES L3 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 3 — Challenge</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">9.</span>For each line, give the result or the error type.</p>
+        <ol class="small" type="a" style="margin:0">
+          <li><code class="inl">int("12")</code></li>
+          <li><code class="inl">int("12.5")</code></li>
+          <li><code class="inl">int(float("12.5"))</code></li>
+          <li><code class="inl">list(12)</code></li>
+          <li><code class="inl">list("12")</code></li>
+        </ol></div>
+      <div class="ex"><p><span class="ex-num">10.</span>Read a whole number and print how many <b>digits</b> it has (e.g. <code class="inl">2026</code> → 4). <i>Hint: cast twice.</i></p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">11.</span>Read one value with <code class="inl">eval(input())</code>. If it is an <code class="inl">int</code> or <code class="inl">float</code>, print its square; if it is a list, print its length; otherwise print <code class="inl">Unsupported type</code>.</p></div>
+      <div class="ex"><p><span class="ex-num">12.</span>Explain why this program is dangerous, and rewrite it safely.</p>
+        <pre class="code" data-skip><code>age = eval(input("Your age: "))
+print("Next year you will be", age + 1)</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 34. SOLUTIONS DIVIDER ============ -->
+<section class="slide">
+  <div class="s-body section-body" style="padding:0">
+    <div class="title-rule" style="margin:0 auto 24px"></div>
+    <h1>Exercise Solutions</h1>
+    <p class="muted" style="font-size:26px">Try every exercise first. Then compare your answers.</p>
+  </div>
+</section>
+
+<!-- ============ 35. SOLUTIONS 1-4 ============ -->
+<section class="slide">
+  <h2>Solutions 1 – 4 <span class="level">Level 1</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">1.</span><code class="inl">int</code> cuts off decimals; <code class="inl">str</code> + <code class="inl">str</code> joins text; True is 1.</p>
+      <pre class="out">7 4.0
+34 1</pre>
+      <p><span class="ex-num">2.</span>Only <b>empty</b> or <b>zero</b> values are False. <code class="inl">"0"</code> and <code class="inl">[0]</code> are not empty.</p>
+      <pre class="out">False True
+False True</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">3.</span><code class="inl">*</code> before <code class="inl">-</code>; <code class="inl">/</code> always gives a float.</p>
+      <pre class="out">2
+3.0 &lt;class 'float'&gt;</pre>
+      <p><span class="ex-num">4.</span><code class="inl">a</code> is the string "6" (repeated); <code class="inl">b</code> is the number 6 (doubled).</p>
+      <pre class="out">a: 6
+b: 6
+66 12</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 36. SOLUTIONS 5-8 ============ -->
+<section class="slide">
+  <h2>Solutions 5 – 8 <span class="level">Level 2</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">5.</span>A float cannot be joined to text with <code class="inl">+</code>. Cast it with <code class="inl">str()</code>.</p>
+      <pre class="code"><code>price = 2.5
+qty = 4
+print("Total: " + str(price * qty))</code></pre>
+      <pre class="out">Total: 10.0</pre>
+      <p><span class="ex-num">6.</span></p>
+      <pre class="code" data-input="19"><code>age = int(input("Age: "))
+older = str(age + 5)
+print("You will be " + older + " in 5 years")</code></pre>
+      <pre class="out">Age: 19
+You will be 24 in 5 years</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">7.</span></p>
+      <pre class="code" data-input="420, 35"><code>km, litres = eval(input("Distance, fuel: "))
+print("km per litre:", km / litres)</code></pre>
+      <pre class="out">Distance, fuel: 420, 35
+km per litre: 12.0</pre>
+      <p><span class="ex-num">8.</span></p>
+      <pre class="code" data-input="[44, 46, 49, 43, 46]"><code>temps = eval(input("Temperatures: "))
+print(max(temps), min(temps), len(set(temps)))</code></pre>
+      <pre class="out">Temperatures: [44, 46, 49, 43, 46]
+49 43 4</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 37. SOLUTIONS 9-10 ============ -->
+<section class="slide">
+  <h2>Solutions 9 – 10 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">9.</span></p>
+      <table class="t" style="font-size:18px">
+        <tr><th></th><th>Code</th><th>Result</th></tr>
+        <tr><td>a</td><td><code>int("12")</code></td><td><code>12</code></td></tr>
+        <tr><td>b</td><td><code>int("12.5")</code></td><td>ValueError — dot in int text</td></tr>
+        <tr><td>c</td><td><code>int(float("12.5"))</code></td><td><code>12</code> — text → 12.5 → 12</td></tr>
+        <tr><td>d</td><td><code>list(12)</code></td><td>TypeError — not a collection</td></tr>
+        <tr><td>e</td><td><code>list("12")</code></td><td><code>['1', '2']</code></td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">10.</span>Cast to <code class="inl">int</code> to check it is a whole number, then to <code class="inl">str</code> to count its characters.</p>
+      <pre class="code" data-input="2026"><code>n = int(input("Whole number: "))
+digits = len(str(n))
+print("Number of digits: " + str(digits))</code></pre>
+      <pre class="out">Whole number: 2026
+Number of digits: 4</pre>
+      <p class="small">For a negative number, <code class="inl">len(str(abs(n)))</code> ignores the minus sign.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 38. SOLUTIONS 11-12 ============ -->
+<section class="slide">
+  <h2>Solutions 11 – 12 <span class="level">Level 3</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">11.</span></p>
+      <pre class="code" data-input="[3, 8, 1]"><code>value = eval(input("Value: "))
+if type(value) in (int, float):
+    print(value ** 2)
+elif type(value) == list:
+    print(len(value))
+else:
+    print("Unsupported type")</code></pre>
+      <pre class="out">Value: [3, 8, 1]
+3</pre>
+      <p class="small">With input <code class="inl">5</code> it prints 25; with <code class="inl">(1, 2)</code> it prints <code class="inl">Unsupported type</code>.</p>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">12.</span><code class="inl">eval</code> runs <b>any</b> expression the user types, so a user could run harmful code. Only a whole number is needed, so casting with <code class="inl">int()</code> is enough — and safe.</p>
+      <pre class="code" data-input="19"><code>age = int(input("Your age: "))
+print("Next year you will be", age + 1)</code></pre>
+      <pre class="out">Your age: 19
+Next year you will be 20</pre>
+      <p class="small">Anything that is not a whole number causes a ValueError instead of being run.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="btnPrev" title="Previous (Left Arrow)">◀ Previous</button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button id="btnNext" title="Next (Right Arrow)">Next ▶</button>
+  <div class="spacer"></div>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="spacer"></div>
+  <button id="btnFull">Full Screen</button>
+  <button id="btnTheme">Dark Mode</button>
+  <button id="btnPdf">Export PDF</button>
+</div>
+
+<script>
+(function () {
+  var COURSE = "CS126 – Introduction to Python";
+  var TOPIC = "Casting and eval()";
+
+  /* ---------- Theme (restore before anything paints) ---------- */
+  var root = document.documentElement;
+  try { if (localStorage.getItem("cs126-theme") === "dark") root.classList.add("dark"); } catch (e) {}
+
+  /* ---------- Build slide chrome ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length;
+  slides.forEach(function (s, i) {
+    if (!s.querySelector(".s-body")) {
+      var body = document.createElement("div");
+      body.className = "s-body";
+      while (s.firstChild) body.appendChild(s.firstChild);
+      s.appendChild(body);
+    }
+    var head = document.createElement("div");
+    head.className = "s-head";
+    head.innerHTML = '<span class="course">' + COURSE + '</span><span>' + TOPIC + '</span>';
+    var foot = document.createElement("div");
+    foot.className = "s-foot";
+    foot.innerHTML = '<span>Dr. Fawaz Alazemi</span><span>Slide ' + (i + 1) + ' of ' + N + '</span>';
+    s.insertBefore(head, s.firstChild);
+    s.appendChild(foot);
+  });
+
+  /* ---------- Python syntax highlighting (no libraries) ---------- */
+  var KW = "for|in|if|elif|else|and|or|not|True|False|None|while|def|return|import|del|from|as";
+  var FN = "print|range|len|list|str|int|float|sum|max|min|round|append|input|type|tuple|set|sorted|dict|abs|pow|divmod|eval|bool";
+  var re = new RegExp(
+    "(#[^\\n]*)|(\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(" + FN + ")(?=\\()|\\b(\\d+(?:\\.\\d+)?)\\b",
+    "g");
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code code").forEach(function (el) {
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "tk-com" : m[2] ? "tk-str" : m[3] ? "tk-kw" : m[4] ? "tk-fn" : "tk-num";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = re.lastIndex;
+    }
+    out += esc(src.slice(last));
+    el.innerHTML = out;
+  });
+
+  /* ---------- Show Answer buttons ---------- */
+  document.querySelectorAll(".reveal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.nextElementSibling;
+      var shown = a.classList.toggle("shown");
+      b.textContent = shown ? "Hide Answer" : "Show Answer";
+      b.blur();
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  var cur = 0;
+  var counter = document.getElementById("counter");
+  var bar = document.getElementById("bar");
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    counter.textContent = (cur + 1) + " / " + N;
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+  function btn(id, fn) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () { fn(); b.blur(); });
+    return b;
+  }
+  btn("btnPrev", function () { go(cur - 1); });
+  btn("btnNext", function () { go(cur + 1); });
+
+  /* ---------- Full screen ---------- */
+  var fullBtn = btn("btnFull", function () {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el);
+    }
+  });
+  function onFs() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fullBtn.textContent = on ? "Exit Full Screen" : "Full Screen";
+    fit();
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+
+  /* ---------- Dark / light ---------- */
+  var themeBtn = btn("btnTheme", function () {
+    var dark = root.classList.toggle("dark");
+    try { localStorage.setItem("cs126-theme", dark ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  });
+  function themeLabel() { themeBtn.textContent = root.classList.contains("dark") ? "Light Mode" : "Dark Mode"; }
+  themeLabel();
+
+  /* ---------- Export PDF ---------- */
+  btn("btnPdf", function () { window.print(); });
+
+  /* ---------- Scale the 1280x720 canvas to fit ---------- */
+  var stage = document.getElementById("stage");
+  var vp = document.getElementById("viewport");
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight;
+    var s = Math.min(w / 1280, h / 720) * 0.98;
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS126 – Inline if</title>
+<style>
+/* ===================== THEME ===================== */
+:root {
+  --bg: #f4f6f8;
+  --slide-bg: #fbfbfc;
+  --text: #1f2933;
+  --muted: #5b6875;
+  --navy: #1b365d;
+  --teal: #0f7c74;
+  --teal-soft: #e3f2f0;
+  --line: #d5dbe1;
+  --code-bg: #f1f3f5;
+  --code-text: #1f2933;
+  --out-bg: #ffffff;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --good: #1a7f37;
+  --good-soft: #e8f5ec;
+  --amber: #a15c00;
+  --tok-kw: #7a2bb5;
+  --tok-str: #a5481a;
+  --tok-num: #0b6bcb;
+  --tok-fn: #0f7c74;
+  --tok-com: #6b7785;
+  --bar-bg: #ffffff;
+}
+html.dark {
+  --bg: #0b1120;
+  --slide-bg: #111827;
+  --text: #e8edf3;
+  --muted: #a3afbd;
+  --navy: #9cc4ff;
+  --teal: #34d1bf;
+  --teal-soft: #12302e;
+  --line: #334155;
+  --code-bg: #0b1220;
+  --code-text: #e8edf3;
+  --out-bg: #0f172a;
+  --bad: #ff8a80;
+  --bad-soft: #3a1717;
+  --good: #7ee2a0;
+  --good-soft: #13301f;
+  --amber: #ffc46b;
+  --tok-kw: #d7a8ff;
+  --tok-str: #ffb38a;
+  --tok-num: #8fc8ff;
+  --tok-fn: #5fe3d2;
+  --tok-com: #8b98a8;
+  --bar-bg: #0f172a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* ===================== STAGE ===================== */
+.viewport {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 56px;
+  overflow: hidden;
+}
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: center center;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--slide-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+.s-head {
+  height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--teal);
+  font-size: 16px; color: var(--muted);
+}
+.s-head .course { color: var(--navy); font-weight: 600; }
+.s-body {
+  flex: 1; min-height: 0;
+  padding: 22px 56px 10px;
+  display: flex; flex-direction: column;
+  font-size: 24px; line-height: 1.4;
+}
+.s-foot {
+  height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; font-size: 15px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+h1 { color: var(--navy); font-size: 56px; margin: 0 0 12px; line-height: 1.15; }
+h2 { color: var(--navy); font-size: 36px; margin: 0 0 16px; line-height: 1.2; }
+h3 { color: var(--teal); font-size: 24px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 30px; }
+li { margin-bottom: 6px; }
+.small { font-size: 20px; }
+.muted { color: var(--muted); }
+.teal { color: var(--teal); font-weight: 600; }
+.navy { color: var(--navy); font-weight: 600; }
+.mono, code.inl {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols.w60 { grid-template-columns: 1.25fr 1fr; }
+.cols.w40 { grid-template-columns: 1fr 1.25fr; }
+.cols.w70 { grid-template-columns: 1.6fr 1fr; }
+.tight pre { font-size: 18px; line-height: 1.38; margin-bottom: 8px; }
+.tight p { margin-bottom: 6px; }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.col { min-width: 0; }
+
+/* ===================== CODE ===================== */
+pre {
+  margin: 0 0 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 20px; line-height: 1.45;
+  white-space: pre; overflow: hidden;
+  border-radius: 6px;
+}
+pre.code {
+  background: var(--code-bg); color: var(--code-text);
+  border: 1px solid var(--line); border-left: 5px solid var(--teal);
+  padding: 10px 16px;
+}
+pre.code.bad  { border-left-color: var(--bad); }
+pre.code.good { border-left-color: var(--good); }
+pre.out {
+  background: var(--out-bg); color: var(--text);
+  border: 1px dashed var(--line); border-left: 5px solid var(--navy);
+  padding: 8px 16px;
+}
+.lbl {
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.tk-kw { color: var(--tok-kw); font-weight: 600; }
+.tk-str { color: var(--tok-str); }
+.tk-num { color: var(--tok-num); }
+.tk-fn { color: var(--tok-fn); }
+.tk-com { color: var(--tok-com); font-style: italic; }
+
+/* ===================== BOXES ===================== */
+.note {
+  border-left: 5px solid var(--teal); background: var(--teal-soft);
+  padding: 10px 16px; border-radius: 4px; margin: 0 0 12px; font-size: 21px;
+}
+.warn {
+  border-left: 5px solid var(--amber); padding: 10px 16px; margin: 0 0 12px;
+  font-size: 21px; background: transparent; border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+}
+.tag-bad, .tag-good {
+  display: inline-block; font-weight: 700; font-size: 17px;
+  padding: 2px 10px; border-radius: 4px; margin-bottom: 4px;
+}
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-good { color: var(--good); background: var(--good-soft); }
+.why { font-size: 19px; margin: 0 0 10px; }
+
+table.t {
+  border-collapse: collapse; font-size: 20px; width: 100%;
+}
+table.t th, table.t td {
+  border: 1px solid var(--line); padding: 6px 12px; text-align: left;
+}
+table.t th { background: var(--teal-soft); color: var(--navy); }
+table.t td.c, table.t th.c { text-align: center; }
+table.t code { font-family: Consolas, Monaco, monospace; }
+
+/* ===================== Q & A ===================== */
+.qa { margin: 0 0 10px; }
+.reveal {
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--teal); background: transparent;
+  border: 1.5px solid var(--teal); border-radius: 4px;
+  padding: 3px 12px; cursor: pointer; margin: 0 0 6px;
+}
+.reveal:hover { background: var(--teal-soft); }
+.answer { visibility: hidden; }
+.answer.shown { visibility: visible; }
+.q { font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+
+/* ===================== TITLE / SECTION ===================== */
+.title-body { justify-content: center; padding-left: 90px; }
+.title-body .sub { font-size: 30px; color: var(--teal); margin-bottom: 36px; }
+.title-body .meta { font-size: 24px; color: var(--muted); line-height: 1.6; }
+.title-rule { width: 120px; height: 5px; background: var(--teal); margin: 0 0 28px; }
+.section-body { justify-content: center; align-items: center; text-align: center; }
+
+/* ===================== DIAGRAMS ===================== */
+.anat {
+  font-family: Consolas, Monaco, monospace; font-size: 40px;
+  background: var(--code-bg); border: 1px solid var(--line);
+  border-left: 5px solid var(--teal); border-radius: 6px;
+  padding: 18px 28px; margin: 0 0 16px; line-height: 1.6;
+}
+.anat .a1 { color: var(--tok-kw); font-weight: 700; }
+.anat .a2 { color: var(--tok-num); font-weight: 700; }
+.anat .a3 { color: var(--tok-str); font-weight: 700; }
+.anat .a4 { color: var(--bad); font-weight: 700; }
+.anat .a5 { color: var(--tok-fn); font-weight: 700; }
+.anat .ind { background: var(--teal-soft); outline: 1px dashed var(--teal); }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 36px; font-size: 21px; }
+.legend b { font-family: Consolas, Monaco, monospace; }
+
+.boxes { display: flex; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap; }
+.box {
+  min-width: 64px; text-align: center;
+  font-family: Consolas, Monaco, monospace; font-size: 22px;
+}
+.box .v {
+  border: 2px solid var(--navy); border-radius: 4px; padding: 6px 10px;
+  background: var(--slide-bg);
+}
+.box .i { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.box .n { font-size: 16px; color: var(--tok-num); margin-bottom: 3px; font-weight: 600; }
+.box.off .v { border-style: dashed; border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.box.hi .v { background: var(--teal-soft); border-color: var(--teal); }
+
+svg text { font-family: "Segoe UI", Arial, sans-serif; }
+.sv-box { fill: var(--slide-bg); stroke: var(--navy); stroke-width: 2; }
+.sv-dec { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.sv-t { fill: var(--text); font-size: 19px; }
+.sv-m { fill: var(--muted); font-size: 16px; font-weight: 600; }
+.sv-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.sv-arrow { fill: var(--muted); }
+
+.ex-num {
+  display: inline-block; min-width: 38px; font-weight: 700; color: var(--teal);
+}
+.level {
+  display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--teal); border: 1.5px solid var(--teal);
+  border-radius: 4px; padding: 1px 10px; margin-left: 12px; vertical-align: middle;
+}
+.ex { margin-bottom: 10px; }
+.ex p { margin: 0 0 6px; }
+
+/* ===================== CONTROLS ===================== */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: var(--bar-bg); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  font-size: 15px;
+}
+.controls button {
+  font: inherit; font-size: 15px; color: var(--navy);
+  background: transparent; border: 1px solid var(--line); border-radius: 4px;
+  padding: 6px 14px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--teal); color: var(--teal); }
+.controls .counter { color: var(--muted); min-width: 64px; text-align: center; }
+.progress {
+  flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.progress div { height: 100%; width: 0; background: var(--teal); }
+.spacer { width: 8px; }
+
+/* Code size for this deck */
+pre { font-size: 19px; }
+.tight pre { font-size: 17px; }
+
+/* ===================== PRINT ===================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  :root, html.dark {
+    --bg: #ffffff; --slide-bg: #ffffff; --text: #1f2933; --muted: #5b6875;
+    --navy: #1b365d; --teal: #0f7c74; --teal-soft: #e3f2f0; --line: #d5dbe1;
+    --code-bg: #f1f3f5; --code-text: #1f2933; --out-bg: #ffffff;
+    --bad: #b42318; --bad-soft: #fdecea; --good: #1a7f37; --good-soft: #e8f5ec;
+    --amber: #a15c00; --tok-kw: #7a2bb5; --tok-str: #a5481a; --tok-num: #0b6bcb;
+    --tok-fn: #0f7c74; --tok-com: #6b7785;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .controls, .reveal { display: none !important; }
+  .answer { visibility: visible !important; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; inset: auto;
+    width: 1280px; height: 720px; zoom: 0.82;
+    margin: 0 auto; border: none; transform: translateY(120px);
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- ============ 1. TITLE ============ -->
+<section class="slide">
+  <div class="s-body title-body">
+    <div class="muted" style="font-size:22px;margin-bottom:10px">CS126 – Introduction to Python</div>
+    <h1>Inline if and Inline else if</h1>
+    <div class="sub">Choosing a value in one line with conditional expressions</div>
+    <div class="title-rule"></div>
+    <div class="meta">Dr. Fawaz Alazemi</div>
+  </div>
+</section>
+
+<!-- ============ 2. OBJECTIVES ============ -->
+<section class="slide">
+  <h2>Learning Objectives</h2>
+  <p>By the end of this lecture, you will be able to:</p>
+  <ol>
+    <li>Explain what an <b>inline if</b> (conditional expression) is and why it is useful.</li>
+    <li>Write the form <code class="inl">A if condition else B</code> and explain each part.</li>
+    <li>Convert a regular <code class="inl">if / else</code> into an inline if, and back.</li>
+    <li>Use inline if with numbers, strings, lists, tuples, sets, and logical operators.</li>
+    <li>Write an <b>inline else if</b>: <code class="inl">A if c1 else B if c2 else C</code>.</li>
+    <li>Use brackets to avoid mistakes with <code class="inl">+</code> and other operators.</li>
+    <li>Decide when an inline if is clearer than a regular <code class="inl">if</code> — and when it is not.</li>
+  </ol>
+</section>
+
+<!-- ============ 3. MOTIVATION ============ -->
+<section class="slide">
+  <h2>Why Do We Need an Inline if?</h2>
+  <p>Very often, an <code class="inl">if / else</code> only decides <b>which value</b> to store:</p>
+  <div class="cols">
+    <div class="col">
+      <h3>Regular if / else (4 lines)</h3>
+      <pre class="code"><code>mark = 72
+if mark &gt;= 60:
+    result = "Pass"
+else:
+    result = "Fail"
+print(result)</code></pre>
+      <pre class="out">Pass</pre>
+    </div>
+    <div class="col">
+      <h3>Inline if (1 line)</h3>
+      <pre class="code"><code>mark = 72
+result = "Pass" if mark &gt;= 60 else "Fail"
+print(result)</code></pre>
+      <pre class="out">Pass</pre>
+      <div class="note">Same result. It reads like English: <i>"result is Pass if the mark is at least 60, else Fail."</i></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. WHAT IS IT ============ -->
+<section class="slide">
+  <h2>What Is an Inline if?</h2>
+  <p>An <b>inline if</b> chooses <b>one of two values</b> based on a condition. Its official name is a <b>conditional expression</b>.</p>
+  <table class="t" style="margin-top:6px">
+    <tr><th style="width:30%">Term</th><th>Meaning</th></tr>
+    <tr><td><b>Expression</b></td><td>Code that <b>produces a value</b>, like <code>3 + 4</code> or <code>len("abc")</code></td></tr>
+    <tr><td><b>Statement</b></td><td>Code that <b>does an action</b>, like <code>x = 5</code> or a regular <code>if</code> block</td></tr>
+    <tr><td><b>Conditional expression</b></td><td>An expression whose value depends on a condition</td></tr>
+  </table>
+  <div class="note" style="margin-top:16px">A regular <code class="inl">if</code> is a <b>statement</b>: it decides which lines <b>run</b>.<br>An inline <code class="inl">if</code> is an <b>expression</b>: it decides which value you <b>get</b>.</div>
+  <p class="small">Everyday example: <i>"Take an umbrella <b>if</b> it rains, <b>else</b> take sunglasses."</i> — one choice between two things.</p>
+</section>
+
+<!-- ============ 5. SYNTAX ============ -->
+<section class="slide">
+  <h2>The Syntax</h2>
+  <div class="anat" style="font-size:36px"><span class="a5">value_if_true</span> <span class="a1">if</span> <span class="a3">condition</span> <span class="a1">else</span> <span class="a2">value_if_false</span></div>
+  <div class="legend">
+    <div><b style="color:var(--tok-fn)">value_if_true</b> — the result when the condition is True</div>
+    <div><b style="color:var(--tok-kw)">if</b> — keyword</div>
+    <div><b style="color:var(--tok-str)">condition</b> — any logical expression</div>
+    <div><b style="color:var(--tok-kw)">else</b> — keyword, <b>always required</b></div>
+    <div><b style="color:var(--tok-num)">value_if_false</b> — the result when it is False</div>
+    <div><b>No colons</b>, <b>no indentation</b>, one line</div>
+  </div>
+  <div class="warn" style="margin-top:18px">The order is different from a regular <code class="inl">if</code>: the <b>True value comes first</b>, then the condition, then the False value.</div>
+</section>
+
+<!-- ============ 6. FIRST EXAMPLE ============ -->
+<section class="slide">
+  <h2>First Example: Even or Odd</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>n = 7
+kind = "even" if n % 2 == 0 else "odd"
+print(n, "is", kind)
+
+n = 10
+kind = "even" if n % 2 == 0 else "odd"
+print(n, "is", kind)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">7 is odd
+10 is even</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step (n = 7)</h3>
+      <ol>
+        <li>Python checks the condition <code class="inl">7 % 2 == 0</code>.</li>
+        <li><code class="inl">7 % 2</code> is 1, so the condition is <b>False</b>.</li>
+        <li>The expression gives the value after <code class="inl">else</code>: <code class="inl">"odd"</code>.</li>
+        <li><code class="inl">kind</code> stores <code class="inl">"odd"</code>.</li>
+      </ol>
+      <div class="note">For n = 10, the condition is True, so <code class="inl">kind</code> gets <code class="inl">"even"</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. HOW IT RUNS ============ -->
+<section class="slide">
+  <h2>How Python Evaluates an Inline if</h2>
+  <div class="cols">
+    <div class="col">
+      <svg viewBox="0 0 500 330" width="100%" height="330" role="img" aria-label="Flow of a conditional expression">
+        <defs><marker id="ah4" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+        <polygon points="250,20 390,80 250,140 110,80" class="sv-dec"/>
+        <text x="250" y="76" text-anchor="middle" class="sv-t">1. Check the</text>
+        <text x="250" y="100" text-anchor="middle" class="sv-t">condition</text>
+        <path d="M110,80 L60,80 L60,190" class="sv-line" marker-end="url(#ah4)"/>
+        <text x="66" y="70" class="sv-m">True</text>
+        <path d="M390,80 L440,80 L440,190" class="sv-line" marker-end="url(#ah4)"/>
+        <text x="398" y="70" class="sv-m">False</text>
+        <rect x="10" y="194" width="200" height="60" rx="6" class="sv-box"/>
+        <text x="110" y="220" text-anchor="middle" class="sv-t">2. Use the value</text>
+        <text x="110" y="244" text-anchor="middle" class="sv-t">BEFORE if</text>
+        <rect x="290" y="194" width="200" height="60" rx="6" class="sv-box"/>
+        <text x="390" y="220" text-anchor="middle" class="sv-t">2. Use the value</text>
+        <text x="390" y="244" text-anchor="middle" class="sv-t">AFTER else</text>
+        <text x="250" y="300" text-anchor="middle" class="sv-m">Only ONE of the two values is calculated</text>
+      </svg>
+    </div>
+    <div class="col">
+      <h3>Only one side runs — useful for safety</h3>
+      <pre class="code"><code>total = 90
+count = 0
+avg = total / count if count != 0 else 0
+print(avg)</code></pre>
+      <pre class="out">0</pre>
+      <p class="small">Because <code class="inl">count != 0</code> is False, Python <b>never calculates</b> <code class="inl">total / count</code>, so there is no <b>ZeroDivisionError</b>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. QUESTIONS ============ -->
+<section class="slide">
+  <h2>What Will This Code Print?</h2>
+  <div class="cols tight">
+    <div class="col">
+      <h3>Question 1</h3>
+      <pre class="code"><code>temp = 47
+print("Hot" if temp &gt;= 45 else "Normal")</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">Hot</pre><p class="small">You can use the inline if directly inside <code class="inl">print()</code>.</p></div>
+      <h3 style="margin-top:12px">Question 2</h3>
+      <pre class="code"><code>x = -8
+size = x if x &gt;= 0 else -x
+print(size)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">8</pre><p class="small">This gives the <b>absolute value</b> (distance from zero).</p></div>
+    </div>
+    <div class="col">
+      <h3>Question 3</h3>
+      <pre class="code"><code>a = 14
+b = 9
+bigger = a if a &gt; b else b
+print(bigger)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">14</pre><p class="small">A very common use: choose the larger of two values.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. CONVERTING ============ -->
+<section class="slide">
+  <h2>Converting Between the Two Forms</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="anat" style="font-size:24px;line-height:1.7"><span class="a1">if</span> <span class="a3">age &gt;= 18</span>:<br>&nbsp;&nbsp;&nbsp;&nbsp;status = <span class="a5">"Adult"</span><br><span class="a1">else</span>:<br>&nbsp;&nbsp;&nbsp;&nbsp;status = <span class="a2">"Minor"</span></div>
+      <div class="anat" style="font-size:24px;line-height:1.7">status = <span class="a5">"Adult"</span> <span class="a1">if</span> <span class="a3">age &gt;= 18</span> <span class="a1">else</span> <span class="a2">"Minor"</span></div>
+    </div>
+    <div class="col">
+      <h3>Recipe</h3>
+      <ol class="small">
+        <li>Check: both branches <b>assign to the same variable</b>.</li>
+        <li>Write the variable and <code class="inl">=</code>.</li>
+        <li>Write the <b>True value</b>, then <code class="inl">if</code> and the <b>condition</b>.</li>
+        <li>Write <code class="inl">else</code> and the <b>False value</b>.</li>
+        <li>Remove the colons and the indentation.</li>
+      </ol>
+      <div class="warn small">If the two branches do <b>different things</b> (different variables, several lines, printing), keep the regular <code class="inl">if</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. ARITHMETIC ============ -->
+<section class="slide">
+  <h2>Inline if with Numbers</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — a 10% member discount (KD)</div>
+      <pre class="code"><code>price = 20
+member = True
+discount = price * 0.1 if member else 0
+total = price - discount
+print("Discount:", discount)
+print("Total:", total, "KD")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Discount: 2.0
+Total: 18.0 KD</pre>
+    </div>
+    <div class="col">
+      <h3>Use brackets inside bigger expressions</h3>
+      <pre class="code"><code>price = 20
+member = False
+total = price - (2 if member else 0)
+print(total)</code></pre>
+      <pre class="out">20</pre>
+      <div class="note small">The inline if has <b>very low priority</b>. When it is <b>part</b> of a bigger calculation, put it in <b>brackets</b> so Python knows where it starts and ends.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. STRINGS ============ -->
+<section class="slide">
+  <h2>Inline if with Strings</h2>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>ch = "e"
+print("vowel" if ch in "aeiou" else "consonant")
+
+name = "  "
+shown = name.strip() if name.strip() != "" else "Guest"
+print("Welcome,", shown)
+
+count = 1
+print(str(count) + " item" + ("" if count == 1 else "s"))
+count = 3
+print(str(count) + " item" + ("" if count == 1 else "s"))</code></pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Output</div>
+      <pre class="out">vowel
+Welcome, Guest
+1 item
+3 items</pre>
+      <ul class="small">
+        <li>Any condition works: <code class="inl">in</code>, <code class="inl">==</code>, string methods…</li>
+        <li>Choose a default when text is empty.</li>
+        <li>Add <code class="inl">"s"</code> only when needed — note the <b>brackets</b> around the inline if.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. COLLECTIONS ============ -->
+<section class="slide">
+  <h2>Inline if with Lists, Tuples, and Sets</h2>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>cart = []
+print("Empty cart" if len(cart) == 0 else "Ready to pay")
+
+weekend = ("Fri", "Sat")
+day = "Sat"
+print("Day off" if day in weekend else "Work day")
+
+allowed = {"sara", "ali"}
+user = "fahad"
+print("Welcome" if user in allowed else "Access denied")
+
+temps = [44, 46, 49]
+print("Warmer" if temps[-1] &gt; temps[0] else "Not warmer")</code></pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Output</div>
+      <pre class="out">Empty cart
+Day off
+Access denied
+Warmer</pre>
+      <div class="note small">Everything you know about conditions works here: <code class="inl">len()</code>, <code class="inl">in</code>, indexes, comparisons.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13. LOGICAL OPERATORS ============ -->
+<section class="slide">
+  <h2>Combining Conditions with <code class="inl">and</code>, <code class="inl">or</code>, <code class="inl">not</code></h2>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code — cinema ticket price (KD)</div>
+      <pre class="code"><code>age = 15
+student = False
+price = 2 if age &lt; 12 or student else 3.5
+print("Ticket:", price, "KD")
+
+gpa = 3.7
+credits = 40
+honor = "Yes" if gpa &gt;= 3.5 and credits &gt;= 30 else "No"
+print("Honor list:", honor)
+
+blocked = False
+print("Login OK" if not blocked else "Blocked")</code></pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Output</div>
+      <pre class="out">Ticket: 3.5 KD
+Honor list: Yes
+Login OK</pre>
+      <ul class="small">
+        <li>The whole condition between <code class="inl">if</code> and <code class="inl">else</code> is evaluated first.</li>
+        <li><code class="inl">15 &lt; 12 or False</code> is False, so the price is 3.5.</li>
+        <li>For a long condition, store it in a variable first: <code class="inl">ok = gpa &gt;= 3.5 and credits &gt;= 30</code>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. RULES ============ -->
+<section class="slide">
+  <h2>Three Rules of the Inline if</h2>
+  <div class="cols" style="grid-template-columns:0.85fr 1.15fr">
+    <div class="col">
+      <h3>1. <code class="inl">else</code> is always required</h3>
+      <pre class="code bad" data-skip><code>result = "Pass" if mark &gt;= 60</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">SyntaxError: expected 'else' after 'if' expression</pre>
+      <p class="small">An expression must <b>always</b> produce a value — even when the condition is False.</p>
+      <h3>2. Only one value on each side</h3>
+      <p class="small">No colons, no extra lines, no <code class="inl">x = …</code> inside it.</p>
+    </div>
+    <div class="col">
+      <h3>3. Use it for <b>values</b>, not for actions</h3>
+      <pre class="code bad"><code>mark = 72
+print("Pass") if mark &gt;= 60 else print("Fail")</code></pre>
+      <pre class="out">Pass</pre>
+      <p class="small">This runs, but it is <b>poor style</b>: the inline if is used only to choose an action.</p>
+      <pre class="code good"><code>mark = 72
+print("Pass" if mark &gt;= 60 else "Fail")</code></pre>
+      <pre class="out">Pass</pre>
+      <p class="small">Better: choose the <b>value</b>, and call <code class="inl">print()</code> once.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15. ELSE IF INTRO ============ -->
+<section class="slide">
+  <h2>Inline else if: More Than Two Choices</h2>
+  <p>A regular <code class="inl">if</code> uses <code class="inl">elif</code> for extra choices. The inline form puts <b>another inline if after <code class="inl">else</code></b>.</p>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Regular if / elif / else</div>
+      <pre class="code"><code>temp = 38
+if temp &gt;= 45:
+    level = "Very hot"
+elif temp &gt;= 30:
+    level = "Hot"
+else:
+    level = "Mild"
+print(level)</code></pre>
+      <pre class="out">Hot</pre>
+    </div>
+    <div class="col">
+      <div class="lbl">Inline else if (chained)</div>
+      <pre class="code"><code>temp = 38
+level = ("Very hot" if temp &gt;= 45
+         else "Hot" if temp &gt;= 30
+         else "Mild")
+print(level)</code></pre>
+      <pre class="out">Hot</pre>
+      <div class="note small">The pattern: <code class="inl">A if c1 else B if c2 else C</code>. Brackets let you split it over several lines so it is easier to read.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16. CHAIN TRACE ============ -->
+<section class="slide">
+  <h2>How a Chained Inline if Is Evaluated</h2>
+  <div class="anat" style="font-size:26px"><span class="a5">"Very hot"</span> <span class="a1">if</span> <span class="a3">temp &gt;= 45</span> <span class="a1">else</span> ( <span class="a5">"Hot"</span> <span class="a1">if</span> <span class="a3">temp &gt;= 30</span> <span class="a1">else</span> <span class="a2">"Mild"</span> )</div>
+  <div class="cols">
+    <div class="col">
+      <table class="t">
+        <tr><th class="c"><code>temp</code></th><th class="c"><code>&gt;= 45</code>?</th><th class="c"><code>&gt;= 30</code>?</th><th class="c">Result</th></tr>
+        <tr><td class="c">48</td><td class="c">True</td><td class="c muted">not checked</td><td class="c">"Very hot"</td></tr>
+        <tr><td class="c">38</td><td class="c">False</td><td class="c">True</td><td class="c">"Hot"</td></tr>
+        <tr><td class="c">22</td><td class="c">False</td><td class="c">False</td><td class="c">"Mild"</td></tr>
+      </table>
+    </div>
+    <div class="col small">
+      <ol>
+        <li>Check the <b>first</b> condition. If True → done.</li>
+        <li>If False → move to the part after <code class="inl">else</code>, which is <b>another</b> inline if.</li>
+        <li>Check the <b>second</b> condition, and so on.</li>
+        <li>The last <code class="inl">else</code> is the value when <b>nothing</b> matched.</li>
+      </ol>
+      <div class="note">Exactly like <code class="inl">if / elif / else</code>: conditions are checked <b>from left to right</b>, and the first True one wins.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17. GRADE CHAIN ============ -->
+<section class="slide">
+  <h2>Example: Letter Grades</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>mark = 85
+letter = ("A" if mark &gt;= 90 else
+          "B" if mark &gt;= 80 else
+          "C" if mark &gt;= 70 else
+          "D" if mark &gt;= 60 else
+          "F")
+print("Mark", mark, "→ grade", letter)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Mark 85 → grade B</pre>
+    </div>
+    <div class="col">
+      <div class="q">What is the grade for mark = 60? And for 59?</div>
+      <button class="reveal">Show Answer</button>
+      <div class="answer small"><b>D</b> for 60 (the first True condition is <code class="inl">60 &gt;= 60</code>), and <b>F</b> for 59 (no condition is True).</div>
+      <div class="warn" style="margin-top:14px">This works, but <b>five</b> choices on one expression is close to the limit. Many programmers would use a regular <code class="inl">if / elif</code> here. Choose what is <b>easiest to read</b>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18. WHEN TO USE ============ -->
+<section class="slide">
+  <h2>When Should You Use an Inline if?</h2>
+  <div class="cols">
+    <div class="col">
+      <h3 style="color:var(--good)">Good for an inline if</h3>
+      <ul class="small">
+        <li>You are choosing <b>one value</b> from <b>two</b> (or three) options.</li>
+        <li>Both values are <b>short</b> and simple.</li>
+        <li>The result goes into a variable, a <code class="inl">print()</code>, or a calculation.</li>
+      </ul>
+      <pre class="code good" data-skip><code>fee = 0 if total &gt;= 20 else 1.5</code></pre>
+    </div>
+    <div class="col">
+      <h3 style="color:var(--bad)">Better as a regular if</h3>
+      <ul class="small">
+        <li>Each branch needs <b>several lines</b>.</li>
+        <li>The branches do <b>different actions</b> (change different variables, print different things).</li>
+        <li>There are <b>many</b> choices, or the condition is very long.</li>
+      </ul>
+      <pre class="code" data-skip><code>if balance &lt; amount:
+    print("Not enough money")
+else:
+    balance = balance - amount
+    print("Paid")</code></pre>
+    </div>
+  </div>
+  <div class="note">Goal: code that a classmate understands in <b>one reading</b>. Short is good; clear is better.</div>
+</section>
+
+<!-- ============ 19. QUICK REFERENCE ============ -->
+<section class="slide">
+  <h2>Quick Reference</h2>
+  <table class="t" style="font-size:19px">
+    <tr><th>Goal</th><th>Inline form</th></tr>
+    <tr><td>Two choices</td><td><code>x = A if cond else B</code></td></tr>
+    <tr><td>Three choices (else if)</td><td><code>x = A if c1 else B if c2 else C</code></td></tr>
+    <tr><td>Inside <code>print()</code></td><td><code>print("Yes" if ok else "No")</code></td></tr>
+    <tr><td>Inside a calculation</td><td><code>total = price - (2 if member else 0)</code></td></tr>
+    <tr><td>Larger of two</td><td><code>big = a if a &gt; b else b</code></td></tr>
+    <tr><td>Absolute value</td><td><code>d = x if x &gt;= 0 else -x</code></td></tr>
+    <tr><td>Safe division</td><td><code>avg = t / n if n != 0 else 0</code></td></tr>
+    <tr><td>Default text</td><td><code>shown = name if name != "" else "Guest"</code></td></tr>
+  </table>
+  <div class="note" style="margin-top:14px">Always: <b>True value first</b>, <code class="inl">else</code> required, brackets when it is part of a bigger expression.</div>
+</section>
+
+<!-- ============ 20. MISTAKES 1 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (1): Syntax</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>mark = 72
+result = "Pass" if mark &gt;= 60</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:17px">SyntaxError: expected 'else' after 'if' expression</pre>
+      <p class="why"><b>Why?</b> The inline if must have an <code class="inl">else</code> value.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>mark = 72
+result = "Pass" if mark &gt;= 60 else "Fail"</code></pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>mark = 72
+result = if mark &gt;= 60 "Pass" else "Fail"</code></pre>
+      <pre class="out">SyntaxError: invalid syntax</pre>
+      <p class="why"><b>Why?</b> Wrong order. The <b>True value</b> comes <b>before</b> <code class="inl">if</code>.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>mark = 72
+result = "Pass" if mark &gt;= 60 else "Fail"</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21. MISTAKES 2 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (2): Missing Brackets</h2>
+  <div class="cols tight">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code>cost = 50
+msg = "Level: " + "high" if cost &gt; 100 else "low"
+print(msg)</code></pre>
+      <pre class="out">low</pre>
+      <p class="why"><b>Why?</b> Python reads it as <code class="inl">("Level: " + "high") if … else "low"</code>. The <code class="inl">"Level: "</code> part is lost in the False case.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>cost = 50
+msg = "Level: " + ("high" if cost &gt; 100 else "low")
+print(msg)</code></pre>
+      <pre class="out">Level: low</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code># goal: members pay 2 KD less
+price = 10
+member = False
+total = price - 2 if member else 0
+print(total)</code></pre>
+      <pre class="out">0</pre>
+      <p class="why"><b>Why?</b> It means <code class="inl">(price - 2) if member else 0</code>. Non-members pay <b>nothing</b>!</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>price = 10
+member = False
+total = price - (2 if member else 0)
+print(total)</code></pre>
+      <pre class="out">10</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22. MISTAKES 3 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (3): Order of Conditions</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad"><code>mark = 95
+letter = ("C" if mark &gt;= 70 else
+          "B" if mark &gt;= 80 else
+          "A" if mark &gt;= 90 else "F")
+print(letter)</code></pre>
+      <pre class="out">C</pre>
+      <p class="why"><b>Why?</b> The first True condition wins. <code class="inl">95 &gt;= 70</code> is True, so the other checks never happen.</p>
+    </div>
+    <div class="col">
+      <span class="tag-good">Correct — strictest condition first</span>
+      <pre class="code good"><code>mark = 95
+letter = ("A" if mark &gt;= 90 else
+          "B" if mark &gt;= 80 else
+          "C" if mark &gt;= 70 else "F")
+print(letter)</code></pre>
+      <pre class="out">A</pre>
+      <div class="note small">The same rule applies to <code class="inl">if / elif</code>: when ranges overlap, check the <b>narrowest</b> one first.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23. WORKED EXAMPLE 1 ============ -->
+<section class="slide">
+  <h2>Worked Example 1: Online Order (KD)</h2>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>subtotal = 17.5
+member = True
+shipping = 0 if subtotal &gt;= 20 or member else 1.5
+discount = subtotal * 0.05 if member else 0
+total = subtotal + shipping - discount
+print("Shipping:", shipping)
+print("Discount:", discount)
+print("Total:", total, "KD")
+print("Free shipping!" if shipping == 0 else "")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Shipping: 0
+Discount: 0.875
+Total: 16.625 KD
+Free shipping!</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li><code class="inl">17.5 &gt;= 20</code> is False, but <code class="inl">member</code> is True → shipping is <b>0</b>.</li>
+        <li>Member → discount is 17.5 × 0.05 = <b>0.875</b>.</li>
+        <li>Total = 17.5 + 0 − 0.875 = <b>16.625</b>.</li>
+        <li>Shipping is 0 → the message is printed.</li>
+      </ol>
+      <div class="note">Each inline if decides <b>one value</b>. Then normal arithmetic uses them.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24. WORKED EXAMPLE 2 ============ -->
+<section class="slide">
+  <h2>Worked Example 2: Electricity Bill with Tiers</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code — price per kWh depends on usage (example rates)</div>
+      <pre class="code"><code>kwh = 2500
+rate_fils = (3 if kwh &lt;= 1000 else
+             5 if kwh &lt;= 3000 else
+             10)
+bill = kwh * rate_fils / 1000
+level = "low" if bill &lt; 10 else "high"
+print("Rate:", rate_fils, "fils per kWh")
+print("Bill:", bill, "KD")
+print("Usage level:", level)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Rate: 5 fils per kWh
+Bill: 12.5 KD
+Usage level: high</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li><code class="inl">2500 &lt;= 1000</code> → False.</li>
+        <li><code class="inl">2500 &lt;= 3000</code> → True → rate is <b>5</b>.</li>
+        <li>2500 × 5 = 12500 fils = <b>12.5 KD</b>.</li>
+        <li><code class="inl">12.5 &lt; 10</code> → False → <b>"high"</b>.</li>
+      </ol>
+      <p class="muted">The rates are simple examples, not official prices.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25. WORKED EXAMPLE 3 ============ -->
+<section class="slide">
+  <h2>Worked Example 3: Weekly Temperature Summary</h2>
+  <div class="cols w70">
+    <div class="col">
+      <div class="lbl">Code — Kuwait, Sunday to Saturday (°C)</div>
+      <pre class="code"><code>temps = [44, 46, 48, 45, 47, 49, 43]
+first = temps[0]
+last = temps[-1]
+trend = ("warmer" if last &gt; first else
+         "cooler" if last &lt; first else
+         "the same")
+hot_week = "Yes" if 49 in temps or 50 in temps else "No"
+print("The week ended", trend)
+print("Reached 49 or 50:", hot_week)
+print(len(temps), "day" if len(temps) == 1 else "days")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">The week ended cooler
+Reached 49 or 50: Yes
+7 days</pre>
+    </div>
+    <div class="col small">
+      <ol>
+        <li><code class="inl">43 &gt; 44</code> is False; <code class="inl">43 &lt; 44</code> is True → <b>"cooler"</b>.</li>
+        <li><code class="inl">49 in temps</code> is True → <b>"Yes"</b> (the <code class="inl">or</code> part is not needed).</li>
+        <li>The list has 7 items → <b>"days"</b>.</li>
+      </ol>
+      <div class="note">An inline if works with list indexes, <code class="inl">in</code>, and <code class="inl">len()</code> — anything that gives True or False.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26. THINK ABOUT IT ============ -->
+<section class="slide">
+  <h2>Think About It</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="qa">
+        <div class="q">1. Why must an inline if always have an <code class="inl">else</code>, while a regular <code class="inl">if</code> does not?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small">An inline if is an <b>expression</b>: it must always give a value. A regular <code class="inl">if</code> is a statement: if the condition is False, it can simply do nothing.</div>
+      </div>
+      <div class="qa">
+        <div class="q">2. In <code class="inl">A if c1 else B if c2 else C</code>, when is <code class="inl">c2</code> checked?</div>
+        <button class="reveal">Show Answer</button>
+        <div class="answer small">Only when <code class="inl">c1</code> is <b>False</b> — just like an <code class="inl">elif</code>.</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="qa">
+        <div class="q">3. What does this print?</div>
+        <pre class="code"><code>x = 0
+print(10 / x if x != 0 else "cannot divide")
+print("zero" if x == 0 else
+      "positive" if x &gt; 0 else "negative")</code></pre>
+        <button class="reveal">Show Answer</button>
+        <div class="answer"><pre class="out">cannot divide
+zero</pre><p class="small"><code class="inl">10 / x</code> is never calculated, so there is no error.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27. PRACTICE ============ -->
+<section class="slide">
+  <h2>Practice in Class (3 minutes)</h2>
+  <p>A mobile package includes <b>10 GB</b>. Extra data costs <b>1.5 KD</b> per GB.</p>
+  <pre class="code" data-skip><code>used = 12.5      # GB used this month
+limit = 10</code></pre>
+  <ol class="small">
+    <li>Using an inline if, set <code class="inl">extra</code> to the GB above the limit, or 0.</li>
+    <li>Print the extra cost.</li>
+    <li>Print <code class="inl">Over limit</code>, <code class="inl">At limit</code>, or <code class="inl">Under limit</code> using an inline else if.</li>
+  </ol>
+  <button class="reveal">Show Answer</button>
+  <div class="answer">
+    <div class="cols" style="flex:none;grid-template-columns:1.5fr 1fr">
+      <pre class="code"><code>used = 12.5
+limit = 10
+extra = used - limit if used &gt; limit else 0
+print("Extra cost:", extra * 1.5, "KD")
+print("Over limit" if used &gt; limit else
+      "At limit" if used == limit else "Under limit")</code></pre>
+      <pre class="out">Extra cost: 3.75 KD
+Over limit</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 28. REMEMBER ============ -->
+<section class="slide">
+  <h2>What You Should Remember</h2>
+  <ol>
+    <li>An inline if chooses a <b>value</b>: <code class="inl">A if condition else B</code>.</li>
+    <li>The <b>True value comes first</b>; the <code class="inl">else</code> part is <b>always required</b>.</li>
+    <li>Only <b>one</b> of the two values is calculated.</li>
+    <li>Inline else if: <code class="inl">A if c1 else B if c2 else C</code> — checked left to right; the first True wins.</li>
+    <li>Put the inline if in <b>brackets</b> when it is part of a bigger expression (<code class="inl">+</code>, <code class="inl">-</code>, …).</li>
+    <li>Use it for <b>short choices between values</b>, not for actions or multi-line branches.</li>
+    <li>If it becomes hard to read, use a regular <code class="inl">if / elif / else</code>.</li>
+  </ol>
+</section>
+
+<!-- ============ 29. EXERCISES L1 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 1 — Basic</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">1.</span>Predict the output.</p>
+        <pre class="code"><code>x = 7
+print("odd" if x % 2 == 1 else "even")
+y = -3
+print(y if y &gt; 0 else -y)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">2.</span>Predict the output.</p>
+        <pre class="code"><code>t = 38
+print("Hot" if t &gt;= 45 else
+      "Warm" if t &gt;= 30 else "Cool")</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">3.</span>Find and fix the error.</p>
+        <pre class="code" data-skip><code>mark = 55
+result = "Pass" if mark &gt;= 60
+print(result)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">4.</span>Rewrite as one line with an inline if.</p>
+        <pre class="code" data-skip><code>if age &gt;= 18:
+    status = "Adult"
+else:
+    status = "Minor"</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 30. EXERCISES L2 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 2 — Apply</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">5.</span>Parking costs nothing for the first hour; after that it is <b>0.25 KD per hour</b> for every hour. Use an inline if to print the fee for <code class="inl">hours = 3</code>, then for <code class="inl">hours = 1</code>.</p></div>
+      <div class="ex"><p><span class="ex-num">6.</span>For a list <code class="inl">cart</code>, print <code class="inl">Cart is empty</code> or <code class="inl">Cart has N items</code> with one inline if. Test with <code class="inl">["rice", "tea"]</code>.</p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">7.</span>Rewrite this with one inline else if.</p>
+        <pre class="code" data-skip><code>if speed &gt; 120:
+    label = "Too fast"
+elif speed &gt;= 60:
+    label = "Normal"
+else:
+    label = "Slow"</code></pre></div>
+      <div class="ex"><p><span class="ex-num">8.</span>Explain what this code does and give its output.</p>
+        <pre class="code"><code>price = 5
+member = False
+total = price - (1 if member else 0)
+print(total)</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 31. EXERCISES L3 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 3 — Challenge</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">9.</span>This should print <code class="inl">Level: low</code>, but it prints <code class="inl">low</code>. Explain why, and fix it.</p>
+        <pre class="code"><code>cost = 50
+msg = "Level: " + "high" if cost &gt; 100 else "low"
+print(msg)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">10.</span>Use an inline else if to choose the rate: 3 fils per kWh up to 1000 kWh, 5 fils up to 3000, otherwise 10 fils. Print the bill in KD for <code class="inl">kwh = 4000</code>.</p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">11.</span>Predict the output.</p>
+        <pre class="code"><code>a = 4
+b = 9
+big = a if a &gt; b else b
+small = b if a &gt; b else a
+same = "equal" if a == b else "different"
+print(big - small, same)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">12.</span>Using inline ifs only (no regular <code class="inl">if</code>), find the <b>largest</b> of three numbers <code class="inl">a, b, c = 12, 30, 7</code> and print it.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 32. SOLUTIONS DIVIDER ============ -->
+<section class="slide">
+  <div class="s-body section-body" style="padding:0">
+    <div class="title-rule" style="margin:0 auto 24px"></div>
+    <h1>Exercise Solutions</h1>
+    <p class="muted" style="font-size:26px">Try every exercise first. Then compare your answers.</p>
+  </div>
+</section>
+
+<!-- ============ 33. SOLUTIONS 1-4 ============ -->
+<section class="slide">
+  <h2>Solutions 1 – 4 <span class="level">Level 1</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">1.</span><code class="inl">7 % 2</code> is 1 → "odd". −3 is not &gt; 0, so <code class="inl">-y</code> = 3.</p>
+      <pre class="out">odd
+3</pre>
+      <p><span class="ex-num">2.</span><code class="inl">38 &gt;= 45</code> is False; <code class="inl">38 &gt;= 30</code> is True.</p>
+      <pre class="out">Warm</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">3.</span>The <code class="inl">else</code> part is missing (SyntaxError).</p>
+      <pre class="code"><code>mark = 55
+result = "Pass" if mark &gt;= 60 else "Fail"
+print(result)</code></pre>
+      <pre class="out">Fail</pre>
+      <p><span class="ex-num">4.</span></p>
+      <pre class="code"><code>age = 20
+status = "Adult" if age &gt;= 18 else "Minor"
+print(status)</code></pre>
+      <pre class="out">Adult</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 34. SOLUTIONS 5-8 ============ -->
+<section class="slide">
+  <h2>Solutions 5 – 8 <span class="level">Level 2</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">5.</span></p>
+      <pre class="code"><code>hours = 3
+fee = 0 if hours &lt;= 1 else hours * 0.25
+print("Fee:", fee, "KD")
+hours = 1
+fee = 0 if hours &lt;= 1 else hours * 0.25
+print("Fee:", fee, "KD")</code></pre>
+      <pre class="out">Fee: 0.75 KD
+Fee: 0 KD</pre>
+      <p><span class="ex-num">6.</span></p>
+      <pre class="code"><code>cart = ["rice", "tea"]
+print("Cart is empty" if len(cart) == 0
+      else "Cart has " + str(len(cart)) + " items")</code></pre>
+      <pre class="out">Cart has 2 items</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">7.</span></p>
+      <pre class="code"><code>speed = 90
+label = ("Too fast" if speed &gt; 120 else
+         "Normal" if speed &gt;= 60 else
+         "Slow")
+print(label)</code></pre>
+      <pre class="out">Normal</pre>
+      <p><span class="ex-num">8.</span>Members pay 1 KD less. <code class="inl">member</code> is False, so the bracket gives 0 and the total stays 5. The brackets make sure only the discount is chosen.</p>
+      <pre class="out">5</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 35. SOLUTIONS 9-10 ============ -->
+<section class="slide">
+  <h2>Solutions 9 – 10 <span class="level">Level 3</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">9.</span>The inline if has the lowest priority, so Python reads <code class="inl">("Level: " + "high") if … else "low"</code>. Put brackets around the inline if:</p>
+      <pre class="code"><code>cost = 50
+msg = "Level: " + ("high" if cost &gt; 100 else "low")
+print(msg)</code></pre>
+      <pre class="out">Level: low</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">10.</span>4000 is above 3000, so the rate is 10.</p>
+      <pre class="code"><code>kwh = 4000
+rate = (3 if kwh &lt;= 1000 else
+        5 if kwh &lt;= 3000 else 10)
+print("Bill:", kwh * rate / 1000, "KD")</code></pre>
+      <pre class="out">Bill: 40.0 KD</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 36. SOLUTIONS 11-12 ============ -->
+<section class="slide">
+  <h2>Solutions 11 – 12 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">11.</span><code class="inl">4 &gt; 9</code> is False, so <code class="inl">big</code> = 9 and <code class="inl">small</code> = 4. They are not equal.</p>
+      <pre class="out">5 different</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">12.</span>Check <code class="inl">a</code> first; if it is not the largest, the larger of <code class="inl">b</code> and <code class="inl">c</code> wins.</p>
+      <pre class="code"><code>a, b, c = 12, 30, 7
+largest = (a if a &gt;= b and a &gt;= c else
+           b if b &gt;= c else
+           c)
+print(largest)</code></pre>
+      <pre class="out">30</pre>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="btnPrev" title="Previous (Left Arrow)">◀ Previous</button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button id="btnNext" title="Next (Right Arrow)">Next ▶</button>
+  <div class="spacer"></div>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="spacer"></div>
+  <button id="btnFull">Full Screen</button>
+  <button id="btnTheme">Dark Mode</button>
+  <button id="btnPdf">Export PDF</button>
+</div>
+
+<script>
+(function () {
+  var COURSE = "CS126 – Introduction to Python";
+  var TOPIC = "Inline if and Inline else if";
+
+  /* ---------- Theme (restore before anything paints) ---------- */
+  var root = document.documentElement;
+  try { if (localStorage.getItem("cs126-theme") === "dark") root.classList.add("dark"); } catch (e) {}
+
+  /* ---------- Build slide chrome ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length;
+  slides.forEach(function (s, i) {
+    if (!s.querySelector(".s-body")) {
+      var body = document.createElement("div");
+      body.className = "s-body";
+      while (s.firstChild) body.appendChild(s.firstChild);
+      s.appendChild(body);
+    }
+    var head = document.createElement("div");
+    head.className = "s-head";
+    head.innerHTML = '<span class="course">' + COURSE + '</span><span>' + TOPIC + '</span>';
+    var foot = document.createElement("div");
+    foot.className = "s-foot";
+    foot.innerHTML = '<span>Dr. Fawaz Alazemi</span><span>Slide ' + (i + 1) + ' of ' + N + '</span>';
+    s.insertBefore(head, s.firstChild);
+    s.appendChild(foot);
+  });
+
+  /* ---------- Python syntax highlighting (no libraries) ---------- */
+  var KW = "for|in|if|elif|else|and|or|not|True|False|None|while|def|return|import|del";
+  var FN = "print|range|len|list|str|int|float|sum|max|min|round|append|input|type|tuple|set|sorted|dict";
+  var re = new RegExp(
+    "(#[^\\n]*)|(\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(" + FN + ")(?=\\()|\\b(\\d+(?:\\.\\d+)?)\\b",
+    "g");
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code code").forEach(function (el) {
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "tk-com" : m[2] ? "tk-str" : m[3] ? "tk-kw" : m[4] ? "tk-fn" : "tk-num";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = re.lastIndex;
+    }
+    out += esc(src.slice(last));
+    el.innerHTML = out;
+  });
+
+  /* ---------- Show Answer buttons ---------- */
+  document.querySelectorAll(".reveal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.nextElementSibling;
+      var shown = a.classList.toggle("shown");
+      b.textContent = shown ? "Hide Answer" : "Show Answer";
+      b.blur();
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  var cur = 0;
+  var counter = document.getElementById("counter");
+  var bar = document.getElementById("bar");
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    counter.textContent = (cur + 1) + " / " + N;
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+  function btn(id, fn) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () { fn(); b.blur(); });
+    return b;
+  }
+  btn("btnPrev", function () { go(cur - 1); });
+  btn("btnNext", function () { go(cur + 1); });
+
+  /* ---------- Full screen ---------- */
+  var fullBtn = btn("btnFull", function () {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el);
+    }
+  });
+  function onFs() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fullBtn.textContent = on ? "Exit Full Screen" : "Full Screen";
+    fit();
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+
+  /* ---------- Dark / light ---------- */
+  var themeBtn = btn("btnTheme", function () {
+    var dark = root.classList.toggle("dark");
+    try { localStorage.setItem("cs126-theme", dark ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  });
+  function themeLabel() { themeBtn.textContent = root.classList.contains("dark") ? "Light Mode" : "Dark Mode"; }
+  themeLabel();
+
+  /* ---------- Export PDF ---------- */
+  btn("btnPdf", function () { window.print(); });
+
+  /* ---------- Scale the 1280x720 canvas to fit ---------- */
+  var stage = document.getElementById("stage");
+  var vp = document.getElementById("viewport");
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight;
+    var s = Math.min(w / 1280, h / 720) * 0.98;
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>

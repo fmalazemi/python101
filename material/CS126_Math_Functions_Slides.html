@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS126 – Math Functions</title>
+<style>
+/* ===================== THEME ===================== */
+:root {
+  --bg: #f4f6f8;
+  --slide-bg: #fbfbfc;
+  --text: #1f2933;
+  --muted: #5b6875;
+  --navy: #1b365d;
+  --teal: #0f7c74;
+  --teal-soft: #e3f2f0;
+  --line: #d5dbe1;
+  --code-bg: #f1f3f5;
+  --code-text: #1f2933;
+  --out-bg: #ffffff;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --good: #1a7f37;
+  --good-soft: #e8f5ec;
+  --amber: #a15c00;
+  --tok-kw: #7a2bb5;
+  --tok-str: #a5481a;
+  --tok-num: #0b6bcb;
+  --tok-fn: #0f7c74;
+  --tok-com: #6b7785;
+  --bar-bg: #ffffff;
+}
+html.dark {
+  --bg: #0b1120;
+  --slide-bg: #111827;
+  --text: #e8edf3;
+  --muted: #a3afbd;
+  --navy: #9cc4ff;
+  --teal: #34d1bf;
+  --teal-soft: #12302e;
+  --line: #334155;
+  --code-bg: #0b1220;
+  --code-text: #e8edf3;
+  --out-bg: #0f172a;
+  --bad: #ff8a80;
+  --bad-soft: #3a1717;
+  --good: #7ee2a0;
+  --good-soft: #13301f;
+  --amber: #ffc46b;
+  --tok-kw: #d7a8ff;
+  --tok-str: #ffb38a;
+  --tok-num: #8fc8ff;
+  --tok-fn: #5fe3d2;
+  --tok-com: #8b98a8;
+  --bar-bg: #0f172a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* ===================== STAGE ===================== */
+.viewport {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 56px;
+  overflow: hidden;
+}
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: center center;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--slide-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+.s-head {
+  height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--teal);
+  font-size: 16px; color: var(--muted);
+}
+.s-head .course { color: var(--navy); font-weight: 600; }
+.s-body {
+  flex: 1; min-height: 0;
+  padding: 22px 56px 10px;
+  display: flex; flex-direction: column;
+  font-size: 24px; line-height: 1.4;
+}
+.s-foot {
+  height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; font-size: 15px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+h1 { color: var(--navy); font-size: 56px; margin: 0 0 12px; line-height: 1.15; }
+h2 { color: var(--navy); font-size: 36px; margin: 0 0 16px; line-height: 1.2; }
+h3 { color: var(--teal); font-size: 24px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 30px; }
+li { margin-bottom: 6px; }
+.small { font-size: 20px; }
+.muted { color: var(--muted); }
+.teal { color: var(--teal); font-weight: 600; }
+.navy { color: var(--navy); font-weight: 600; }
+.mono, code.inl {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols.w60 { grid-template-columns: 1.25fr 1fr; }
+.cols.w40 { grid-template-columns: 1fr 1.25fr; }
+.cols.w70 { grid-template-columns: 1.6fr 1fr; }
+.tight pre { font-size: 18px; line-height: 1.38; margin-bottom: 8px; }
+.tight p { margin-bottom: 6px; }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.col { min-width: 0; }
+
+/* ===================== CODE ===================== */
+pre {
+  margin: 0 0 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 20px; line-height: 1.45;
+  white-space: pre; overflow: hidden;
+  border-radius: 6px;
+}
+pre.code {
+  background: var(--code-bg); color: var(--code-text);
+  border: 1px solid var(--line); border-left: 5px solid var(--teal);
+  padding: 10px 16px;
+}
+pre.code.bad  { border-left-color: var(--bad); }
+pre.code.good { border-left-color: var(--good); }
+pre.out {
+  background: var(--out-bg); color: var(--text);
+  border: 1px dashed var(--line); border-left: 5px solid var(--navy);
+  padding: 8px 16px;
+}
+.lbl {
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.tk-kw { color: var(--tok-kw); font-weight: 600; }
+.tk-str { color: var(--tok-str); }
+.tk-num { color: var(--tok-num); }
+.tk-fn { color: var(--tok-fn); }
+.tk-com { color: var(--tok-com); font-style: italic; }
+
+/* ===================== BOXES ===================== */
+.note {
+  border-left: 5px solid var(--teal); background: var(--teal-soft);
+  padding: 10px 16px; border-radius: 4px; margin: 0 0 12px; font-size: 21px;
+}
+.warn {
+  border-left: 5px solid var(--amber); padding: 10px 16px; margin: 0 0 12px;
+  font-size: 21px; background: transparent; border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+}
+.tag-bad, .tag-good {
+  display: inline-block; font-weight: 700; font-size: 17px;
+  padding: 2px 10px; border-radius: 4px; margin-bottom: 4px;
+}
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-good { color: var(--good); background: var(--good-soft); }
+.why { font-size: 19px; margin: 0 0 10px; }
+
+table.t {
+  border-collapse: collapse; font-size: 20px; width: 100%;
+}
+table.t th, table.t td {
+  border: 1px solid var(--line); padding: 6px 12px; text-align: left;
+}
+table.t th { background: var(--teal-soft); color: var(--navy); }
+table.t td.c, table.t th.c { text-align: center; }
+table.t code { font-family: Consolas, Monaco, monospace; }
+
+/* ===================== Q & A ===================== */
+.qa { margin: 0 0 10px; }
+.reveal {
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--teal); background: transparent;
+  border: 1.5px solid var(--teal); border-radius: 4px;
+  padding: 3px 12px; cursor: pointer; margin: 0 0 6px;
+}
+.reveal:hover { background: var(--teal-soft); }
+.answer { visibility: hidden; }
+.answer.shown { visibility: visible; }
+.q { font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+
+/* ===================== TITLE / SECTION ===================== */
+.title-body { justify-content: center; padding-left: 90px; }
+.title-body .sub { font-size: 30px; color: var(--teal); margin-bottom: 36px; }
+.title-body .meta { font-size: 24px; color: var(--muted); line-height: 1.6; }
+.title-rule { width: 120px; height: 5px; background: var(--teal); margin: 0 0 28px; }
+.section-body { justify-content: center; align-items: center; text-align: center; }
+
+/* ===================== DIAGRAMS ===================== */
+.anat {
+  font-family: Consolas, Monaco, monospace; font-size: 40px;
+  background: var(--code-bg); border: 1px solid var(--line);
+  border-left: 5px solid var(--teal); border-radius: 6px;
+  padding: 18px 28px; margin: 0 0 16px; line-height: 1.6;
+}
+.anat .a1 { color: var(--tok-kw); font-weight: 700; }
+.anat .a2 { color: var(--tok-num); font-weight: 700; }
+.anat .a3 { color: var(--tok-str); font-weight: 700; }
+.anat .a4 { color: var(--bad); font-weight: 700; }
+.anat .a5 { color: var(--tok-fn); font-weight: 700; }
+.anat .ind { background: var(--teal-soft); outline: 1px dashed var(--teal); }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 36px; font-size: 21px; }
+.legend b { font-family: Consolas, Monaco, monospace; }
+
+.boxes { display: flex; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap; }
+.box {
+  min-width: 64px; text-align: center;
+  font-family: Consolas, Monaco, monospace; font-size: 22px;
+}
+.box .v {
+  border: 2px solid var(--navy); border-radius: 4px; padding: 6px 10px;
+  background: var(--slide-bg);
+}
+.box .i { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.box .n { font-size: 16px; color: var(--tok-num); margin-bottom: 3px; font-weight: 600; }
+.box.off .v { border-style: dashed; border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.box.hi .v { background: var(--teal-soft); border-color: var(--teal); }
+
+svg text { font-family: "Segoe UI", Arial, sans-serif; }
+.sv-box { fill: var(--slide-bg); stroke: var(--navy); stroke-width: 2; }
+.sv-dec { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.sv-t { fill: var(--text); font-size: 19px; }
+.sv-m { fill: var(--muted); font-size: 16px; font-weight: 600; }
+.sv-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.sv-arrow { fill: var(--muted); }
+
+.ex-num {
+  display: inline-block; min-width: 38px; font-weight: 700; color: var(--teal);
+}
+.level {
+  display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--teal); border: 1.5px solid var(--teal);
+  border-radius: 4px; padding: 1px 10px; margin-left: 12px; vertical-align: middle;
+}
+.ex { margin-bottom: 10px; }
+.ex p { margin: 0 0 6px; }
+
+/* ===================== CONTROLS ===================== */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: var(--bar-bg); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  font-size: 15px;
+}
+.controls button {
+  font: inherit; font-size: 15px; color: var(--navy);
+  background: transparent; border: 1px solid var(--line); border-radius: 4px;
+  padding: 6px 14px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--teal); color: var(--teal); }
+.controls .counter { color: var(--muted); min-width: 64px; text-align: center; }
+.progress {
+  flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.progress div { height: 100%; width: 0; background: var(--teal); }
+.spacer { width: 8px; }
+
+/* Code size for this deck */
+pre { font-size: 19px; }
+.tight pre { font-size: 17px; }
+
+/* ===================== PRINT ===================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  :root, html.dark {
+    --bg: #ffffff; --slide-bg: #ffffff; --text: #1f2933; --muted: #5b6875;
+    --navy: #1b365d; --teal: #0f7c74; --teal-soft: #e3f2f0; --line: #d5dbe1;
+    --code-bg: #f1f3f5; --code-text: #1f2933; --out-bg: #ffffff;
+    --bad: #b42318; --bad-soft: #fdecea; --good: #1a7f37; --good-soft: #e8f5ec;
+    --amber: #a15c00; --tok-kw: #7a2bb5; --tok-str: #a5481a; --tok-num: #0b6bcb;
+    --tok-fn: #0f7c74; --tok-com: #6b7785;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .controls, .reveal { display: none !important; }
+  .answer { visibility: visible !important; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; inset: auto;
+    width: 1280px; height: 720px; zoom: 0.82;
+    margin: 0 auto; border: none; transform: translateY(120px);
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- ============ 1. TITLE ============ -->
+<section class="slide">
+  <div class="s-body title-body">
+    <div class="muted" style="font-size:22px;margin-bottom:10px">CS126 – Introduction to Python</div>
+    <h1>Mathematical Functions in Python</h1>
+    <div class="sub">Built-in functions and the <span style="font-family:Consolas,Monaco,monospace">math</span> library</div>
+    <div class="title-rule"></div>
+    <div class="meta">Dr. Fawaz Alazemi</div>
+  </div>
+</section>
+
+<!-- ============ 2. OBJECTIVES ============ -->
+<section class="slide">
+  <h2>Learning Objectives</h2>
+  <p>By the end of this lecture, you will be able to:</p>
+  <ol>
+    <li>Use the built-in functions <code class="inl">abs</code>, <code class="inl">round</code>, <code class="inl">pow</code>, <code class="inl">max</code>, <code class="inl">min</code>, <code class="inl">sum</code>, and <code class="inl">divmod</code>.</li>
+    <li>Import the <code class="inl">math</code> library and call its functions with <code class="inl">math.</code></li>
+    <li>Use <code class="inl">sqrt</code>, <code class="inl">pow</code>, <code class="inl">ceil</code>, <code class="inl">floor</code>, <code class="inl">trunc</code>, <code class="inl">factorial</code>, <code class="inl">log</code>, and <code class="inl">exp</code>.</li>
+    <li>Use <code class="inl">sin</code> and <code class="inl">cos</code> with angles in <b>radians</b>.</li>
+    <li>Use the constants <code class="inl">math.pi</code>, <code class="inl">math.e</code>, and <code class="inl">math.nan</code>.</li>
+    <li>Avoid common mistakes: missing <code class="inl">import</code>, degrees vs radians, rounding surprises.</li>
+  </ol>
+</section>
+
+<!-- ============ 3. BUILT-IN VS MATH ============ -->
+<section class="slide">
+  <h2>Two Groups of Functions</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Built-in: ready to use</h3>
+      <pre class="code"><code>print(abs(-5))
+print(max(3, 9, 4))</code></pre>
+      <pre class="out">5
+9</pre>
+      <p class="small"><code class="inl">abs</code>, <code class="inl">round</code>, <code class="inl">pow</code>, <code class="inl">max</code>, <code class="inl">min</code>, <code class="inl">sum</code>, <code class="inl">divmod</code> — no import needed.</p>
+    </div>
+    <div class="col">
+      <h3>math library: import first</h3>
+      <pre class="code"><code>import math
+print(math.sqrt(16))
+print(math.pi)</code></pre>
+      <pre class="out">4.0
+3.141592653589793</pre>
+      <ul class="small">
+        <li>A <b>library</b> (module) is a collection of ready-made tools.</li>
+        <li><code class="inl">import math</code> once, at the <b>top</b> of the program.</li>
+        <li>Then write <code class="inl">math.</code> before each name.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. ABS AND ROUND ============ -->
+<section class="slide">
+  <h2><code class="inl">abs()</code> and <code class="inl">round()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>print(abs(-7), abs(2.5), abs(0))
+print(round(3.14159, 2))
+print(round(7.6))
+print(round(1234, -2))
+print(round(2.5), round(3.5))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">7 2.5 0
+3.14
+8
+1200
+2 4</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">abs(x)</code>: distance from zero — always ≥ 0.</li>
+        <li><code class="inl">round(x, n)</code>: round to <code class="inl">n</code> decimal places.</li>
+        <li><code class="inl">round(x)</code> with no <code class="inl">n</code> gives an <b>integer</b>.</li>
+        <li>A <b>negative</b> <code class="inl">n</code> rounds to tens, hundreds, …</li>
+      </ul>
+      <div class="warn">Exactly halfway (.5), Python rounds to the <b>even</b> number: <code class="inl">round(2.5)</code> is 2, <code class="inl">round(3.5)</code> is 4. This is called <b>banker's rounding</b>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. POW ============ -->
+<section class="slide">
+  <h2>Powers: <code class="inl">pow()</code> and <code class="inl">**</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>print(pow(2, 3), 2 ** 3)
+print(pow(5, 2), pow(2, -1))
+print(pow(9, 0.5))
+print(pow(2, 3, 5))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">8 8
+25 0.5
+3.0
+3</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">pow(a, b)</code> is the same as <code class="inl">a ** b</code>: <i>a</i> to the power <i>b</i>.</li>
+        <li>A negative power gives a fraction: 2<sup>−1</sup> = 0.5.</li>
+        <li>Power 0.5 is the square root.</li>
+        <li><code class="inl">pow(a, b, m)</code> gives the <b>remainder</b> of <i>a<sup>b</sup></i> ÷ <i>m</i>: 8 ÷ 5 leaves 3.</li>
+      </ul>
+      <div class="note">With whole numbers, <code class="inl">pow</code> keeps an <b>integer</b> result.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. MAX MIN SUM ============ -->
+<section class="slide">
+  <h2><code class="inl">max()</code>, <code class="inl">min()</code>, <code class="inl">sum()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — Kuwait temperatures (°C)</div>
+      <pre class="code"><code>print(max(44, 49, 46), min(44, 49, 46))
+temps = [44, 46, 48, 45, 47, 49, 43]
+print(max(temps), min(temps))
+print(sum(temps))
+print(round(sum(temps) / len(temps), 1))
+print(sum((1.5, 2.5)), max({3, 8, 1}))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">49 44
+49 43
+322
+46.0
+4.0 8</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">max</code> and <code class="inl">min</code> accept several values <b>or</b> one list, tuple, or set.</li>
+        <li><code class="inl">sum</code> needs <b>one</b> collection of numbers: <code class="inl">sum([1, 2])</code>, not <code class="inl">sum(1, 2)</code>.</li>
+        <li>Average = <code class="inl">sum(x) / len(x)</code>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. DIVMOD ============ -->
+<section class="slide">
+  <h2><code class="inl">divmod()</code>: Quotient and Remainder Together</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>print(17 // 5, 17 % 5)
+print(divmod(17, 5))
+minutes = 125
+h, m = divmod(minutes, 60)
+print(h, "h", m, "min")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">3 2
+(3, 2)
+2 h 5 min</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">divmod(a, b)</code> returns a <b>tuple</b>: <code class="inl">(a // b, a % b)</code>.</li>
+        <li><code class="inl">//</code> = how many whole times; <code class="inl">%</code> = what is left over.</li>
+        <li>Unpack the tuple into two variables in one line.</li>
+      </ul>
+      <div class="note">Useful for minutes → hours, fils → dinars, items → boxes.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. QUESTIONS ============ -->
+<section class="slide">
+  <h2>What Will This Code Print?</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Question 1</h3>
+      <pre class="code"><code>print(abs(3 - 10), round(9.876, 1))</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">7 9.9</pre></div>
+      <h3 style="margin-top:10px">Question 2</h3>
+      <pre class="code"><code>print(divmod(2750, 1000))</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">(2, 750)</pre><p class="small">2750 fils = 2 KD and 750 fils.</p></div>
+    </div>
+    <div class="col">
+      <h3>Question 3</h3>
+      <pre class="code"><code>marks = (70, 85, 90)
+print(sum(marks) - max(marks))
+print(pow(min(marks), 0))</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">155
+1</pre><p class="small">245 − 90 = 155. Any number to the power 0 is 1.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. SQRT ============ -->
+<section class="slide">
+  <h2><code class="inl">math.sqrt()</code>: Square Root</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>import math
+print(math.sqrt(16))
+print(math.sqrt(2))
+print(round(math.sqrt(50), 2))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">4.0
+1.4142135623730951
+7.07</pre>
+      <span class="tag-bad">Error</span>
+      <pre class="code bad" data-skip><code>import math
+print(math.sqrt(-1))</code></pre>
+      <pre class="out">ValueError: math domain error</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li>Always returns a <b>float</b> (4.0, not 4).</li>
+        <li>The number must be <b>≥ 0</b>. A negative number has no real square root → <b>ValueError</b>.</li>
+        <li>"Domain error" means: this input is not allowed for this function.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. MATH.POW ============ -->
+<section class="slide">
+  <h2><code class="inl">math.pow()</code> vs <code class="inl">pow()</code> vs <code class="inl">**</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>import math
+print(2 ** 10)
+print(pow(2, 10))
+print(math.pow(2, 10))
+print(math.pow(9, 0.5))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">1024
+1024
+1024.0
+3.0</pre>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:19px">
+        <tr><th>Form</th><th>Result for whole numbers</th><th>Import?</th></tr>
+        <tr><td><code>a ** b</code></td><td>integer</td><td>no</td></tr>
+        <tr><td><code>pow(a, b)</code></td><td>integer</td><td>no</td></tr>
+        <tr><td><code>math.pow(a, b)</code></td><td><b>always float</b></td><td>yes</td></tr>
+      </table>
+      <div class="note small" style="margin-top:12px">For everyday work, <code class="inl">**</code> is the simplest. Use <code class="inl">math.pow</code> when you want a float result.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. CEIL FLOOR TRUNC ============ -->
+<section class="slide">
+  <h2><code class="inl">math.ceil()</code>, <code class="inl">math.floor()</code>, <code class="inl">math.trunc()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>import math
+print(math.ceil(4.2), math.floor(4.8))
+print(math.trunc(4.8))
+print(math.ceil(-4.2), math.floor(-4.2))
+print(math.trunc(-4.8))
+print(math.ceil(5), math.floor(5.0))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">5 4
+4
+-4 -5
+-4
+5 5</pre>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:18px">
+        <tr><th>Function</th><th>Meaning</th><th class="c">4.7</th><th class="c">−4.7</th></tr>
+        <tr><td><code>ceil</code></td><td>up (toward +∞)</td><td class="c">5</td><td class="c">−4</td></tr>
+        <tr><td><code>floor</code></td><td>down (toward −∞)</td><td class="c">4</td><td class="c">−5</td></tr>
+        <tr><td><code>trunc</code></td><td>cut decimals (toward 0)</td><td class="c">4</td><td class="c">−4</td></tr>
+        <tr><td><code>round</code></td><td>nearest</td><td class="c">5</td><td class="c">−5</td></tr>
+      </table>
+      <p class="small" style="margin-top:10px">All return an <b>integer</b>. They differ only for <b>negative</b> numbers or when rounding direction matters.</p>
+      <div class="note small"><b>ceil</b> = ceiling (up). <b>floor</b> = floor (down).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. FACTORIAL ============ -->
+<section class="slide">
+  <h2><code class="inl">math.factorial()</code></h2>
+  <div class="cols tight">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>import math
+print(math.factorial(5))
+print(math.factorial(0))
+print(math.factorial(10))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">120
+1
+3628800</pre>
+      <span class="tag-bad">Errors</span>
+      <pre class="code bad" data-skip><code>math.factorial(-1)
+math.factorial(2.5)</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:16px">ValueError: factorial() not defined for negative values
+TypeError: 'float' object cannot be interpreted as an integer</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><b>n!</b> = n × (n−1) × … × 1. Example: 5! = 5 × 4 × 3 × 2 × 1 = 120.</li>
+        <li>By definition, 0! = 1.</li>
+        <li>Only whole numbers ≥ 0 are allowed.</li>
+      </ul>
+      <div class="note">Real use: the number of ways to order 5 students in a line is 5! = 120.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13. LOG AND EXP ============ -->
+<section class="slide">
+  <h2><code class="inl">math.log()</code>, <code class="inl">math.exp()</code>, and <code class="inl">math.e</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>import math
+print(math.e)
+print(math.exp(1), math.exp(0))
+print(math.log(math.e))
+print(math.log(100, 10))
+print(math.log10(1000), math.log2(8))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">2.718281828459045
+2.718281828459045 1.0
+1.0
+2.0
+3.0 3.0</pre>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:18px">
+        <tr><th>Code</th><th>Meaning</th></tr>
+        <tr><td><code>math.e</code></td><td>the number <i>e</i> ≈ 2.718</td></tr>
+        <tr><td><code>math.exp(x)</code></td><td><i>e</i><sup>x</sup></td></tr>
+        <tr><td><code>math.log(x)</code></td><td>natural log (base <i>e</i>)</td></tr>
+        <tr><td><code>math.log(x, b)</code></td><td>log base <i>b</i></td></tr>
+        <tr><td><code>math.log10(x)</code> / <code>log2(x)</code></td><td>base 10 / base 2</td></tr>
+      </table>
+      <p class="small" style="margin-top:10px"><code class="inl">log</code> is the opposite of a power: log<sub>10</sub>(100) = 2 because 10<sup>2</sup> = 100. <code class="inl">x</code> must be &gt; 0, otherwise → ValueError.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. PI SIN COS ============ -->
+<section class="slide">
+  <h2><code class="inl">math.pi</code>, <code class="inl">math.sin()</code>, <code class="inl">math.cos()</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>import math
+print(math.pi)
+print(math.sin(math.pi / 2), math.cos(0))
+print(math.cos(math.pi))
+angle = math.radians(30)   # 30 degrees
+print(math.sin(angle))
+print(round(math.sin(angle), 4))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">3.141592653589793
+1.0 1.0
+-1.0
+0.49999999999999994
+0.5</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">math.pi</code> ≈ 3.14159 — the ratio of a circle's circumference to its diameter.</li>
+        <li><code class="inl">sin</code> and <code class="inl">cos</code> use <b>radians</b>, not degrees.</li>
+        <li>180° = π radians. Convert with <code class="inl">math.radians(deg)</code> (and back with <code class="inl">math.degrees(rad)</code>).</li>
+        <li>Results are often <b>slightly</b> off (0.49999…) because computers store decimals approximately. Use <code class="inl">round</code> to display them.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15. NAN ============ -->
+<section class="slide">
+  <h2><code class="inl">math.nan</code>: "Not a Number"</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>import math
+x = math.nan
+print(x)
+print(x + 5, x * 0)
+print(x == x)
+print(math.isnan(x), math.isnan(3.0))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">nan
+nan nan
+False
+True False</pre>
+    </div>
+    <div class="col small">
+      <ul>
+        <li><code class="inl">nan</code> is a special <b>float</b> that means "missing" or "not a valid number" — for example, a sensor reading that failed.</li>
+        <li>Any calculation with <code class="inl">nan</code> gives <code class="inl">nan</code>.</li>
+        <li><code class="inl">nan</code> is <b>not equal to anything</b>, not even itself!</li>
+        <li>To test for it, use <code class="inl">math.isnan(x)</code> — never <code class="inl">x == math.nan</code>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16. QUICK REFERENCE ============ -->
+<section class="slide">
+  <h2>Quick Reference</h2>
+  <div class="cols" style="gap:22px">
+    <div class="col">
+      <table class="t" style="font-size:16px">
+        <tr><th>Built-in</th><th>Example</th><th>Result</th></tr>
+        <tr><td><code>abs</code></td><td><code>abs(-3)</code></td><td><code>3</code></td></tr>
+        <tr><td><code>round</code></td><td><code>round(2.567, 2)</code></td><td><code>2.57</code></td></tr>
+        <tr><td><code>pow</code></td><td><code>pow(2, 4)</code></td><td><code>16</code></td></tr>
+        <tr><td><code>max</code> / <code>min</code></td><td><code>max([3, 8, 1])</code></td><td><code>8</code></td></tr>
+        <tr><td><code>sum</code></td><td><code>sum([3, 8, 1])</code></td><td><code>12</code></td></tr>
+        <tr><td><code>divmod</code></td><td><code>divmod(17, 5)</code></td><td><code>(3, 2)</code></td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:16px">
+        <tr><th>math.</th><th>Example</th><th>Result</th></tr>
+        <tr><td><code>sqrt</code></td><td><code>math.sqrt(25)</code></td><td><code>5.0</code></td></tr>
+        <tr><td><code>pow</code></td><td><code>math.pow(2, 4)</code></td><td><code>16.0</code></td></tr>
+        <tr><td><code>ceil</code> / <code>floor</code></td><td><code>math.ceil(2.1)</code></td><td><code>3</code></td></tr>
+        <tr><td><code>trunc</code></td><td><code>math.trunc(-2.9)</code></td><td><code>-2</code></td></tr>
+        <tr><td><code>factorial</code></td><td><code>math.factorial(4)</code></td><td><code>24</code></td></tr>
+        <tr><td><code>log</code> / <code>exp</code></td><td><code>math.log(8, 2)</code></td><td><code>3.0</code></td></tr>
+        <tr><td><code>sin</code> / <code>cos</code></td><td><code>math.cos(0)</code></td><td><code>1.0</code></td></tr>
+        <tr><td><code>pi</code> / <code>e</code> / <code>nan</code></td><td><code>math.pi</code></td><td><code>3.14159…</code></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17. MISTAKES 1 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (1): Importing</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>x = math.sqrt(25)</code></pre>
+      <pre class="out">NameError: name 'math' is not defined</pre>
+      <p class="why"><b>Why?</b> The library was never imported.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>import math
+x = math.sqrt(25)
+print(x)</code></pre>
+      <pre class="out">5.0</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>import math
+x = sqrt(25)</code></pre>
+      <pre class="out">NameError: name 'sqrt' is not defined</pre>
+      <p class="why"><b>Why?</b> After <code class="inl">import math</code>, the name must start with <code class="inl">math.</code></p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>import math
+print(math.sqrt(25))</code></pre>
+      <pre class="out">5.0</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18. MISTAKES 2 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (2): Surprises with Results</h2>
+  <div class="cols tight">
+    <div class="col">
+      <span class="tag-bad">Incorrect — degrees given to sin</span>
+      <pre class="code bad"><code>import math
+print(round(math.sin(30), 4))</code></pre>
+      <pre class="out">-0.988</pre>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>import math
+print(round(math.sin(math.radians(30)), 4))</code></pre>
+      <pre class="out">0.5</pre>
+      <span class="tag-bad">Surprise — floats are approximate</span>
+      <pre class="code bad"><code>import math
+print(math.sqrt(2) ** 2 == 2)
+print(round(math.sqrt(2) ** 2, 9) == 2)</code></pre>
+      <pre class="out">False
+True</pre>
+
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect — comparing with nan</span>
+      <pre class="code bad"><code>import math
+x = math.nan
+print(x == math.nan)</code></pre>
+      <pre class="out">False</pre>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>import math
+x = math.nan
+print(math.isnan(x))</code></pre>
+      <pre class="out">True</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19. WORKED EXAMPLE 1 ============ -->
+<section class="slide">
+  <h2>Worked Example 1: A Roundabout in Kuwait City</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — a circular garden, radius 12.5 m</div>
+      <pre class="code"><code>import math
+r = 12.5
+area = math.pi * r ** 2
+circumference = 2 * math.pi * r
+print("Area:", round(area, 2), "m2")
+print("Fence:", round(circumference, 2), "m")
+rolls = math.ceil(circumference / 10)
+print("Fence rolls of 10 m:", rolls)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Area: 490.87 m2
+Fence: 78.54 m
+Fence rolls of 10 m: 8</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li>Area = π r² ≈ 490.87 m².</li>
+        <li>Circumference = 2 π r ≈ 78.54 m.</li>
+        <li>78.54 ÷ 10 = 7.854 rolls. We cannot buy part of a roll, so <code class="inl">ceil</code> rounds <b>up</b> to 8.</li>
+      </ol>
+      <div class="note"><code class="inl">round</code> for <b>display</b>; <code class="inl">ceil</code> when you must have <b>enough</b>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20. WORKED EXAMPLE 2 ============ -->
+<section class="slide">
+  <h2>Worked Example 2: A School Trip</h2>
+  <div class="cols w70 tight">
+    <div class="col">
+      <div class="lbl">Code — 47 students, each bus holds 12</div>
+      <pre class="code"><code>import math
+students = 47
+seats = 12
+full, left = divmod(students, seats)
+buses = math.ceil(students / seats)
+print("Full buses:", full, "Students left:", left)
+print("Buses needed:", buses)
+print("Empty seats:", buses * seats - students)
+trip_minutes = 135
+h, m = divmod(trip_minutes, 60)
+print("Trip time:", h, "h", m, "min")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Full buses: 3 Students left: 11
+Buses needed: 4
+Empty seats: 1
+Trip time: 2 h 15 min</pre>
+    </div>
+    <div class="col small">
+      <ol>
+        <li><code class="inl">divmod(47, 12)</code> → <code class="inl">(3, 11)</code>: 3 full buses and 11 students left.</li>
+        <li>Those 11 still need a bus, so <code class="inl">ceil(47 / 12)</code> = <code class="inl">ceil(3.92)</code> = 4.</li>
+        <li>4 × 12 − 47 = 1 empty seat.</li>
+        <li><code class="inl">divmod</code> again turns minutes into hours and minutes.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21. WORKED EXAMPLE 3 ============ -->
+<section class="slide">
+  <h2>Worked Example 3: Distance Between Two Points</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — points on a map grid (km)</div>
+      <pre class="code"><code>import math
+home = (2, 3)
+school = (8, 11)
+x1, y1 = home
+x2, y2 = school
+dx = abs(x2 - x1)
+dy = abs(y2 - y1)
+distance = math.sqrt(dx ** 2 + dy ** 2)
+print("Straight line:", distance, "km")
+print("Along streets:", dx + dy, "km")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Straight line: 10.0 km
+Along streets: 14 km</pre>
+    </div>
+    <div class="col small">
+      <ol>
+        <li>Unpack each <b>tuple</b> into x and y.</li>
+        <li><code class="inl">abs</code> gives positive differences: 6 and 8.</li>
+        <li>Pythagoras: √(6² + 8²) = √100 = 10.0.</li>
+        <li>If you must follow a grid of streets, the distance is 6 + 8 = 14.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22. REMEMBER ============ -->
+<section class="slide">
+  <h2>What You Should Remember</h2>
+  <ol>
+    <li>Built-ins need no import: <code class="inl">abs</code>, <code class="inl">round</code>, <code class="inl">pow</code>, <code class="inl">max</code>, <code class="inl">min</code>, <code class="inl">sum</code>, <code class="inl">divmod</code>.</li>
+    <li>For the rest: <code class="inl">import math</code>, then <code class="inl">math.name</code>.</li>
+    <li><code class="inl">round</code> → nearest (.5 to even); <code class="inl">ceil</code> → up; <code class="inl">floor</code> → down; <code class="inl">trunc</code> → toward 0.</li>
+    <li><code class="inl">math.sqrt</code> and <code class="inl">math.pow</code> return floats; <code class="inl">divmod</code> returns a tuple.</li>
+    <li><code class="inl">sin</code> / <code class="inl">cos</code> use <b>radians</b> — convert with <code class="inl">math.radians</code>.</li>
+    <li><code class="inl">nan</code> is never equal to anything; test with <code class="inl">math.isnan</code>.</li>
+    <li>Floats are approximate — use <code class="inl">round</code> to display and to compare.</li>
+  </ol>
+</section>
+
+<!-- ============ 23. EXERCISES L1 L2 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 1 &amp; 2</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">1.</span><b>(L1)</b> Predict the output.</p>
+        <pre class="code"><code>print(abs(-7), round(3.14159, 2))
+print(pow(2, 5), max(4, 9, 2))</code></pre></div>
+      <div class="ex"><p><span class="ex-num">2.</span><b>(L1)</b> Predict the output.</p>
+        <pre class="code"><code>import math
+print(math.ceil(4.2), math.floor(4.8))
+print(math.trunc(-4.8), math.floor(-4.2))</code></pre></div>
+      <div class="ex"><p><span class="ex-num">3.</span><b>(L1)</b> Find and fix the error.</p>
+        <pre class="code" data-skip><code>import math
+x = sqrt(25)
+print(x)</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">4.</span><b>(L2)</b> A film is 200 minutes long. Use <code class="inl">divmod</code> to print <code class="inl">3 h 20 min</code>.</p></div>
+      <div class="ex"><p><span class="ex-num">5.</span><b>(L2)</b> For <code class="inl">grades = [85, 92, 78, 95, 70]</code>, print the average rounded to 1 decimal place, the highest, the lowest, and the range (highest − lowest).</p></div>
+      <div class="ex"><p><span class="ex-num">6.</span><b>(L2)</b> A circle has radius 7 m. Print its area and circumference, each rounded to 2 decimal places.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24. EXERCISES L3 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 3 — Challenge</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">7.</span>Predict the output. Explain the last two values.</p>
+        <pre class="code"><code>import math
+print(math.factorial(5), math.log(100, 10))
+print(math.sqrt(2) ** 2 == 2)
+print(round(math.sqrt(2) ** 2, 9) == 2)</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">8.</span>A class of 47 students goes on a trip. Each minibus holds 12 students.</p>
+        <ol class="small" type="a" style="margin:0">
+          <li>Use <code class="inl">divmod</code> to print how many minibuses are full and how many students are left.</li>
+          <li>Use <code class="inl">math.ceil</code> to print how many minibuses are needed.</li>
+          <li>Print the number of empty seats.</li>
+        </ol></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25. SOLUTIONS DIVIDER ============ -->
+<section class="slide">
+  <div class="s-body section-body" style="padding:0">
+    <div class="title-rule" style="margin:0 auto 24px"></div>
+    <h1>Exercise Solutions</h1>
+    <p class="muted" style="font-size:26px">Try every exercise first. Then compare your answers.</p>
+  </div>
+</section>
+
+<!-- ============ 26. SOLUTIONS 1-4 ============ -->
+<section class="slide">
+  <h2>Solutions 1 – 4</h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">1.</span></p>
+      <pre class="out">7 3.14
+32 9</pre>
+      <p><span class="ex-num">2.</span><code class="inl">trunc</code> moves toward 0; <code class="inl">floor</code> always moves down.</p>
+      <pre class="out">5 4
+-4 -5</pre>
+      <p><span class="ex-num">3.</span><code class="inl">sqrt</code> must be written <code class="inl">math.sqrt</code> (NameError otherwise).</p>
+      <pre class="code"><code>import math
+x = math.sqrt(25)
+print(x)</code></pre>
+      <pre class="out">5.0</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">4.</span></p>
+      <pre class="code"><code>h, m = divmod(200, 60)
+print(h, "h", m, "min")</code></pre>
+      <pre class="out">3 h 20 min</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27. SOLUTIONS 5-8 ============ -->
+<section class="slide">
+  <h2>Solutions 5 – 8</h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">5.</span></p>
+      <pre class="code"><code>grades = [85, 92, 78, 95, 70]
+avg = round(sum(grades) / len(grades), 1)
+print(avg, max(grades), min(grades))
+print(max(grades) - min(grades))</code></pre>
+      <pre class="out">84.0 95 70
+25</pre>
+      <p><span class="ex-num">6.</span></p>
+      <pre class="code"><code>import math
+r = 7
+print(round(math.pi * r ** 2, 2))
+print(round(2 * math.pi * r, 2))</code></pre>
+      <pre class="out">153.94
+43.98</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">7.</span>5! = 120; log<sub>10</sub>100 = 2.0. √2 is stored approximately, so squaring gives 2.0000000000000004, not exactly 2. Rounding first fixes the comparison.</p>
+      <pre class="out">120 2.0
+False
+True</pre>
+      <p><span class="ex-num">8.</span></p>
+      <pre class="code"><code>import math
+full, left = divmod(47, 12)
+buses = math.ceil(47 / 12)
+print(full, left)
+print(buses, buses * 12 - 47)</code></pre>
+      <pre class="out">3 11
+4 1</pre>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="btnPrev" title="Previous (Left Arrow)">◀ Previous</button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button id="btnNext" title="Next (Right Arrow)">Next ▶</button>
+  <div class="spacer"></div>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="spacer"></div>
+  <button id="btnFull">Full Screen</button>
+  <button id="btnTheme">Dark Mode</button>
+  <button id="btnPdf">Export PDF</button>
+</div>
+
+<script>
+(function () {
+  var COURSE = "CS126 – Introduction to Python";
+  var TOPIC = "Mathematical Functions";
+
+  /* ---------- Theme (restore before anything paints) ---------- */
+  var root = document.documentElement;
+  try { if (localStorage.getItem("cs126-theme") === "dark") root.classList.add("dark"); } catch (e) {}
+
+  /* ---------- Build slide chrome ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length;
+  slides.forEach(function (s, i) {
+    if (!s.querySelector(".s-body")) {
+      var body = document.createElement("div");
+      body.className = "s-body";
+      while (s.firstChild) body.appendChild(s.firstChild);
+      s.appendChild(body);
+    }
+    var head = document.createElement("div");
+    head.className = "s-head";
+    head.innerHTML = '<span class="course">' + COURSE + '</span><span>' + TOPIC + '</span>';
+    var foot = document.createElement("div");
+    foot.className = "s-foot";
+    foot.innerHTML = '<span>Dr. Fawaz Alazemi</span><span>Slide ' + (i + 1) + ' of ' + N + '</span>';
+    s.insertBefore(head, s.firstChild);
+    s.appendChild(foot);
+  });
+
+  /* ---------- Python syntax highlighting (no libraries) ---------- */
+  var KW = "for|in|if|elif|else|and|or|not|True|False|None|while|def|return|import|del";
+  var FN = "print|range|len|list|str|int|float|sum|max|min|round|append|input|type|tuple|set|sorted|dict|abs|pow|divmod";
+  var re = new RegExp(
+    "(#[^\\n]*)|(\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(" + FN + ")(?=\\()|\\b(\\d+(?:\\.\\d+)?)\\b",
+    "g");
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code code").forEach(function (el) {
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "tk-com" : m[2] ? "tk-str" : m[3] ? "tk-kw" : m[4] ? "tk-fn" : "tk-num";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = re.lastIndex;
+    }
+    out += esc(src.slice(last));
+    el.innerHTML = out;
+  });
+
+  /* ---------- Show Answer buttons ---------- */
+  document.querySelectorAll(".reveal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.nextElementSibling;
+      var shown = a.classList.toggle("shown");
+      b.textContent = shown ? "Hide Answer" : "Show Answer";
+      b.blur();
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  var cur = 0;
+  var counter = document.getElementById("counter");
+  var bar = document.getElementById("bar");
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    counter.textContent = (cur + 1) + " / " + N;
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+  function btn(id, fn) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () { fn(); b.blur(); });
+    return b;
+  }
+  btn("btnPrev", function () { go(cur - 1); });
+  btn("btnNext", function () { go(cur + 1); });
+
+  /* ---------- Full screen ---------- */
+  var fullBtn = btn("btnFull", function () {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el);
+    }
+  });
+  function onFs() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fullBtn.textContent = on ? "Exit Full Screen" : "Full Screen";
+    fit();
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+
+  /* ---------- Dark / light ---------- */
+  var themeBtn = btn("btnTheme", function () {
+    var dark = root.classList.toggle("dark");
+    try { localStorage.setItem("cs126-theme", dark ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  });
+  function themeLabel() { themeBtn.textContent = root.classList.contains("dark") ? "Light Mode" : "Dark Mode"; }
+  themeLabel();
+
+  /* ---------- Export PDF ---------- */
+  btn("btnPdf", function () { window.print(); });
+
+  /* ---------- Scale the 1280x720 canvas to fit ---------- */
+  var stage = document.getElementById("stage");
+  var vp = document.getElementById("viewport");
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight;
+    var s = Math.min(w / 1280, h / 720) * 0.98;
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>
