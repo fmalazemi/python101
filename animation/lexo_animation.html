@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Lexicographic Order</title>
+<style>
+ body{font-family:system-ui,sans-serif;background:#f4f6fb;color:#1f2937;margin:0;padding:24px}
+ .card{max-width:820px;margin:auto;background:#fff;border-radius:14px;padding:24px 28px;box-shadow:0 4px 18px #0001}
+ h1{margin-top:0;font-size:26px}
+ .idea{background:#eef2ff;border-left:5px solid #6366f1;padding:10px 14px;border-radius:6px;margin-bottom:18px}
+ .row{display:flex;align-items:center;gap:6px;margin:14px 0;min-height:84px}
+ .label{width:60px;font-weight:bold;color:#6b7280}
+ .box{width:52px;height:62px;border:2px solid #cbd5e1;border-radius:8px;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;font-size:26px;font-family:monospace;transition:all .35s;background:#fff}
+ .box small{font-size:11px;color:#9ca3af}
+ .box.active{border-color:#6366f1;transform:translateY(-6px);box-shadow:0 4px 10px #6366f155}
+ .box.equal{background:#dcfce7;border-color:#22c55e}
+ .box.diff{background:#fef3c7;border-color:#f59e0b}
+ .box.winner{background:#dbeafe;border-color:#3b82f6}
+ .box.empty{border-style:dashed;color:#9ca3af;background:#f9fafb}
+ #msg{min-height:60px;background:#f9fafb;border-radius:8px;padding:12px 16px;font-size:17px;margin:10px 0}
+ #verdict{font-size:22px;font-weight:bold;min-height:34px;margin:8px 0}
+ button,select,input{font-size:16px;padding:8px 14px;border-radius:8px;border:1px solid #cbd5e1}
+ button{background:#6366f1;color:#fff;border:none;cursor:pointer;margin-right:6px}
+ button.sec{background:#e5e7eb;color:#111}
+ input{width:110px}
+ .controls{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+ pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:8px;overflow:auto;font-size:14px}
+</style></head><body><div class="card">
+<h1>Lexicographic order (dictionary order)</h1>
+<div class="idea"><b>Rule:</b> compare two words letter by letter, left to right.
+ The first position where they differ decides. If one word runs out first, the shorter word comes first.
+ Letters are compared by their character code (<code>ord</code>).</div>
+
+<div class="controls">
+ <select id="preset"></select>
+ <span>or try your own:</span>
+ <input id="ia" value="banana"> <input id="ib" value="band">
+ <button class="sec" onclick="custom()">Use</button>
+</div>
+
+<div class="row"><div class="label" id="la"></div><div id="wa" style="display:flex;gap:6px"></div></div>
+<div class="row"><div class="label" id="lb"></div><div id="wb" style="display:flex;gap:6px"></div></div>
+<div id="msg">Press <b>Play</b> or <b>Next step</b>.</div>
+<div id="verdict"></div>
+
+<div class="controls">
+ <button onclick="play()">&#9654; Play</button>
+ <button onclick="next()">Next step</button>
+ <button class="sec" onclick="reset()">Reset</button>
+</div>
+
+<h3>The same thing in Python</h3>
+<pre id="code"></pre>
+</div>
+<script>
+const PRESETS = [{"a": "apple", "b": "apricot", "steps": [{"i": 0, "ca": "a", "cb": "a", "kind": "equal", "oa": 97, "ob": 97}, {"i": 1, "ca": "p", "cb": "p", "kind": "equal", "oa": 112, "ob": 112}, {"i": 2, "ca": "p", "cb": "r", "kind": "diff", "oa": 112, "ob": 114}], "result": "less"}, {"a": "cat", "b": "catalog", "steps": [{"i": 0, "ca": "c", "cb": "c", "kind": "equal", "oa": 99, "ob": 99}, {"i": 1, "ca": "a", "cb": "a", "kind": "equal", "oa": 97, "ob": 97}, {"i": 2, "ca": "t", "cb": "t", "kind": "equal", "oa": 116, "ob": 116}, {"i": 3, "ca": null, "cb": "a", "kind": "a_ended"}], "result": "less"}, {"a": "Zebra", "b": "apple", "steps": [{"i": 0, "ca": "Z", "cb": "a", "kind": "diff", "oa": 90, "ob": 97}], "result": "less"}, {"a": "10", "b": "9", "steps": [{"i": 0, "ca": "1", "cb": "9", "kind": "diff", "oa": 49, "ob": 57}], "result": "less"}, {"a": "same", "b": "same", "steps": [{"i": 0, "ca": "s", "cb": "s", "kind": "equal", "oa": 115, "ob": 115}, {"i": 1, "ca": "a", "cb": "a", "kind": "equal", "oa": 97, "ob": 97}, {"i": 2, "ca": "m", "cb": "m", "kind": "equal", "oa": 109, "ob": 109}, {"i": 3, "ca": "e", "cb": "e", "kind": "equal", "oa": 101, "ob": 101}], "result": "equal"}];
+let cur, idx, timer;
+const sel = document.getElementById('preset');
+PRESETS.forEach((t,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`"${t.a}"  vs  "${t.b}"`;sel.appendChild(o)});
+sel.onchange=()=>load(PRESETS[sel.value]);
+
+// same logic as trace() in Python, used for custom words
+function trace(a,b){
+  const steps=[];let result=null;
+  for(let i=0;i<Math.max(a.length,b.length);i++){
+    const ca=a[i]??null, cb=b[i]??null;
+    if(ca===null){steps.push({i,ca,cb,kind:'a_ended'});result='less';break}
+    if(cb===null){steps.push({i,ca,cb,kind:'b_ended'});result='greater';break}
+    const oa=ca.codePointAt(0), ob=cb.codePointAt(0);
+    if(ca===cb) steps.push({i,ca,cb,kind:'equal',oa,ob});
+    else {steps.push({i,ca,cb,kind:'diff',oa,ob});result=oa<ob?'less':'greater';break}
+  }
+  return {a,b,steps,result:result||'equal'};
+}
+function custom(){load(trace(ia.value,ib.value))}
+
+function draw(wordId,word){
+  const w=document.getElementById(wordId);w.innerHTML='';
+  [...word].forEach((ch,i)=>{const d=document.createElement('div');d.className='box';d.id=wordId+i;
+    d.innerHTML=`${ch}<small>${ch.codePointAt(0)}</small>`;w.appendChild(d)});
+}
+function load(t){
+  stop();cur=t;idx=0;
+  la.textContent='A';lb.textContent='B';
+  draw('wa',t.a);draw('wb',t.b);
+  msg.innerHTML='Press <b>Play</b> or <b>Next step</b>.';verdict.textContent='';
+  code.textContent=`a = "${t.a}"\nb = "${t.b}"\nprint(a < b)   # ${t.a<t.b}\nprint(sorted([a, b]))  # ${JSON.stringify([t.a,t.b].sort())}`;
+}
+function cls(id,c){const e=document.getElementById(id);if(e)e.className='box '+c}
+function next(){
+  if(idx>=cur.steps.length){return false}
+  const s=cur.steps[idx++];
+  document.querySelectorAll('.box.active').forEach(e=>e.classList.remove('active'));
+  const A=s.ca===null?null:'wa'+s.i, B=s.cb===null?null:'wb'+s.i;
+  const q=c=>s.ca===null?`"${s.ca}"`:c;
+  if(s.kind==='equal'){
+    cls(A,'equal');cls(B,'equal');
+    msg.innerHTML=`Position ${s.i+1}: <b>${s.ca}</b> (${s.oa}) = <b>${s.cb}</b> (${s.ob}). Same, so keep going.`;
+  }else if(s.kind==='diff'){
+    const aw=s.oa<s.ob;
+    cls(A,aw?'winner':'diff');cls(B,aw?'diff':'winner');
+    msg.innerHTML=`Position ${s.i+1}: <b>${s.ca}</b> (${s.oa}) vs <b>${s.cb}</b> (${s.ob}). They differ! ${s.oa} ${aw?'&lt;':'&gt;'} ${s.ob}, so <b>${aw?s.ca:s.cb}</b> comes first.`;
+  }else{
+    const ended=s.kind==='a_ended'?'A':'B', box=s.kind==='a_ended'?B:A;
+    const el=document.createElement('div');
+    if(s.kind==='a_ended'){const d=document.createElement('div');d.className='box empty';d.textContent='∅';wa.appendChild(d);}
+    else{const d=document.createElement('div');d.className='box empty';d.textContent='∅';wb.appendChild(d);}
+    cls(box,'winner');
+    msg.innerHTML=`Word ${ended} has no letter at position ${s.i+1}: it ran out. A shorter prefix comes first.`;
+  }
+  if(A)document.getElementById(A).classList.add('active');
+  if(B)document.getElementById(B).classList.add('active');
+  if(idx>=cur.steps.length){
+    const r=cur.result;
+    verdict.innerHTML = r==='less' ? `"${cur.a}" &lt; "${cur.b}"  &rarr; "${cur.a}" comes first`
+      : r==='greater' ? `"${cur.a}" &gt; "${cur.b}"  &rarr; "${cur.b}" comes first`
+      : `"${cur.a}" = "${cur.b}"  &rarr; identical`;
+    stop();
+  }
+  return true;
+}
+function play(){reset();timer=setInterval(()=>{if(!next())stop()},1400)}
+function stop(){clearInterval(timer)}
+function reset(){stop();load(cur)}
+load(PRESETS[0]);
+</script></body></html>
