@@ -13,18 +13,21 @@ Python is one of the most popular programming languages in the world. It is know
 | 3 | [Arithmetic Operations and Expressions in Python](lecture_notes/lecture_03.md) | [🔗](slides/lecture_03.html) | 
 | 4 | [Making Decisions with `if`, `elif`, and `else`](lecture_notes/lecture_04.md) | [🔗](slides/lecture_04.html) | 
 | 5 | [Logical Operators and Nested Conditions](lecture_notes/lecture_05.md) | [🔗](slides/lecture_05.html) |
-| 6 | [Introduction to Strings](material/CS126_Strings_Intro_Notes.md) |  [🔗](material/CS126_Strings_Intro_Slides.html) |
-| 7 | [Advanced Strings](material/CS126_Advanced_Strings_Notes.md) | [🔗](material/CS126_Advanced_Strings_Slides.html)|
-| 7 | [Introduction to Lists](material/CS126_Lists_Intro_Notes.md) | [🔗](material/CS126_Lists_Intro_Slides.html)| 
-| 8 | [Advanced Lists](material/CS126_List_Methods_Notes.md) |  [🔗](material/CS126_List_Methods_Slides.html)|
-| 9 | [in and not in Operator](material/CS126_In_Not_In_Notes.md) | [🔗](material/CS126_In_Not_In_Slides.html) | 
-| 9 | [Introduction to Tuples](material/CS126_Tuples_Notes.md) | [🔗](material/CS126_Tuples_Slides.html)|
-| 10 | [Introduction to Sets](material/CS126_Sets_Notes.md) | [🔗](material/CS126_Sets_Slides.html) |
-| 11 | [List, Tuple, Set, String Review](material/CS126_Collections_Compared_Notes.md) | [🔗](material/CS126_Collections_Compared_Slides.html)|
-| 11 | [Introduction to Dictionary](material/CS126_Dictionaries_Notes.md)| [🔗](material/CS126_Dictionaries_Slides.html) | 
-| 12 | [Loops: the for loop](material/CS126_Loops_Notes.md) | [🔗](material/CS126_Loops_Slides.html) | 
-| 13 | [Loops: the While Loop](material/CS126_While_Loops_Notes.md) | [🔗](material/CS126_While_Loops_Slides.html) |
-| 14 | [List Comprehension](material/CS126_List_Comprehension_Notes.md) | [🔗](material/CS126_List_Comprehension_Slides.html)|
+| 6* | [Inline `if` statement](material/CS126_Inline_If_Notes.md) | [🔗](material/CS126_Inline_If_Slides.html)|
+| 7* | [Math functions and methods](material/CS126_Math_Functions_Notes.md) | [🔗](material/CS126_Math_Functions_Slides.html)|
+| 8 | [Introduction to Strings](material/CS126_Strings_Intro_Notes.md) |  [🔗](material/CS126_Strings_Intro_Slides.html) |
+| 9* | [Advanced Strings](material/CS126_Advanced_Strings_Notes.md) | [🔗](material/CS126_Advanced_Strings_Slides.html)|
+| 10 | [Introduction to Lists](material/CS126_Lists_Intro_Notes.md) | [🔗](material/CS126_Lists_Intro_Slides.html)| 
+| 11 | [Advanced Lists](material/CS126_List_Methods_Notes.md) |  [🔗](material/CS126_List_Methods_Slides.html)|
+| 12* | [`in` and `not in` Operator](material/CS126_In_Not_In_Notes.md) | [🔗](material/CS126_In_Not_In_Slides.html) | 
+| 13*  | [Casting and `eval` functions](material/CS126_Eval_and_Casting_Notes.md) | | [🔗](material/CS126_Eval_and_Casting_Slides.html) | 
+| 14 | [Introduction to Tuples](material/CS126_Tuples_Notes.md) | [🔗](material/CS126_Tuples_Slides.html)|
+| 15 | [Introduction to Sets](material/CS126_Sets_Notes.md) | [🔗](material/CS126_Sets_Slides.html) |
+| 16* | [List, Tuple, Set, and String! A Review](material/CS126_Collections_Compared_Notes.md) | [🔗](material/CS126_Collections_Compared_Slides.html)|
+| 17 | [Introduction to Dictionary](material/CS126_Dictionaries_Notes.md)| [🔗](material/CS126_Dictionaries_Slides.html) | 
+| 18 | [Loops: the for loop](material/CS126_Loops_Notes.md) | [🔗](material/CS126_Loops_Slides.html) | 
+| 19 | [Loops: the While Loop](material/CS126_While_Loops_Notes.md) | [🔗](material/CS126_While_Loops_Slides.html) |
+| 20 | [List Comprehension](material/CS126_List_Comprehension_Notes.md) | [🔗](material/CS126_List_Comprehension_Slides.html)|
 
 ## Animations
 | No.1 | Topic |
