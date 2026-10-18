@@ -20,7 +20,7 @@ Python is one of the most popular programming languages in the world. It is know
 | 10 | [Introduction to Lists](material/CS126_Lists_Intro_Notes.md) | [🔗](material/CS126_Lists_Intro_Slides.html)| 
 | 11 | [Advanced Lists](material/CS126_List_Methods_Notes.md) |  [🔗](material/CS126_List_Methods_Slides.html)|
 | 12* | [`in` and `not in` Operator](material/CS126_In_Not_In_Notes.md) | [🔗](material/CS126_In_Not_In_Slides.html) | 
-| 13*  | [Casting and `eval` functions](material/CS126_Eval_and_Casting_Notes.md) | | [🔗](material/CS126_Eval_and_Casting_Slides.html) | 
+| 13*  | [Casting and `eval` functions](material/CS126_Eval_and_Casting_Notes.md) |  [🔗](material/CS126_Eval_and_Casting_Slides.html) | 
 | 14 | [Introduction to Tuples](material/CS126_Tuples_Notes.md) | [🔗](material/CS126_Tuples_Slides.html)|
 | 15 | [Introduction to Sets](material/CS126_Sets_Notes.md) | [🔗](material/CS126_Sets_Slides.html) |
 | 16* | [List, Tuple, Set, and String! A Review](material/CS126_Collections_Compared_Notes.md) | [🔗](material/CS126_Collections_Compared_Slides.html)|
