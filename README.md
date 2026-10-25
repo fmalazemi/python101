@@ -33,7 +33,7 @@ Python is one of the most popular programming languages in the world. It is know
 | No.1 | Topic |
 |:--:|:--:|
 | 1 | [How Slicing Works](animation/list_slicing_animation.html)|
-| 2 | [Lexigraphic Order (dictionary Order)](animation/lexo_animation.html)|
+| 2 | [Lexigraphic Order] (dictionary Order)](animation/lexo_animation.html)|
 
 ## Exercises
 
