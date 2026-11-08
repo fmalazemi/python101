@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS126 – Introduction to Computers</title>
+<style>
+/* ===================== THEME ===================== */
+:root {
+  --bg: #f4f6f8;
+  --slide-bg: #fbfbfc;
+  --text: #1f2933;
+  --muted: #5b6875;
+  --navy: #1b365d;
+  --teal: #0f7c74;
+  --teal-soft: #e3f2f0;
+  --line: #d5dbe1;
+  --code-bg: #f1f3f5;
+  --code-text: #1f2933;
+  --out-bg: #ffffff;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --good: #1a7f37;
+  --good-soft: #e8f5ec;
+  --amber: #a15c00;
+  --tok-kw: #7a2bb5;
+  --tok-str: #a5481a;
+  --tok-num: #0b6bcb;
+  --tok-fn: #0f7c74;
+  --tok-com: #6b7785;
+  --bar-bg: #ffffff;
+}
+html.dark {
+  --bg: #0b1120;
+  --slide-bg: #111827;
+  --text: #e8edf3;
+  --muted: #a3afbd;
+  --navy: #9cc4ff;
+  --teal: #34d1bf;
+  --teal-soft: #12302e;
+  --line: #334155;
+  --code-bg: #0b1220;
+  --code-text: #e8edf3;
+  --out-bg: #0f172a;
+  --bad: #ff8a80;
+  --bad-soft: #3a1717;
+  --good: #7ee2a0;
+  --good-soft: #13301f;
+  --amber: #ffc46b;
+  --tok-kw: #d7a8ff;
+  --tok-str: #ffb38a;
+  --tok-num: #8fc8ff;
+  --tok-fn: #5fe3d2;
+  --tok-com: #8b98a8;
+  --bar-bg: #0f172a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* ===================== STAGE ===================== */
+.viewport {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 56px;
+  overflow: hidden;
+}
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: center center;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--slide-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+.s-head {
+  height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--teal);
+  font-size: 16px; color: var(--muted);
+}
+.s-head .course { color: var(--navy); font-weight: 600; }
+.s-body {
+  flex: 1; min-height: 0;
+  padding: 22px 56px 10px;
+  display: flex; flex-direction: column;
+  font-size: 24px; line-height: 1.4;
+}
+.s-foot {
+  height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; font-size: 15px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+h1 { color: var(--navy); font-size: 56px; margin: 0 0 12px; line-height: 1.15; }
+h2 { color: var(--navy); font-size: 36px; margin: 0 0 16px; line-height: 1.2; }
+h3 { color: var(--teal); font-size: 24px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 30px; }
+li { margin-bottom: 6px; }
+.small { font-size: 20px; }
+.muted { color: var(--muted); }
+.teal { color: var(--teal); font-weight: 600; }
+.navy { color: var(--navy); font-weight: 600; }
+.mono, code.inl {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols.w60 { grid-template-columns: 1.25fr 1fr; }
+.cols.w40 { grid-template-columns: 1fr 1.25fr; }
+.cols.w70 { grid-template-columns: 1.6fr 1fr; }
+.tight pre { font-size: 18px; line-height: 1.38; margin-bottom: 8px; }
+.tight p { margin-bottom: 6px; }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.col { min-width: 0; }
+
+/* ===================== CODE ===================== */
+pre {
+  margin: 0 0 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 20px; line-height: 1.45;
+  white-space: pre; overflow: hidden;
+  border-radius: 6px;
+}
+pre.code {
+  background: var(--code-bg); color: var(--code-text);
+  border: 1px solid var(--line); border-left: 5px solid var(--teal);
+  padding: 10px 16px;
+}
+pre.code.bad  { border-left-color: var(--bad); }
+pre.code.good { border-left-color: var(--good); }
+pre.out {
+  background: var(--out-bg); color: var(--text);
+  border: 1px dashed var(--line); border-left: 5px solid var(--navy);
+  padding: 8px 16px;
+}
+.lbl {
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.tk-kw { color: var(--tok-kw); font-weight: 600; }
+.tk-str { color: var(--tok-str); }
+.tk-num { color: var(--tok-num); }
+.tk-fn { color: var(--tok-fn); }
+.tk-com { color: var(--tok-com); font-style: italic; }
+
+/* ===================== BOXES ===================== */
+.note {
+  border-left: 5px solid var(--teal); background: var(--teal-soft);
+  padding: 10px 16px; border-radius: 4px; margin: 0 0 12px; font-size: 21px;
+}
+.warn {
+  border-left: 5px solid var(--amber); padding: 10px 16px; margin: 0 0 12px;
+  font-size: 21px; background: transparent; border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+}
+.tag-bad, .tag-good {
+  display: inline-block; font-weight: 700; font-size: 17px;
+  padding: 2px 10px; border-radius: 4px; margin-bottom: 4px;
+}
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-good { color: var(--good); background: var(--good-soft); }
+.why { font-size: 19px; margin: 0 0 10px; }
+
+table.t {
+  border-collapse: collapse; font-size: 20px; width: 100%;
+}
+table.t th, table.t td {
+  border: 1px solid var(--line); padding: 6px 12px; text-align: left;
+}
+table.t th { background: var(--teal-soft); color: var(--navy); }
+table.t td.c, table.t th.c { text-align: center; }
+table.t code { font-family: Consolas, Monaco, monospace; }
+
+/* ===================== Q & A ===================== */
+.qa { margin: 0 0 10px; }
+.reveal {
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--teal); background: transparent;
+  border: 1.5px solid var(--teal); border-radius: 4px;
+  padding: 3px 12px; cursor: pointer; margin: 0 0 6px;
+}
+.reveal:hover { background: var(--teal-soft); }
+.answer { visibility: hidden; }
+.answer.shown { visibility: visible; }
+.q { font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+
+/* ===================== TITLE / SECTION ===================== */
+.title-body { justify-content: center; padding-left: 90px; }
+.title-body .sub { font-size: 30px; color: var(--teal); margin-bottom: 36px; }
+.title-body .meta { font-size: 24px; color: var(--muted); line-height: 1.6; }
+.title-rule { width: 120px; height: 5px; background: var(--teal); margin: 0 0 28px; }
+.section-body { justify-content: center; align-items: center; text-align: center; }
+
+/* ===================== DIAGRAMS ===================== */
+.anat {
+  font-family: Consolas, Monaco, monospace; font-size: 40px;
+  background: var(--code-bg); border: 1px solid var(--line);
+  border-left: 5px solid var(--teal); border-radius: 6px;
+  padding: 18px 28px; margin: 0 0 16px; line-height: 1.6;
+}
+.anat .a1 { color: var(--tok-kw); font-weight: 700; }
+.anat .a2 { color: var(--tok-num); font-weight: 700; }
+.anat .a3 { color: var(--tok-str); font-weight: 700; }
+.anat .a4 { color: var(--bad); font-weight: 700; }
+.anat .a5 { color: var(--tok-fn); font-weight: 700; }
+.anat .ind { background: var(--teal-soft); outline: 1px dashed var(--teal); }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 36px; font-size: 21px; }
+.legend b { font-family: Consolas, Monaco, monospace; }
+
+.boxes { display: flex; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap; }
+.box {
+  min-width: 64px; text-align: center;
+  font-family: Consolas, Monaco, monospace; font-size: 22px;
+}
+.box .v {
+  border: 2px solid var(--navy); border-radius: 4px; padding: 6px 10px;
+  background: var(--slide-bg);
+}
+.box .i { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.box .n { font-size: 16px; color: var(--tok-num); margin-bottom: 3px; font-weight: 600; }
+.box.off .v { border-style: dashed; border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.box.hi .v { background: var(--teal-soft); border-color: var(--teal); }
+
+svg text { font-family: "Segoe UI", Arial, sans-serif; }
+.sv-box { fill: var(--slide-bg); stroke: var(--navy); stroke-width: 2; }
+.sv-dec { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.sv-t { fill: var(--text); font-size: 19px; }
+.sv-m { fill: var(--muted); font-size: 16px; font-weight: 600; }
+.sv-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.sv-arrow { fill: var(--muted); }
+
+.ex-num {
+  display: inline-block; min-width: 38px; font-weight: 700; color: var(--teal);
+}
+.level {
+  display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--teal); border: 1.5px solid var(--teal);
+  border-radius: 4px; padding: 1px 10px; margin-left: 12px; vertical-align: middle;
+}
+.ex { margin-bottom: 10px; }
+.ex p { margin: 0 0 6px; }
+
+/* ===================== CONTROLS ===================== */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: var(--bar-bg); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  font-size: 15px;
+}
+.controls button {
+  font: inherit; font-size: 15px; color: var(--navy);
+  background: transparent; border: 1px solid var(--line); border-radius: 4px;
+  padding: 6px 14px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--teal); color: var(--teal); }
+.controls .counter { color: var(--muted); min-width: 64px; text-align: center; }
+.progress {
+  flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.progress div { height: 100%; width: 0; background: var(--teal); }
+.spacer { width: 8px; }
+
+/* Code size for this deck */
+pre { font-size: 19px; }
+.tight pre { font-size: 17px; }
+
+/* ===================== PRINT ===================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  :root, html.dark {
+    --bg: #ffffff; --slide-bg: #ffffff; --text: #1f2933; --muted: #5b6875;
+    --navy: #1b365d; --teal: #0f7c74; --teal-soft: #e3f2f0; --line: #d5dbe1;
+    --code-bg: #f1f3f5; --code-text: #1f2933; --out-bg: #ffffff;
+    --bad: #b42318; --bad-soft: #fdecea; --good: #1a7f37; --good-soft: #e8f5ec;
+    --amber: #a15c00; --tok-kw: #7a2bb5; --tok-str: #a5481a; --tok-num: #0b6bcb;
+    --tok-fn: #0f7c74; --tok-com: #6b7785;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .controls, .reveal { display: none !important; }
+  .answer { visibility: visible !important; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; inset: auto;
+    width: 1280px; height: 720px; zoom: 0.82;
+    margin: 0 auto; border: none; transform: translateY(120px);
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- ============ 1. TITLE ============ -->
+<section class="slide">
+  <div class="s-body title-body">
+    <div class="muted" style="font-size:22px;margin-bottom:10px">CS126 – Introduction to Python</div>
+    <h1>Introduction to Computers</h1>
+    <div class="sub">Hardware, software, and how a program runs</div>
+    <div class="title-rule"></div>
+    <div class="meta">Dr. Fawaz Alazemi</div>
+  </div>
+</section>
+
+<!-- ============ 2. OBJECTIVES ============ -->
+<section class="slide">
+  <h2>Learning Objectives</h2>
+  <p>By the end of this lecture, you will be able to:</p>
+  <ol>
+    <li>Explain what a computer is, and the difference between <b>hardware</b> and <b>software</b>.</li>
+    <li>Name the main parts of a computer: <b>CPU</b>, <b>memory (RAM)</b>, <b>storage</b>, <b>input</b> and <b>output</b> devices.</li>
+    <li>Explain the difference between <b>memory</b> and <b>storage</b>.</li>
+    <li>Describe <b>machine code</b>, <b>assembly language</b>, and <b>high-level languages</b>.</li>
+    <li>Explain what a <b>compiler</b> and an <b>interpreter</b> do, and how they differ.</li>
+    <li>Describe the steps to <b>start a computer</b> and to <b>run a Python program</b>.</li>
+  </ol>
+</section>
+
+<!-- ============ 3. WHAT IS A COMPUTER ============ -->
+<section class="slide">
+  <h2>What Is a Computer?</h2>
+  <p>A <b>computer</b> is a machine that follows <b>instructions</b> to work with <b>data</b>.</p>
+  <div class="cols">
+    <div class="col">
+      <h3>A computer can:</h3>
+      <ol>
+        <li><b>Take in</b> data (input)</li>
+        <li><b>Work on</b> the data (process)</li>
+        <li><b>Keep</b> the data (store)</li>
+        <li><b>Give back</b> results (output)</li>
+      </ol>
+      <div class="note">A list of instructions for a computer is called a <b>program</b>. Writing programs is called <b>programming</b>.</div>
+    </div>
+    <div class="col">
+      <h3>Computers are everywhere</h3>
+      <ul>
+        <li>Laptops and desktop PCs</li>
+        <li>Mobile phones and tablets</li>
+        <li>ATMs and petrol pumps</li>
+        <li>Cars, smart TVs, and washing machines</li>
+        <li>Airport check-in machines</li>
+      </ul>
+      <p class="small muted">All of them follow programs written by people.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. HARDWARE VS SOFTWARE ============ -->
+<section class="slide">
+  <h2>Hardware and Software</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Hardware</h3>
+      <p>The <b>physical parts</b> of a computer — things you can <b>touch</b>.</p>
+      <ul class="small">
+        <li>Keyboard, mouse, screen</li>
+        <li>Processor (CPU), memory chips</li>
+        <li>Hard disk or SSD</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Software</h3>
+      <p><b>Programs</b> — instructions that tell the hardware what to do. You <b>cannot touch</b> them.</p>
+      <ul class="small">
+        <li><b>Operating system</b>: Windows, macOS, Android</li>
+        <li><b>Applications</b>: web browser, WhatsApp, Word</li>
+        <li><b>Your own programs</b>, written in Python</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note"><b>Simple picture:</b> hardware is the <b>body</b>; software is the <b>thinking</b> that tells the body what to do. One is useless without the other.</div>
+</section>
+
+<!-- ============ 5. IPO MODEL ============ -->
+<section class="slide">
+  <h2>The Input – Process – Output Model</h2>
+  <svg viewBox="0 0 1160 230" width="100%" height="230" role="img" aria-label="Input, process, output, storage">
+    <defs><marker id="ah5" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+    <rect x="20" y="30" width="260" height="90" rx="8" class="sv-box"/>
+    <text x="150" y="68" text-anchor="middle" class="sv-t" style="font-size:24px;font-weight:600">INPUT</text>
+    <text x="150" y="98" text-anchor="middle" class="sv-m">data goes in</text>
+    <line x1="280" y1="75" x2="440" y2="75" class="sv-line" marker-end="url(#ah5)"/>
+    <rect x="444" y="30" width="272" height="90" rx="8" class="sv-dec"/>
+    <text x="580" y="68" text-anchor="middle" class="sv-t" style="font-size:24px;font-weight:600">PROCESS</text>
+    <text x="580" y="98" text-anchor="middle" class="sv-m">data is worked on (CPU)</text>
+    <line x1="716" y1="75" x2="876" y2="75" class="sv-line" marker-end="url(#ah5)"/>
+    <rect x="880" y="30" width="260" height="90" rx="8" class="sv-box"/>
+    <text x="1010" y="68" text-anchor="middle" class="sv-t" style="font-size:24px;font-weight:600">OUTPUT</text>
+    <text x="1010" y="98" text-anchor="middle" class="sv-m">results come out</text>
+    <line x1="580" y1="120" x2="580" y2="160" class="sv-line" marker-end="url(#ah5)"/>
+    <rect x="460" y="164" width="240" height="56" rx="8" class="sv-box" style="stroke-dasharray:6 4"/>
+    <text x="580" y="199" text-anchor="middle" class="sv-t">STORAGE (keep data)</text>
+  </svg>
+  <table class="t" style="font-size:20px;margin-top:8px">
+    <tr><th>Example</th><th>Input</th><th>Process</th><th>Output</th></tr>
+    <tr><td>Calculator</td><td>buttons <code>7 + 5</code></td><td>add the numbers</td><td><code>12</code> on the screen</td></tr>
+    <tr><td>ATM</td><td>card, PIN, amount</td><td>check PIN and balance</td><td>cash and a receipt</td></tr>
+  </table>
+</section>
+
+<!-- ============ 6. MAIN COMPONENTS ============ -->
+<section class="slide">
+  <h2>The Main Parts of a Computer</h2>
+  <div class="cols w60">
+    <div class="col">
+      <svg viewBox="0 0 640 400" width="100%" height="400" role="img" aria-label="Computer components diagram">
+        <defs><marker id="ah6" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+        <rect x="150" y="20" width="340" height="300" rx="10" class="sv-box" style="stroke-dasharray:8 5"/>
+        <text x="320" y="48" text-anchor="middle" class="sv-m">MOTHERBOARD (connects everything)</text>
+        <rect x="200" y="70" width="240" height="80" rx="8" class="sv-dec"/>
+        <text x="320" y="104" text-anchor="middle" class="sv-t" style="font-weight:600">CPU</text>
+        <text x="320" y="130" text-anchor="middle" class="sv-m">the "brain"</text>
+        <rect x="185" y="200" width="125" height="80" rx="8" class="sv-box"/>
+        <text x="247" y="234" text-anchor="middle" class="sv-t" style="font-weight:600">RAM</text>
+        <text x="247" y="260" text-anchor="middle" class="sv-m">memory</text>
+        <rect x="330" y="200" width="125" height="80" rx="8" class="sv-box"/>
+        <text x="392" y="234" text-anchor="middle" class="sv-t" style="font-weight:600">Storage</text>
+        <text x="392" y="260" text-anchor="middle" class="sv-m">SSD / disk</text>
+        <line x1="270" y1="196" x2="290" y2="154" class="sv-line" marker-end="url(#ah6)"/>
+        <line x1="370" y1="196" x2="350" y2="154" class="sv-line" marker-end="url(#ah6)"/>
+        <rect x="10" y="90" width="110" height="60" rx="8" class="sv-box"/>
+        <text x="65" y="126" text-anchor="middle" class="sv-t">Input</text>
+        <line x1="120" y1="120" x2="196" y2="110" class="sv-line" marker-end="url(#ah6)"/>
+        <rect x="520" y="90" width="110" height="60" rx="8" class="sv-box"/>
+        <text x="575" y="126" text-anchor="middle" class="sv-t">Output</text>
+        <line x1="440" y1="110" x2="516" y2="120" class="sv-line" marker-end="url(#ah6)"/>
+        <text x="320" y="370" text-anchor="middle" class="sv-m">Data flows: input → CPU (using RAM and storage) → output</text>
+      </svg>
+    </div>
+    <div class="col small">
+      <table class="t" style="font-size:19px">
+        <tr><th>Part</th><th>Job</th></tr>
+        <tr><td><b>CPU</b></td><td>follows the instructions</td></tr>
+        <tr><td><b>RAM</b></td><td>holds what is being used <b>now</b></td></tr>
+        <tr><td><b>Storage</b></td><td>keeps files <b>for later</b></td></tr>
+        <tr><td><b>Input</b></td><td>brings data in</td></tr>
+        <tr><td><b>Output</b></td><td>shows or sends results</td></tr>
+        <tr><td><b>Motherboard</b></td><td>the main board that connects all parts</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. CPU ============ -->
+<section class="slide">
+  <h2>The CPU: The Brain of the Computer</h2>
+  <div class="cols">
+    <div class="col">
+      <p><b>CPU</b> = Central Processing Unit (also called the <b>processor</b>).</p>
+      <ul class="small">
+        <li>It follows program instructions, one after another.</li>
+        <li>It does math (<code class="inl">+ - × ÷</code>) and comparisons (<code class="inl">&gt;</code>, <code class="inl">=</code>).</li>
+        <li>It controls the other parts of the computer.</li>
+        <li>Speed is measured in <b>GHz</b>: 3 GHz ≈ 3 billion steps per second.</li>
+        <li>Modern CPUs have several <b>cores</b> — small processors that work at the same time.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>The instruction cycle</h3>
+      <svg viewBox="0 0 460 300" width="100%" height="300" role="img" aria-label="Fetch decode execute cycle">
+        <defs><marker id="ah7" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+        <rect x="150" y="10" width="160" height="70" rx="8" class="sv-dec"/>
+        <text x="230" y="42" text-anchor="middle" class="sv-t" style="font-weight:600">1. Fetch</text>
+        <text x="230" y="66" text-anchor="middle" class="sv-m">get the instruction</text>
+        <rect x="290" y="190" width="160" height="70" rx="8" class="sv-dec"/>
+        <text x="370" y="222" text-anchor="middle" class="sv-t" style="font-weight:600">2. Decode</text>
+        <text x="370" y="246" text-anchor="middle" class="sv-m">understand it</text>
+        <rect x="10" y="190" width="160" height="70" rx="8" class="sv-dec"/>
+        <text x="90" y="222" text-anchor="middle" class="sv-t" style="font-weight:600">3. Execute</text>
+        <text x="90" y="246" text-anchor="middle" class="sv-m">do it</text>
+        <line x1="300" y1="80" x2="355" y2="184" class="sv-line" marker-end="url(#ah7)"/>
+        <line x1="288" y1="225" x2="176" y2="225" class="sv-line" marker-end="url(#ah7)"/>
+        <line x1="105" y1="186" x2="160" y2="84" class="sv-line" marker-end="url(#ah7)"/>
+      </svg>
+      <p class="small muted" style="text-align:center">This cycle repeats billions of times every second.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. MEMORY VS STORAGE ============ -->
+<section class="slide">
+  <h2>Memory (RAM) vs Storage</h2>
+  <table class="t" style="font-size:20px">
+    <tr><th></th><th>Memory (RAM)</th><th>Storage (SSD / hard disk)</th></tr>
+    <tr><td><b>Holds</b></td><td>programs and data being used <b>now</b></td><td>files, apps, photos — <b>for later</b></td></tr>
+    <tr><td><b>Power off?</b></td><td>contents are <b>lost</b></td><td>contents are <b>kept</b></td></tr>
+    <tr><td><b>Speed</b></td><td>very fast</td><td>slower</td></tr>
+    <tr><td><b>Typical size</b></td><td>8 – 32 GB</td><td>256 GB – 2 TB</td></tr>
+  </table>
+  <div class="cols" style="margin-top:16px;flex:none">
+    <div class="note"><b>Analogy:</b> RAM is your <b>desk</b> — small, but everything on it is ready to use. Storage is the <b>cabinet</b> — big, but you must take things out first.</div>
+    <div class="warn">This is why you must <b>save</b> your work: saving copies it from RAM to storage. If the power goes off before you save, the work in RAM is lost.</div>
+  </div>
+</section>
+
+<!-- ============ 9. BITS AND BYTES ============ -->
+<section class="slide">
+  <h2>Bits and Bytes: How Computers Store Data</h2>
+  <div class="cols">
+    <div class="col">
+      <ul class="small">
+        <li>Inside a computer, everything is stored as <b>0</b>s and <b>1</b>s (off and on).</li>
+        <li>One 0 or 1 is called a <b>bit</b> (binary digit).</li>
+        <li><b>8 bits</b> make <b>1 byte</b> — enough for one letter, like <code class="inl">A</code>.</li>
+      </ul>
+      <div class="boxes">
+        <div class="box"><div class="v">0</div></div><div class="box"><div class="v">1</div></div>
+        <div class="box"><div class="v">0</div></div><div class="box"><div class="v">0</div></div>
+        <div class="box"><div class="v">0</div></div><div class="box"><div class="v">0</div></div>
+        <div class="box"><div class="v">0</div></div><div class="box"><div class="v">1</div></div>
+      </div>
+      <p class="small">These 8 bits (1 byte) are how a computer stores the letter <b>A</b>.</p>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:20px">
+        <tr><th>Unit</th><th>Size (about)</th><th>Example</th></tr>
+        <tr><td>1 byte</td><td>8 bits</td><td>one letter</td></tr>
+        <tr><td>1 KB (kilobyte)</td><td>1,000 bytes</td><td>a short text message</td></tr>
+        <tr><td>1 MB (megabyte)</td><td>1,000 KB</td><td>a photo</td></tr>
+        <tr><td>1 GB (gigabyte)</td><td>1,000 MB</td><td>a movie</td></tr>
+        <tr><td>1 TB (terabyte)</td><td>1,000 GB</td><td>a large disk</td></tr>
+      </table>
+      <p class="small muted">Programs, pictures, music, and text are all stored as bits.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. INPUT / OUTPUT DEVICES ============ -->
+<section class="slide">
+  <h2>Input and Output Devices</h2>
+  <div class="cols3">
+    <div class="col">
+      <h3>Input devices</h3>
+      <p class="small">Send data <b>into</b> the computer.</p>
+      <ul class="small">
+        <li>Keyboard</li><li>Mouse, touchpad</li><li>Microphone</li><li>Camera, webcam</li><li>Scanner, barcode reader</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Output devices</h3>
+      <p class="small">Show or send results <b>out</b> of the computer.</p>
+      <ul class="small">
+        <li>Monitor, screen</li><li>Speakers, headphones</li><li>Printer</li><li>Projector</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Both</h3>
+      <p class="small">Work as input <b>and</b> output.</p>
+      <ul class="small">
+        <li>Touchscreen</li><li>Headset with microphone</li><li>Network card (sends and receives)</li><li>USB flash drive</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note" style="margin-top:10px">In Python, <code class="inl">input()</code> reads from the <b>keyboard</b> and <code class="inl">print()</code> writes to the <b>screen</b>.</div>
+</section>
+
+<!-- ============ 11. QUESTION ============ -->
+<section class="slide">
+  <h2>Which Is It?</h2>
+  <p>For each item, decide: <b>input</b>, <b>output</b>, <b>both</b>, or <b>storage</b>.</p>
+  <div class="cols">
+    <div class="col">
+      <div class="qa"><div class="q">1. Microphone</div><button class="reveal">Show Answer</button><div class="answer small">Input — it sends sound into the computer.</div></div>
+      <div class="qa"><div class="q">2. Printer</div><button class="reveal">Show Answer</button><div class="answer small">Output — it puts results on paper.</div></div>
+      <div class="qa"><div class="q">3. Touchscreen on a phone</div><button class="reveal">Show Answer</button><div class="answer small">Both — it shows images and reads your touch.</div></div>
+    </div>
+    <div class="col">
+      <div class="qa"><div class="q">4. SSD</div><button class="reveal">Show Answer</button><div class="answer small">Storage — it keeps files when the power is off.</div></div>
+      <div class="qa"><div class="q">5. Barcode reader at a supermarket</div><button class="reveal">Show Answer</button><div class="answer small">Input — it reads the product code.</div></div>
+      <div class="qa"><div class="q">6. Speaker</div><button class="reveal">Show Answer</button><div class="answer small">Output — it plays sound.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. OS ============ -->
+<section class="slide">
+  <h2>The Operating System (OS)</h2>
+  <div class="cols">
+    <div class="col">
+      <p>The <b>operating system</b> is the main program of a computer. It runs all the time and manages everything else.</p>
+      <ul class="small">
+        <li><b>Starts and stops</b> other programs.</li>
+        <li>Gives each program a part of <b>RAM</b> and <b>CPU</b> time.</li>
+        <li>Manages <b>files and folders</b> in storage.</li>
+        <li>Talks to <b>input and output</b> devices.</li>
+      </ul>
+      <p class="small">Examples: <b>Windows</b>, <b>macOS</b>, <b>Linux</b>, <b>Android</b>, <b>iOS</b>.</p>
+    </div>
+    <div class="col">
+      <svg viewBox="0 0 460 300" width="100%" height="300" role="img" aria-label="Software layers">
+        <rect x="30" y="20" width="400" height="70" rx="8" class="sv-box"/>
+        <text x="230" y="52" text-anchor="middle" class="sv-t" style="font-weight:600">Applications</text>
+        <text x="230" y="76" text-anchor="middle" class="sv-m">browser, Word, your Python program</text>
+        <rect x="30" y="110" width="400" height="70" rx="8" class="sv-dec"/>
+        <text x="230" y="142" text-anchor="middle" class="sv-t" style="font-weight:600">Operating System</text>
+        <text x="230" y="166" text-anchor="middle" class="sv-m">Windows, macOS, Android</text>
+        <rect x="30" y="200" width="400" height="70" rx="8" class="sv-box"/>
+        <text x="230" y="232" text-anchor="middle" class="sv-t" style="font-weight:600">Hardware</text>
+        <text x="230" y="256" text-anchor="middle" class="sv-m">CPU, RAM, storage, devices</text>
+      </svg>
+      <p class="small muted" style="text-align:center">Applications ask the OS; the OS controls the hardware.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13. BOOT ============ -->
+<section class="slide">
+  <h2>What Happens When You Turn On a Computer?</h2>
+  <p>Starting a computer is called <b>booting</b>.</p>
+  <svg viewBox="0 0 1160 150" width="100%" height="150" role="img" aria-label="Boot steps">
+    <defs><marker id="ah13" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+    <rect x="10" y="20" width="200" height="90" rx="8" class="sv-box"/><text x="110" y="58" text-anchor="middle" class="sv-t" style="font-weight:600">1. Power on</text><text x="110" y="86" text-anchor="middle" class="sv-m">press the button</text>
+    <line x1="210" y1="65" x2="240" y2="65" class="sv-line" marker-end="url(#ah13)"/>
+    <rect x="244" y="20" width="200" height="90" rx="8" class="sv-box"/><text x="344" y="58" text-anchor="middle" class="sv-t" style="font-weight:600">2. Firmware</text><text x="344" y="86" text-anchor="middle" class="sv-m">checks the parts</text>
+    <line x1="444" y1="65" x2="474" y2="65" class="sv-line" marker-end="url(#ah13)"/>
+    <rect x="478" y="20" width="200" height="90" rx="8" class="sv-box"/><text x="578" y="58" text-anchor="middle" class="sv-t" style="font-weight:600">3. Find the OS</text><text x="578" y="86" text-anchor="middle" class="sv-m">on the SSD / disk</text>
+    <line x1="678" y1="65" x2="708" y2="65" class="sv-line" marker-end="url(#ah13)"/>
+    <rect x="712" y="20" width="200" height="90" rx="8" class="sv-box"/><text x="812" y="58" text-anchor="middle" class="sv-t" style="font-weight:600">4. Load the OS</text><text x="812" y="86" text-anchor="middle" class="sv-m">copy it into RAM</text>
+    <line x1="912" y1="65" x2="942" y2="65" class="sv-line" marker-end="url(#ah13)"/>
+    <rect x="946" y="20" width="200" height="90" rx="8" class="sv-dec"/><text x="1046" y="58" text-anchor="middle" class="sv-t" style="font-weight:600">5. Ready</text><text x="1046" y="86" text-anchor="middle" class="sv-m">desktop / login screen</text>
+  </svg>
+  <ul class="small">
+    <li><b>Firmware</b> (called <b>BIOS</b> or <b>UEFI</b>) is a small program stored on a chip on the motherboard. It runs first, every time.</li>
+    <li>It checks the hardware, then finds the operating system in storage.</li>
+    <li>The OS is copied from storage into RAM, because the CPU can only run programs that are in RAM.</li>
+  </ul>
+  <div class="note small">Now the computer is ready, and the OS can start other programs — such as Python.</div>
+</section>
+
+<!-- ============ 14. MACHINE CODE ============ -->
+<section class="slide">
+  <h2>Machine Code: The CPU's Own Language</h2>
+  <div class="cols">
+    <div class="col">
+      <ul class="small">
+        <li>A CPU understands only <b>machine code</b>: instructions written in <b>0s and 1s</b>.</li>
+        <li>Each instruction is a very small step: "put a number here", "add two numbers", "jump to another step".</li>
+        <li>Each CPU family (Intel, ARM in phones, …) has its <b>own</b> machine code.</li>
+      </ul>
+      <div class="warn small">Machine code is very hard for people to read and write. One wrong 0 or 1 changes the meaning.</div>
+    </div>
+    <div class="col">
+      <div class="lbl">Machine code — "store 5, then add 3" (Intel CPU)</div>
+      <pre class="code asm" data-skip><code>10110000 00000101
+00000100 00000011</code></pre>
+      <p class="small">Can you tell what this does? Neither can most people! This is why other languages were invented.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15. ASSEMBLY ============ -->
+<section class="slide">
+  <h2>Assembly Language: Short Words for Machine Code</h2>
+  <div class="cols">
+    <div class="col">
+      <ul class="small">
+        <li><b>Assembly language</b> uses short words, called <b>mnemonics</b>, instead of 0s and 1s.</li>
+        <li>Each assembly line matches <b>one</b> machine code instruction.</li>
+        <li>A program called an <b>assembler</b> turns assembly into machine code.</li>
+        <li>It is still tied to one CPU family, and still slow to write.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="lbl">Assembly</div>
+      <pre class="code asm" data-skip><code>MOV AL, 5     ; put 5 in AL
+ADD AL, 3     ; add 3 to AL</code></pre>
+      <div class="lbl">Machine code (after the assembler)</div>
+      <pre class="code asm" data-skip><code>10110000 00000101
+00000100 00000011</code></pre>
+      <p class="small"><code class="inl">AL</code> is a <b>register</b>: a tiny, very fast storage place <b>inside the CPU</b>. <code class="inl">MOV</code> means move (put), <code class="inl">ADD</code> means add. Afterwards, AL holds <b>8</b>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16. LANGUAGE LEVELS ============ -->
+<section class="slide">
+  <h2>High-Level Languages: Closer to Human Language</h2>
+  <div class="cols3">
+    <div class="col">
+      <h3>Machine code</h3>
+      <pre class="code asm" data-skip style="font-size:17px"><code>10110000 00000101
+00000100 00000011</code></pre>
+      <p class="small">0s and 1s.<br>The CPU runs it directly.</p>
+    </div>
+    <div class="col">
+      <h3>Assembly</h3>
+      <pre class="code asm" data-skip style="font-size:17px"><code>MOV AL, 5
+ADD AL, 3</code></pre>
+      <p class="small">Short words.<br>One line = one machine instruction.</p>
+    </div>
+    <div class="col">
+      <h3>High-level (Python)</h3>
+      <pre class="code" style="font-size:17px"><code>x = 5 + 3
+print(x)</code></pre>
+      <pre class="out" style="font-size:17px">8</pre>
+      <p class="small">Close to English and math.<br>One line = many machine instructions.</p>
+    </div>
+  </div>
+  <svg viewBox="0 0 1160 60" width="100%" height="60" aria-hidden="true">
+    <defs><marker id="ah16" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+    <line x1="40" y1="20" x2="1110" y2="20" class="sv-line" marker-end="url(#ah16)"/>
+    <text x="40" y="50" class="sv-m">closer to the machine (low level)</text>
+    <text x="1120" y="50" text-anchor="end" class="sv-m">closer to people (high level)</text>
+  </svg>
+  <p class="small">Other high-level languages: Java, C, C++, JavaScript. High-level code works on <b>many</b> kinds of CPUs.</p>
+</section>
+
+<!-- ============ 17. TRANSLATORS ============ -->
+<section class="slide">
+  <h2>Translators: From Your Code to Machine Code</h2>
+  <p>The CPU cannot understand Python directly. A <b>translator</b> program must turn it into machine code.</p>
+  <svg viewBox="0 0 1160 150" width="100%" height="150" role="img" aria-label="Translation">
+    <defs><marker id="ah17" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+    <rect x="20" y="25" width="300" height="90" rx="8" class="sv-box"/><text x="170" y="62" text-anchor="middle" class="sv-t" style="font-weight:600">Source code</text><text x="170" y="90" text-anchor="middle" class="sv-m">written by people (Python)</text>
+    <line x1="320" y1="70" x2="426" y2="70" class="sv-line" marker-end="url(#ah17)"/>
+    <rect x="430" y="25" width="300" height="90" rx="8" class="sv-dec"/><text x="580" y="62" text-anchor="middle" class="sv-t" style="font-weight:600">Translator</text><text x="580" y="90" text-anchor="middle" class="sv-m">compiler or interpreter</text>
+    <line x1="730" y1="70" x2="836" y2="70" class="sv-line" marker-end="url(#ah17)"/>
+    <rect x="840" y="25" width="300" height="90" rx="8" class="sv-box"/><text x="990" y="62" text-anchor="middle" class="sv-t" style="font-weight:600">Machine code</text><text x="990" y="90" text-anchor="middle" class="sv-m">run by the CPU</text>
+  </svg>
+  <table class="t" style="font-size:20px">
+    <tr><th>Translator</th><th>Translates</th></tr>
+    <tr><td><b>Assembler</b></td><td>assembly language → machine code</td></tr>
+    <tr><td><b>Compiler</b></td><td>a whole high-level program → machine code, <b>before</b> it runs</td></tr>
+    <tr><td><b>Interpreter</b></td><td>a high-level program, <b>one line at a time</b>, while it runs</td></tr>
+  </table>
+  <p class="small" style="margin-top:10px"><b>Source code</b> = the program text that a person writes.</p>
+</section>
+
+<!-- ============ 18. COMPILER ============ -->
+<section class="slide">
+  <h2>The Compiler</h2>
+  <svg viewBox="0 0 1160 130" width="100%" height="130" role="img" aria-label="Compiler">
+    <defs><marker id="ah18" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+    <rect x="10" y="20" width="230" height="80" rx="8" class="sv-box"/><text x="125" y="54" text-anchor="middle" class="sv-t" style="font-weight:600">Whole program</text><text x="125" y="80" text-anchor="middle" class="sv-m">source code (C++)</text>
+    <line x1="240" y1="60" x2="300" y2="60" class="sv-line" marker-end="url(#ah18)"/>
+    <rect x="304" y="20" width="230" height="80" rx="8" class="sv-dec"/><text x="419" y="54" text-anchor="middle" class="sv-t" style="font-weight:600">Compiler</text><text x="419" y="80" text-anchor="middle" class="sv-m">translates everything</text>
+    <line x1="534" y1="60" x2="594" y2="60" class="sv-line" marker-end="url(#ah18)"/>
+    <rect x="598" y="20" width="230" height="80" rx="8" class="sv-box"/><text x="713" y="54" text-anchor="middle" class="sv-t" style="font-weight:600">Program file</text><text x="713" y="80" text-anchor="middle" class="sv-m">machine code (.exe)</text>
+    <line x1="828" y1="60" x2="888" y2="60" class="sv-line" marker-end="url(#ah18)"/>
+    <rect x="892" y="20" width="250" height="80" rx="8" class="sv-box"/><text x="1017" y="54" text-anchor="middle" class="sv-t" style="font-weight:600">Run</text><text x="1017" y="80" text-anchor="middle" class="sv-m">any time, very fast</text>
+  </svg>
+  <div class="cols">
+    <div class="col">
+      <ul class="small">
+        <li>Translates the <b>whole program at once</b>, before it runs.</li>
+        <li>If there is an error, it reports it and <b>no</b> program file is made.</li>
+        <li>The program file can run many times <b>without</b> translating again.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="note small"><b>Analogy:</b> translating a whole book into Arabic, then printing it. Readers do not need the translator any more.</div>
+      <p class="small">Languages usually compiled: <b>C</b>, <b>C++</b>, <b>Go</b>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19. INTERPRETER ============ -->
+<section class="slide">
+  <h2>The Interpreter</h2>
+  <svg viewBox="0 0 1160 130" width="100%" height="130" role="img" aria-label="Interpreter">
+    <defs><marker id="ah19" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+    <rect x="10" y="20" width="260" height="80" rx="8" class="sv-box"/><text x="140" y="54" text-anchor="middle" class="sv-t" style="font-weight:600">Source code</text><text x="140" y="80" text-anchor="middle" class="sv-m">Python file (.py)</text>
+    <line x1="270" y1="60" x2="340" y2="60" class="sv-line" marker-end="url(#ah19)"/>
+    <rect x="344" y="20" width="420" height="80" rx="8" class="sv-dec"/><text x="554" y="54" text-anchor="middle" class="sv-t" style="font-weight:600">Interpreter</text><text x="554" y="80" text-anchor="middle" class="sv-m">translate a line → run it → next line …</text>
+    <line x1="764" y1="60" x2="834" y2="60" class="sv-line" marker-end="url(#ah19)"/>
+    <rect x="838" y="20" width="300" height="80" rx="8" class="sv-box"/><text x="988" y="54" text-anchor="middle" class="sv-t" style="font-weight:600">Results</text><text x="988" y="80" text-anchor="middle" class="sv-m">appear as each line runs</text>
+  </svg>
+  <div class="cols">
+    <div class="col">
+      <ul class="small">
+        <li>Translates and runs the program <b>one line at a time</b>.</li>
+        <li>If a line has an error, it <b>stops at that line</b>. Lines before it have already run.</li>
+        <li>No separate program file is made; the interpreter is needed <b>every time</b> the program runs.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="note small"><b>Analogy:</b> a live interpreter at a meeting — translating each sentence as the speaker says it.</div>
+      <p class="small">Languages usually interpreted: <b>Python</b>, <b>JavaScript</b>. The program that runs your Python code is called the <b>Python interpreter</b>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20. COMPILER VS INTERPRETER ============ -->
+<section class="slide">
+  <h2>Compiler vs Interpreter</h2>
+  <table class="t" style="font-size:20px">
+    <tr><th></th><th>Compiler</th><th>Interpreter</th></tr>
+    <tr><td><b>How it translates</b></td><td>whole program, before running</td><td>one line at a time, while running</td></tr>
+    <tr><td><b>Output file</b></td><td>yes (machine code program)</td><td>no</td></tr>
+    <tr><td><b>Errors</b></td><td>reported before the program runs</td><td>program stops at the line with the error</td></tr>
+    <tr><td><b>Running speed</b></td><td>faster</td><td>slower</td></tr>
+    <tr><td><b>Testing and fixing</b></td><td>slower: compile again after every change</td><td>easier: change a line and run again</td></tr>
+    <tr><td><b>Examples</b></td><td>C, C++, Go</td><td>Python, JavaScript</td></tr>
+  </table>
+  <div class="note" style="margin-top:14px">Both do the same job — turn high-level code into something the CPU can run. They do it at <b>different times</b>.</div>
+</section>
+
+<!-- ============ 21. INTERPRETER DEMO ============ -->
+<section class="slide">
+  <h2>See the Interpreter at Work</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-skip><code>print("Start")
+print(5 + 2)
+print(total)      # total does not exist
+print("End")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Start
+7
+NameError: name 'total' is not defined</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li>Line 1 runs: <code class="inl">Start</code> appears.</li>
+        <li>Line 2 runs: Python calculates 5 + 2 and shows <code class="inl">7</code>.</li>
+        <li>Line 3 has an error: nothing called <code class="inl">total</code> exists. The interpreter <b>stops</b>.</li>
+        <li>Line 4 <b>never runs</b>, so <code class="inl">End</code> is not shown.</li>
+      </ol>
+      <div class="note">A compiled language would report the problem <b>before</b> showing anything.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22. FIRST PROGRAM ============ -->
+<section class="slide">
+  <h2>Your First Python Program</h2>
+  <div class="anat" style="font-size:38px"><span class="a5">print</span>(<span class="a3">"Hello, Kuwait!"</span>)</div>
+  <div class="cols">
+    <div class="col">
+      <ul class="small">
+        <li><code class="inl">print</code> is a Python instruction (a <b>function</b>) that shows something on the screen.</li>
+        <li>The <b>brackets</b> <code class="inl">( )</code> hold what we want to show.</li>
+        <li>The <b>quotes</b> <code class="inl">" "</code> mark text. Python shows the text exactly, without the quotes.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code># My first program
+print("Hello, Kuwait!")
+print("Welcome to CS126")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Hello, Kuwait!
+Welcome to CS126</pre>
+      <p class="small">A line starting with <code class="inl">#</code> is a <b>comment</b>: a note for people. Python ignores it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23. RUN PROCESS ============ -->
+<section class="slide">
+  <h2>How to Write and Run a Python Program</h2>
+  <svg viewBox="0 0 1160 150" width="100%" height="150" role="img" aria-label="Run process">
+    <defs><marker id="ah23" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+    <rect x="10" y="20" width="200" height="100" rx="8" class="sv-box"/><text x="110" y="60" text-anchor="middle" class="sv-t" style="font-weight:600">1. Write</text><text x="110" y="88" text-anchor="middle" class="sv-m">type code in an editor</text>
+    <line x1="210" y1="70" x2="240" y2="70" class="sv-line" marker-end="url(#ah23)"/>
+    <rect x="244" y="20" width="200" height="100" rx="8" class="sv-box"/><text x="344" y="60" text-anchor="middle" class="sv-t" style="font-weight:600">2. Save</text><text x="344" y="88" text-anchor="middle" class="sv-m">hello.py in storage</text>
+    <line x1="444" y1="70" x2="474" y2="70" class="sv-line" marker-end="url(#ah23)"/>
+    <rect x="478" y="20" width="200" height="100" rx="8" class="sv-box"/><text x="578" y="60" text-anchor="middle" class="sv-t" style="font-weight:600">3. Run</text><text x="578" y="88" text-anchor="middle" class="sv-m">press Run</text>
+    <line x1="678" y1="70" x2="708" y2="70" class="sv-line" marker-end="url(#ah23)"/>
+    <rect x="712" y="20" width="200" height="100" rx="8" class="sv-dec"/><text x="812" y="60" text-anchor="middle" class="sv-t" style="font-weight:600">4. Interpret</text><text x="812" y="88" text-anchor="middle" class="sv-m">line by line → CPU</text>
+    <line x1="912" y1="70" x2="942" y2="70" class="sv-line" marker-end="url(#ah23)"/>
+    <rect x="946" y="20" width="200" height="100" rx="8" class="sv-box"/><text x="1046" y="60" text-anchor="middle" class="sv-t" style="font-weight:600">5. Output</text><text x="1046" y="88" text-anchor="middle" class="sv-m">results on the screen</text>
+  </svg>
+  <div class="cols">
+    <div class="col small">
+      <ul>
+        <li><b>Editor / IDE:</b> a program for writing code, such as IDLE, Thonny, or VS Code. (IDE = Integrated Development Environment.)</li>
+        <li>Python files end with <b><code class="inl">.py</code></b>.</li>
+        <li>You can also run a file by typing <code class="inl">python hello.py</code> in a terminal.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="warn small"><b>6. Fix and repeat.</b> If you see an error, read the message, fix the code, save, and run again. This is normal — every programmer does it many times a day.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24. INSIDE THE COMPUTER ============ -->
+<section class="slide">
+  <h2>What Happens Inside the Computer?</h2>
+  <div class="cols w60">
+    <div class="col">
+      <svg viewBox="0 0 640 380" width="100%" height="380" role="img" aria-label="Program path inside the computer">
+        <defs><marker id="ah24" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+        <rect x="20" y="20" width="250" height="80" rx="8" class="sv-box"/><text x="145" y="54" text-anchor="middle" class="sv-t" style="font-weight:600">Storage</text><text x="145" y="80" text-anchor="middle" class="sv-m">hello.py is saved here</text>
+        <line x1="145" y1="100" x2="145" y2="146" class="sv-line" marker-end="url(#ah24)"/>
+        <text x="160" y="130" class="sv-m">① OS loads</text>
+        <rect x="20" y="150" width="250" height="100" rx="8" class="sv-box"/><text x="145" y="184" text-anchor="middle" class="sv-t" style="font-weight:600">RAM</text><text x="145" y="210" text-anchor="middle" class="sv-m">Python interpreter</text><text x="145" y="232" text-anchor="middle" class="sv-m">+ your code</text>
+        <line x1="270" y1="200" x2="366" y2="200" class="sv-line" marker-end="url(#ah24)"/>
+        <text x="318" y="190" text-anchor="middle" class="sv-m">②</text>
+        <rect x="370" y="150" width="250" height="100" rx="8" class="sv-dec"/><text x="495" y="184" text-anchor="middle" class="sv-t" style="font-weight:600">CPU</text><text x="495" y="210" text-anchor="middle" class="sv-m">fetch – decode – execute</text><text x="495" y="232" text-anchor="middle" class="sv-m">machine instructions</text>
+        <line x1="495" y1="250" x2="495" y2="296" class="sv-line" marker-end="url(#ah24)"/>
+        <text x="510" y="280" class="sv-m">③</text>
+        <rect x="370" y="300" width="250" height="70" rx="8" class="sv-box"/><text x="495" y="330" text-anchor="middle" class="sv-t" style="font-weight:600">Output: screen</text><text x="495" y="354" text-anchor="middle" class="sv-m">Hello, Kuwait!</text>
+      </svg>
+    </div>
+    <div class="col small">
+      <ol>
+        <li>When you press <b>Run</b>, the OS copies the Python interpreter and your file from <b>storage</b> into <b>RAM</b>.</li>
+        <li>The interpreter reads your code and turns each line into <b>machine instructions</b>. The <b>CPU</b> runs them.</li>
+        <li><code class="inl">print</code> sends the text to the <b>screen</b> (output).</li>
+        <li>When the program ends, the OS frees its part of RAM.</li>
+      </ol>
+      <div class="note">Every part from today works together: storage, RAM, CPU, OS, interpreter, and output.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25. QUESTIONS ============ -->
+<section class="slide">
+  <h2>What Will This Code Print?</h2>
+  <div class="cols tight">
+    <div class="col">
+      <h3>Question 1</h3>
+      <pre class="code" data-skip><code>print("CS126")
+# print("Python")
+print(10 - 4)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">CS126
+6</pre><p class="small">Line 2 is a comment, so Python ignores it.</p></div>
+    </div>
+    <div class="col">
+      <h3>Question 2</h3>
+      <pre class="code" data-skip><code>print("A")
+print("B")
+print(C)
+print("D")</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">A
+B
+NameError: name 'C' is not defined</pre><p class="small">Without quotes, <code class="inl">C</code> is not text. The interpreter stops at line 3, so <code class="inl">D</code> is never printed.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26. MISTAKES 1 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (1): Wrong Ideas About Computers</h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <p class="small">"My laptop has 512 GB of <b>memory</b>."</p>
+      <p class="why"><b>Why?</b> 512 GB is usually the <b>storage</b> (SSD). Memory (RAM) is smaller, such as 16 GB.</p>
+      <span class="tag-good">Correct</span>
+      <p class="small">"My laptop has 16 GB of RAM and a 512 GB SSD."</p>
+      <span class="tag-bad" style="margin-top:12px">Incorrect</span>
+      <p class="small">"More storage makes programs run faster."</p>
+      <p class="why"><b>Why?</b> Speed depends mostly on the <b>CPU</b> and the amount of <b>RAM</b>. Storage size decides how many files you can keep.</p>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <p class="small">"The CPU understands Python."</p>
+      <p class="why"><b>Why?</b> The CPU understands only machine code. The <b>interpreter</b> translates Python for it.</p>
+      <span class="tag-good">Correct</span>
+      <p class="small">"The Python interpreter turns my code into instructions that the CPU can run."</p>
+      <span class="tag-bad" style="margin-top:12px">Incorrect</span>
+      <p class="small">"My work is safe while I type, even if I do not save."</p>
+      <p class="why"><b>Why?</b> Unsaved work is only in RAM, and it is lost when the power goes off. <b>Save often.</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27. MISTAKES 2 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (2): Your First Program</h2>
+  <div class="cols3">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip style="font-size:17px"><code>Print("Hello")</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:15px">NameError: name 'Print' is not defined</pre>
+      <p class="why"><b>Why?</b> Python is <b>case-sensitive</b>: <code class="inl">Print</code> ≠ <code class="inl">print</code>.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good" style="font-size:17px"><code>print("Hello")</code></pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip style="font-size:17px"><code>print(Hello)</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:15px">NameError: name 'Hello' is not defined</pre>
+      <p class="why"><b>Why?</b> Without quotes, Python does not treat <code class="inl">Hello</code> as text.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good" style="font-size:17px"><code>print("Hello")</code></pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip style="font-size:17px"><code>print("Hello)</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:15px">SyntaxError: unterminated string literal</pre>
+      <p class="why"><b>Why?</b> The closing quote is missing.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good" style="font-size:17px"><code>print("Hello")</code></pre>
+    </div>
+  </div>
+  <div class="note small" style="margin-top:8px">A <b>syntax error</b> means the code breaks Python's writing rules, like a spelling or grammar mistake.</div>
+</section>
+
+<!-- ============ 28. WORKED EXAMPLE 1 ============ -->
+<section class="slide">
+  <h2>Worked Example 1: A Petrol Pump Is a Computer</h2>
+  <div class="cols">
+    <div class="col">
+      <table class="t" style="font-size:19px">
+        <tr><th>Part</th><th>At the petrol pump</th></tr>
+        <tr><td><b>Input</b></td><td>buttons (fuel type), card reader, fuel flow sensor</td></tr>
+        <tr><td><b>Process (CPU)</b></td><td>litres × price per litre</td></tr>
+        <tr><td><b>Memory (RAM)</b></td><td>the litres and price of the current sale</td></tr>
+        <tr><td><b>Storage</b></td><td>the record of all sales today</td></tr>
+        <tr><td><b>Output</b></td><td>display screen, printed receipt</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <div class="lbl">The calculation in Python</div>
+      <pre class="code"><code># 40 litres at 0.085 KD per litre
+print(40 * 0.085)</code></pre>
+      <pre class="out">3.4000000000000004</pre>
+      <ul class="small">
+        <li><code class="inl">*</code> means multiply.</li>
+        <li>The CPU stores decimal numbers in binary, so tiny errors like <code class="inl">…0004</code> can appear.</li>
+        <li>Later you will learn to round results: <code class="inl">round(…, 3)</code> gives <code class="inl">3.4</code>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 29. WORKED EXAMPLE 2 ============ -->
+<section class="slide">
+  <h2>Worked Example 2: Following a Program Through the Computer</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code — saved as total.py</div>
+      <pre class="code" data-input="3"><code>qty = int(input("How many books? "))
+price = 4.5
+print("Total:", qty * price, "KD")</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">How many books? 3
+Total: 13.5 KD</pre>
+    </div>
+    <div class="col small">
+      <ol>
+        <li><b>Storage → RAM:</b> the OS loads the interpreter and <code class="inl">total.py</code>.</li>
+        <li><b>Input:</b> the user types <code class="inl">3</code> on the <b>keyboard</b>; <code class="inl">int</code> turns it into a number.</li>
+        <li><b>RAM:</b> <code class="inl">qty</code> holds 3 and <code class="inl">price</code> holds 4.5.</li>
+        <li><b>Process:</b> the <b>CPU</b> multiplies 3 × 4.5 = 13.5.</li>
+        <li><b>Output:</b> <code class="inl">print</code> shows the result on the <b>screen</b>.</li>
+      </ol>
+      <p class="muted">Do not worry about every detail of this code yet. You will learn <code class="inl">input</code>, <code class="inl">int</code>, and variables in the next lectures.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 30. WORKED EXAMPLE 3 ============ -->
+<section class="slide">
+  <h2>Worked Example 3: Reading Assembly Step by Step</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Assembly</div>
+      <pre class="code asm" data-skip><code>MOV AL, 7     ; put 7 in AL
+ADD AL, 5     ; add 5 to AL
+SUB AL, 2     ; subtract 2 from AL</code></pre>
+      <table class="t" style="font-size:19px">
+        <tr><th>After line</th><th>AL holds</th></tr>
+        <tr><td>1 (MOV)</td><td>7</td></tr>
+        <tr><td>2 (ADD)</td><td>7 + 5 = 12</td></tr>
+        <tr><td>3 (SUB)</td><td>12 − 2 = 10</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <div class="lbl">The same work in Python</div>
+      <pre class="code"><code>al = 7
+al = al + 5
+al = al - 2
+print(al)</code></pre>
+      <pre class="out">10</pre>
+      <div class="note small">Even simpler: <code class="inl">print(7 + 5 - 2)</code>. One Python line can replace many assembly lines — that is the power of a high-level language.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 31. THINK ABOUT IT ============ -->
+<section class="slide">
+  <h2>Think About It</h2>
+  <div class="qa"><div class="q">1. Why does a computer need RAM if it already has storage?</div>
+    <button class="reveal">Show Answer</button>
+    <div class="answer small">Storage is too slow for the CPU to work from directly. Programs and data are copied into fast RAM while they are being used.</div></div>
+  <div class="qa"><div class="q">2. A Python program and a phone app both run on your phone. Who decides which one gets the CPU?</div>
+    <button class="reveal">Show Answer</button>
+    <div class="answer small">The operating system. It shares CPU time and RAM between all running programs.</div></div>
+  <div class="qa"><div class="q">3. Why is it useful that Python runs one line at a time while you are learning?</div>
+    <button class="reveal">Show Answer</button>
+    <div class="answer small">You can run your code immediately, see results line by line, and find exactly where an error happened.</div></div>
+</section>
+
+<!-- ============ 32. REMEMBER ============ -->
+<section class="slide">
+  <h2>What You Should Remember</h2>
+  <ol>
+    <li><b>Hardware</b> = physical parts; <b>software</b> = programs.</li>
+    <li>Computers follow the <b>input → process → output</b> model, and <b>store</b> data.</li>
+    <li>The <b>CPU</b> runs instructions; <b>RAM</b> holds what is used now (lost at power off); <b>storage</b> keeps files.</li>
+    <li>The <b>operating system</b> manages the hardware and runs programs. Booting loads it into RAM.</li>
+    <li>The CPU understands only <b>machine code</b> (0s and 1s). <b>Assembly</b> uses short words; <b>Python</b> is high-level.</li>
+    <li>A <b>compiler</b> translates the whole program first; an <b>interpreter</b> translates and runs line by line. Python uses an interpreter.</li>
+    <li>To run Python: <b>write → save (.py) → run → interpreter + CPU → output</b>.</li>
+  </ol>
+</section>
+
+<!-- ============ 33. EXERCISES L1 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 1 — Basic</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">1.</span>Classify each device as <b>input</b>, <b>output</b>, or <b>both</b>:<br>keyboard, monitor, webcam, printer, touchscreen, speaker, microphone.</p></div>
+      <div class="ex"><p><span class="ex-num">2.</span>Name the part:</p>
+        <ol type="a" class="small" style="margin:0">
+          <li>follows program instructions</li>
+          <li>keeps files when the power is off</li>
+          <li>holds running programs, but forgets at power off</li>
+          <li>the main board that connects all parts</li>
+        </ol></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">3.</span>True or false?</p>
+        <ol type="a" class="small" style="margin:0">
+          <li>RAM keeps its data after the power is turned off.</li>
+          <li>Machine code is written in 0s and 1s.</li>
+          <li>The CPU can run assembly language directly, with no translation.</li>
+          <li>Python normally uses an interpreter.</li>
+          <li>Windows is an example of application software.</li>
+        </ol></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 34. EXERCISES L2 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 2 — Apply</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">4.</span>Put these steps for running a Python program in the correct order:</p>
+        <p class="small">(A) the CPU runs the instructions &nbsp; (B) save the file as <code class="inl">hello.py</code> &nbsp; (C) write the code in an editor &nbsp; (D) the result appears on the screen &nbsp; (E) press Run &nbsp; (F) the interpreter translates each line</p></div>
+      <div class="ex"><p><span class="ex-num">5.</span>Predict the output, and explain why the last line does not run.</p>
+        <pre class="code" data-skip><code>print("Kuwait")
+print(3 * 4)
+print(Doha)
+print("Riyadh")</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">6.</span>For an <b>airport check-in machine</b>, give one example each of: input, process, output, and storage.</p></div>
+      <div class="ex"><p><span class="ex-num">7.</span>A laptop has <b>16 GB RAM</b> and a <b>1 TB SSD</b>.</p>
+        <ol type="a" class="small" style="margin:0">
+          <li>Where are your saved photos kept?</li>
+          <li>Where is the web browser while it is open?</li>
+          <li>The battery dies before you save a document. What happens to your changes, and why?</li>
+        </ol></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 35. EXERCISES L3 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 3 — Challenge</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">8.</span>Write a Python program that prints these two lines:</p>
+        <pre class="out">CS126 – Introduction to Python
+I am ready to learn!</pre></div>
+      <div class="ex"><p><span class="ex-num">9.</span>Trace this assembly code. What number does <code class="inl">AL</code> hold at the end?</p>
+        <pre class="code asm" data-skip><code>MOV AL, 10
+SUB AL, 4
+ADD AL, 2</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">10.</span>Your friend says: "Compilers and interpreters are the same thing." Give <b>two</b> differences.</p></div>
+      <div class="ex"><p><span class="ex-num">11.</span>Explain in 3–5 short steps what happens, from pressing <b>Run</b> to seeing the text, when this program runs:</p>
+        <pre class="code" data-skip><code>print("Hello")</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 36. SOLUTIONS DIVIDER ============ -->
+<section class="slide">
+  <div class="s-body section-body" style="padding:0">
+    <div class="title-rule" style="margin:0 auto 24px"></div>
+    <h1>Exercise Solutions</h1>
+    <p class="muted" style="font-size:26px">Try every exercise first. Then compare your answers.</p>
+  </div>
+</section>
+
+<!-- ============ 37. SOLUTIONS 1-3 ============ -->
+<section class="slide">
+  <h2>Solutions 1 – 3 <span class="level">Level 1</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">1.</span></p>
+      <table class="t" style="font-size:19px">
+        <tr><th>Input</th><th>Output</th><th>Both</th></tr>
+        <tr><td>keyboard<br>webcam<br>microphone</td><td>monitor<br>printer<br>speaker</td><td>touchscreen</td></tr>
+      </table>
+      <p style="margin-top:12px"><span class="ex-num">2.</span></p>
+      <ol type="a" class="small" style="margin:0">
+        <li>CPU (processor)</li><li>storage (SSD / hard disk)</li><li>RAM (memory)</li><li>motherboard</li>
+      </ol>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">3.</span></p>
+      <ol type="a" class="small">
+        <li><b>False</b> — RAM loses its data at power off.</li>
+        <li><b>True</b>.</li>
+        <li><b>False</b> — an assembler must turn it into machine code.</li>
+        <li><b>True</b>.</li>
+        <li><b>False</b> — Windows is an <b>operating system</b> (system software).</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 38. SOLUTIONS 4-7 ============ -->
+<section class="slide">
+  <h2>Solutions 4 – 7 <span class="level">Level 2</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">4.</span><b>C → B → E → F → A → D</b><br><span class="small">write, save, run, translate, execute, output.</span></p>
+      <p><span class="ex-num">5.</span></p>
+      <pre class="out">Kuwait
+12
+NameError: name 'Doha' is not defined</pre>
+      <p class="small"><code class="inl">Doha</code> has no quotes, so it is not text. The interpreter stops at line 3, so <code class="inl">Riyadh</code> is never printed.</p>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">6.</span> <span class="small">(example answers)</span></p>
+      <ul class="small" style="margin-bottom:8px">
+        <li><b>Input:</b> passport scanner, touchscreen choices</li>
+        <li><b>Process:</b> find the booking, choose a seat</li>
+        <li><b>Output:</b> boarding pass, bag tag, screen messages</li>
+        <li><b>Storage:</b> passenger and flight records</li>
+      </ul>
+      <p><span class="ex-num">7.</span></p>
+      <ol type="a" class="small">
+        <li>In storage (the 1 TB SSD).</li>
+        <li>In RAM (the 16 GB memory).</li>
+        <li>The changes are <b>lost</b>: they were only in RAM, which forgets everything when the power goes off.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 39. SOLUTIONS 8-9 ============ -->
+<section class="slide">
+  <h2>Solutions 8 – 9 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">8.</span></p>
+      <pre class="code"><code>print("CS126 – Introduction to Python")
+print("I am ready to learn!")</code></pre>
+      <pre class="out">CS126 – Introduction to Python
+I am ready to learn!</pre>
+      <p class="small">Each <code class="inl">print</code> shows one line. The text must be inside quotes.</p>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">9.</span>AL holds <b>8</b>.</p>
+      <table class="t" style="font-size:19px">
+        <tr><th>After line</th><th>AL holds</th></tr>
+        <tr><td>MOV AL, 10</td><td>10</td></tr>
+        <tr><td>SUB AL, 4</td><td>10 − 4 = 6</td></tr>
+        <tr><td>ADD AL, 2</td><td>6 + 2 = 8</td></tr>
+      </table>
+      <p class="small" style="margin-top:10px">In Python: <code class="inl">print(10 - 4 + 2)</code> shows <code class="inl">8</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 40. SOLUTIONS 10-11 ============ -->
+<section class="slide">
+  <h2>Solutions 10 – 11 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">10.</span> Any two of:</p>
+      <ul class="small">
+        <li>A compiler translates the <b>whole program before</b> it runs; an interpreter translates <b>one line at a time while</b> it runs.</li>
+        <li>A compiler makes a <b>machine code file</b>; an interpreter does not.</li>
+        <li>A compiler reports errors <b>before</b> running; an interpreter <b>stops at the line</b> with the error.</li>
+        <li>Compiled programs usually run <b>faster</b>.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">11.</span></p>
+      <ol class="small">
+        <li>The OS copies the Python interpreter and the file from <b>storage</b> into <b>RAM</b>.</li>
+        <li>The interpreter reads the line <code class="inl">print("Hello")</code>.</li>
+        <li>It turns the line into <b>machine instructions</b>.</li>
+        <li>The <b>CPU</b> runs the instructions (fetch, decode, execute).</li>
+        <li>The text <code class="inl">Hello</code> is sent to the <b>screen</b> (output).</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="btnPrev" title="Previous (Left Arrow)">◀ Previous</button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button id="btnNext" title="Next (Right Arrow)">Next ▶</button>
+  <div class="spacer"></div>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="spacer"></div>
+  <button id="btnFull">Full Screen</button>
+  <button id="btnTheme">Dark Mode</button>
+  <button id="btnPdf">Export PDF</button>
+</div>
+
+<script>
+(function () {
+  var COURSE = "CS126 – Introduction to Python";
+  var TOPIC = "Introduction to Computers";
+
+  /* ---------- Theme (restore before anything paints) ---------- */
+  var root = document.documentElement;
+  try { if (localStorage.getItem("cs126-theme") === "dark") root.classList.add("dark"); } catch (e) {}
+
+  /* ---------- Build slide chrome ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length;
+  slides.forEach(function (s, i) {
+    if (!s.querySelector(".s-body")) {
+      var body = document.createElement("div");
+      body.className = "s-body";
+      while (s.firstChild) body.appendChild(s.firstChild);
+      s.appendChild(body);
+    }
+    var head = document.createElement("div");
+    head.className = "s-head";
+    head.innerHTML = '<span class="course">' + COURSE + '</span><span>' + TOPIC + '</span>';
+    var foot = document.createElement("div");
+    foot.className = "s-foot";
+    foot.innerHTML = '<span>Dr. Fawaz Alazemi</span><span>Slide ' + (i + 1) + ' of ' + N + '</span>';
+    s.insertBefore(head, s.firstChild);
+    s.appendChild(foot);
+  });
+
+  /* ---------- Python syntax highlighting (no libraries) ---------- */
+  var KW = "for|in|if|elif|else|and|or|not|True|False|None|while|def|return|import|del|from|as";
+  var FN = "print|range|len|list|str|int|float|sum|max|min|round|append|input|type|tuple|set|sorted|dict|abs|pow|divmod|eval";
+  var re = new RegExp(
+    "(#[^\\n]*)|(\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(" + FN + ")(?=\\()|\\b(\\d+(?:\\.\\d+)?)\\b",
+    "g");
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code:not(.asm) code").forEach(function (el) {
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "tk-com" : m[2] ? "tk-str" : m[3] ? "tk-kw" : m[4] ? "tk-fn" : "tk-num";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = re.lastIndex;
+    }
+    out += esc(src.slice(last));
+    el.innerHTML = out;
+  });
+
+  /* ---------- Show Answer buttons ---------- */
+  document.querySelectorAll(".reveal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.nextElementSibling;
+      var shown = a.classList.toggle("shown");
+      b.textContent = shown ? "Hide Answer" : "Show Answer";
+      b.blur();
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  var cur = 0;
+  var counter = document.getElementById("counter");
+  var bar = document.getElementById("bar");
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    counter.textContent = (cur + 1) + " / " + N;
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+  function btn(id, fn) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () { fn(); b.blur(); });
+    return b;
+  }
+  btn("btnPrev", function () { go(cur - 1); });
+  btn("btnNext", function () { go(cur + 1); });
+
+  /* ---------- Full screen ---------- */
+  var fullBtn = btn("btnFull", function () {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el);
+    }
+  });
+  function onFs() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fullBtn.textContent = on ? "Exit Full Screen" : "Full Screen";
+    fit();
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+
+  /* ---------- Dark / light ---------- */
+  var themeBtn = btn("btnTheme", function () {
+    var dark = root.classList.toggle("dark");
+    try { localStorage.setItem("cs126-theme", dark ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  });
+  function themeLabel() { themeBtn.textContent = root.classList.contains("dark") ? "Light Mode" : "Dark Mode"; }
+  themeLabel();
+
+  /* ---------- Export PDF ---------- */
+  btn("btnPdf", function () { window.print(); });
+
+  /* ---------- Scale the 1280x720 canvas to fit ---------- */
+  var stage = document.getElementById("stage");
+  var vp = document.getElementById("viewport");
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight;
+    var s = Math.min(w / 1280, h / 720) * 0.98;
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>
