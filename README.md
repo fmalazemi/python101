@@ -8,7 +8,7 @@ Python is one of the most popular programming languages in the world. It is know
 
 | No.1 | Lecture | Slides |
 |:--:|:-:|:--|
-| 0 | |[🔗](material/CS126_Computer_Basics_Slides.html)
+| 0 | Introduction to Computer Science |[🔗](material/CS126_Computer_Basics_Slides.html)
 | 1 | [Introduction to Python and Writing Your First Program](lecture_notes/lecture_01.md) | [🔗](slides/lecture_01.html) |
 | 2 | [Variables, Basic Data Types, and User Input](lecture_notes/lecture_02.md) |[🔗](slides/lecture_02.html) | 
 | 3 | [Arithmetic Operations and Expressions in Python](lecture_notes/lecture_03.md) | [🔗](slides/lecture_03.html) | 
