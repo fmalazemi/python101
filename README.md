@@ -28,7 +28,8 @@ Python is one of the most popular programming languages in the world. It is know
 | 17 | [Introduction to Dictionary](material/CS126_Dictionaries_Notes.md)| [🔗](material/CS126_Dictionaries_Slides.html) | 
 | 18 | [Loops: the for loop](material/CS126_Loops_Notes.md) | [🔗](material/CS126_Loops_Slides.html) | 
 | 19 | [Loops: the While Loop](material/CS126_While_Loops_Notes.md) | [🔗](material/CS126_While_Loops_Slides.html) |
-| 20 | [List Comprehension](material/CS126_List_Comprehension_Notes.md) | [🔗](material/CS126_List_Comprehension_Slides.html)|
+| 20 | [Break and Continue](material/CS126_Break_Continue_Notes.md) | [🔗](material/CS126_Break_Continue_Slides.html) |
+| 21 | [List Comprehension](material/CS126_List_Comprehension_Notes.md) | [🔗](material/CS126_List_Comprehension_Slides.html)|
 
 ## Animations
 | No.1 | Topic |
