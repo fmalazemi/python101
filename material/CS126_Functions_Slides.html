@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS126 – Functions</title>
+<style>
+/* ===================== THEME ===================== */
+:root {
+  --bg: #f4f6f8;
+  --slide-bg: #fbfbfc;
+  --text: #1f2933;
+  --muted: #5b6875;
+  --navy: #1b365d;
+  --teal: #0f7c74;
+  --teal-soft: #e3f2f0;
+  --line: #d5dbe1;
+  --code-bg: #f1f3f5;
+  --code-text: #1f2933;
+  --out-bg: #ffffff;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --good: #1a7f37;
+  --good-soft: #e8f5ec;
+  --amber: #a15c00;
+  --tok-kw: #7a2bb5;
+  --tok-str: #a5481a;
+  --tok-num: #0b6bcb;
+  --tok-fn: #0f7c74;
+  --tok-com: #6b7785;
+  --bar-bg: #ffffff;
+}
+html.dark {
+  --bg: #0b1120;
+  --slide-bg: #111827;
+  --text: #e8edf3;
+  --muted: #a3afbd;
+  --navy: #9cc4ff;
+  --teal: #34d1bf;
+  --teal-soft: #12302e;
+  --line: #334155;
+  --code-bg: #0b1220;
+  --code-text: #e8edf3;
+  --out-bg: #0f172a;
+  --bad: #ff8a80;
+  --bad-soft: #3a1717;
+  --good: #7ee2a0;
+  --good-soft: #13301f;
+  --amber: #ffc46b;
+  --tok-kw: #d7a8ff;
+  --tok-str: #ffb38a;
+  --tok-num: #8fc8ff;
+  --tok-fn: #5fe3d2;
+  --tok-com: #8b98a8;
+  --bar-bg: #0f172a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+/* ===================== STAGE ===================== */
+.viewport {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 56px;
+  overflow: hidden;
+}
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1280px; height: 720px;
+  transform-origin: center center;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--slide-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+.s-head {
+  height: 44px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--teal);
+  font-size: 16px; color: var(--muted);
+}
+.s-head .course { color: var(--navy); font-weight: 600; }
+.s-body {
+  flex: 1; min-height: 0;
+  padding: 22px 56px 10px;
+  display: flex; flex-direction: column;
+  font-size: 24px; line-height: 1.4;
+}
+.s-foot {
+  height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; font-size: 15px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+h1 { color: var(--navy); font-size: 56px; margin: 0 0 12px; line-height: 1.15; }
+h2 { color: var(--navy); font-size: 36px; margin: 0 0 16px; line-height: 1.2; }
+h3 { color: var(--teal); font-size: 24px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 30px; }
+li { margin-bottom: 6px; }
+.small { font-size: 20px; }
+.muted { color: var(--muted); }
+.teal { color: var(--teal); font-weight: 600; }
+.navy { color: var(--navy); font-weight: 600; }
+.mono, code.inl {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols.w60 { grid-template-columns: 1.25fr 1fr; }
+.cols.w40 { grid-template-columns: 1fr 1.25fr; }
+.cols.w70 { grid-template-columns: 1.6fr 1fr; }
+.tight pre { font-size: 18px; line-height: 1.38; margin-bottom: 8px; }
+.tight p { margin-bottom: 6px; }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.col { min-width: 0; }
+
+/* ===================== CODE ===================== */
+pre {
+  margin: 0 0 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 20px; line-height: 1.45;
+  white-space: pre; overflow: hidden;
+  border-radius: 6px;
+}
+pre.code {
+  background: var(--code-bg); color: var(--code-text);
+  border: 1px solid var(--line); border-left: 5px solid var(--teal);
+  padding: 10px 16px;
+}
+pre.code.bad  { border-left-color: var(--bad); }
+pre.code.good { border-left-color: var(--good); }
+pre.out {
+  background: var(--out-bg); color: var(--text);
+  border: 1px dashed var(--line); border-left: 5px solid var(--navy);
+  padding: 8px 16px;
+}
+.lbl {
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.tk-kw { color: var(--tok-kw); font-weight: 600; }
+.tk-str { color: var(--tok-str); }
+.tk-num { color: var(--tok-num); }
+.tk-fn { color: var(--tok-fn); }
+.tk-com { color: var(--tok-com); font-style: italic; }
+
+/* ===================== BOXES ===================== */
+.note {
+  border-left: 5px solid var(--teal); background: var(--teal-soft);
+  padding: 10px 16px; border-radius: 4px; margin: 0 0 12px; font-size: 21px;
+}
+.warn {
+  border-left: 5px solid var(--amber); padding: 10px 16px; margin: 0 0 12px;
+  font-size: 21px; background: transparent; border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+}
+.tag-bad, .tag-good {
+  display: inline-block; font-weight: 700; font-size: 17px;
+  padding: 2px 10px; border-radius: 4px; margin-bottom: 4px;
+}
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-good { color: var(--good); background: var(--good-soft); }
+.why { font-size: 19px; margin: 0 0 10px; }
+
+table.t {
+  border-collapse: collapse; font-size: 20px; width: 100%;
+}
+table.t th, table.t td {
+  border: 1px solid var(--line); padding: 6px 12px; text-align: left;
+}
+table.t th { background: var(--teal-soft); color: var(--navy); }
+table.t td.c, table.t th.c { text-align: center; }
+table.t code { font-family: Consolas, Monaco, monospace; }
+
+/* ===================== Q & A ===================== */
+.qa { margin: 0 0 10px; }
+.reveal {
+  font: inherit; font-size: 16px; font-weight: 600;
+  color: var(--teal); background: transparent;
+  border: 1.5px solid var(--teal); border-radius: 4px;
+  padding: 3px 12px; cursor: pointer; margin: 0 0 6px;
+}
+.reveal:hover { background: var(--teal-soft); }
+.answer { visibility: hidden; }
+.answer.shown { visibility: visible; }
+.q { font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+
+/* ===================== TITLE / SECTION ===================== */
+.title-body { justify-content: center; padding-left: 90px; }
+.title-body .sub { font-size: 30px; color: var(--teal); margin-bottom: 36px; }
+.title-body .meta { font-size: 24px; color: var(--muted); line-height: 1.6; }
+.title-rule { width: 120px; height: 5px; background: var(--teal); margin: 0 0 28px; }
+.section-body { justify-content: center; align-items: center; text-align: center; }
+
+/* ===================== DIAGRAMS ===================== */
+.anat {
+  font-family: Consolas, Monaco, monospace; font-size: 40px;
+  background: var(--code-bg); border: 1px solid var(--line);
+  border-left: 5px solid var(--teal); border-radius: 6px;
+  padding: 18px 28px; margin: 0 0 16px; line-height: 1.6;
+}
+.anat .a1 { color: var(--tok-kw); font-weight: 700; }
+.anat .a2 { color: var(--tok-num); font-weight: 700; }
+.anat .a3 { color: var(--tok-str); font-weight: 700; }
+.anat .a4 { color: var(--bad); font-weight: 700; }
+.anat .a5 { color: var(--tok-fn); font-weight: 700; }
+.anat .ind { background: var(--teal-soft); outline: 1px dashed var(--teal); }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 36px; font-size: 21px; }
+.legend b { font-family: Consolas, Monaco, monospace; }
+
+.boxes { display: flex; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap; }
+.box {
+  min-width: 64px; text-align: center;
+  font-family: Consolas, Monaco, monospace; font-size: 22px;
+}
+.box .v {
+  border: 2px solid var(--navy); border-radius: 4px; padding: 6px 10px;
+  background: var(--slide-bg);
+}
+.box .i { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.box.off .v { border-style: dashed; border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.box.hi .v { background: var(--teal-soft); border-color: var(--teal); }
+
+svg text { font-family: "Segoe UI", Arial, sans-serif; }
+.sv-box { fill: var(--slide-bg); stroke: var(--navy); stroke-width: 2; }
+.sv-dec { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.sv-t { fill: var(--text); font-size: 19px; }
+.sv-m { fill: var(--muted); font-size: 16px; font-weight: 600; }
+.sv-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.sv-arrow { fill: var(--muted); }
+
+.ex-num {
+  display: inline-block; min-width: 38px; font-weight: 700; color: var(--teal);
+}
+.level {
+  display: inline-block; font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--teal); border: 1.5px solid var(--teal);
+  border-radius: 4px; padding: 1px 10px; margin-left: 12px; vertical-align: middle;
+}
+.ex { margin-bottom: 10px; }
+.ex p { margin: 0 0 6px; }
+
+/* ===================== CONTROLS ===================== */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: var(--bar-bg); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  font-size: 15px;
+}
+.controls button {
+  font: inherit; font-size: 15px; color: var(--navy);
+  background: transparent; border: 1px solid var(--line); border-radius: 4px;
+  padding: 6px 14px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--teal); color: var(--teal); }
+.controls .counter { color: var(--muted); min-width: 64px; text-align: center; }
+.progress {
+  flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden;
+}
+.progress div { height: 100%; width: 0; background: var(--teal); }
+.spacer { width: 8px; }
+
+/* ===================== PRINT ===================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  :root, html.dark {
+    --bg: #ffffff; --slide-bg: #ffffff; --text: #1f2933; --muted: #5b6875;
+    --navy: #1b365d; --teal: #0f7c74; --teal-soft: #e3f2f0; --line: #d5dbe1;
+    --code-bg: #f1f3f5; --code-text: #1f2933; --out-bg: #ffffff;
+    --bad: #b42318; --bad-soft: #fdecea; --good: #1a7f37; --good-soft: #e8f5ec;
+    --amber: #a15c00; --tok-kw: #7a2bb5; --tok-str: #a5481a; --tok-num: #0b6bcb;
+    --tok-fn: #0f7c74; --tok-com: #6b7785;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: auto; overflow: visible; background: #fff; }
+  .controls, .reveal { display: none !important; }
+  .answer { visibility: visible !important; }
+  .viewport { position: static; overflow: visible; }
+  .stage { position: static; transform: none !important; width: auto; height: auto; }
+  .slide {
+    display: flex !important; position: relative; inset: auto;
+    width: 1280px; height: 720px; zoom: 0.82;
+    margin: 0 auto; border: none; transform: translateY(120px);
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page; page-break-after: always;
+  }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- ============ 1. TITLE ============ -->
+<section class="slide">
+  <div class="s-body title-body">
+    <div class="muted" style="font-size:22px;margin-bottom:10px">CS126 – Introduction to Python</div>
+    <h1>Functions</h1>
+    <div class="sub">Defining functions and returning values</div>
+    <div class="title-rule"></div>
+    <div class="meta">Dr. Fawaz Alazemi</div>
+  </div>
+</section>
+
+<!-- ============ 2. OBJECTIVES ============ -->
+<section class="slide">
+  <h2>Learning Objectives</h2>
+  <p>By the end of this lecture, you will be able to:</p>
+  <ol>
+    <li>Explain what a <b>function</b> is and why it is useful.</li>
+    <li><b>Define</b> a function with <code class="inl">def</code>, and <b>call</b> it.</li>
+    <li>Use <b>parameters</b> and <b>arguments</b> to give data to a function.</li>
+    <li>Use <code class="inl">return</code> to send a value back, and use that value.</li>
+    <li>Write <b>void functions</b> (no return value), and explain <code class="inl">None</code>.</li>
+    <li><b>Return several values</b> at once and unpack them.</li>
+    <li>Explain the difference between <code class="inl">print</code> and <code class="inl">return</code>.</li>
+  </ol>
+</section>
+
+<!-- ============ 3. MOTIVATION ============ -->
+<section class="slide">
+  <h2>Why Do We Need Functions?</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Without a function — the same idea 3 times</div>
+      <pre class="code"><code>price1 = 20
+print(price1 - price1 * 10 / 100)
+price2 = 35
+print(price2 - price2 * 10 / 100)
+price3 = 8
+print(price3 - price3 * 10 / 100)</code></pre>
+      <pre class="out">18.0
+31.5
+7.2</pre>
+    </div>
+    <div class="col">
+      <div class="lbl">With a function — write it once, use it many times</div>
+      <pre class="code"><code>def after_discount(price):
+    return price - price * 10 / 100
+
+print(after_discount(20))
+print(after_discount(35))
+print(after_discount(8))</code></pre>
+      <pre class="out">18.0
+31.5
+7.2</pre>
+      <div class="note small">If the discount changes to 15%, we change <b>one</b> line, not three.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. WHAT IS A FUNCTION ============ -->
+<section class="slide">
+  <h2>What Is a Function?</h2>
+  <p>A <b>function</b> is a <b>named block of code</b> that does one job. You give it a name once, then <b>call</b> it by name whenever you need that job done.</p>
+  <svg viewBox="0 0 1160 160" width="100%" height="160" role="img" aria-label="Function as a machine">
+    <defs><marker id="ah4" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-arrow"/></marker></defs>
+    <rect x="40" y="35" width="260" height="90" rx="8" class="sv-box"/>
+    <text x="170" y="72" text-anchor="middle" class="sv-t" style="font-weight:600">Input</text>
+    <text x="170" y="100" text-anchor="middle" class="sv-m">20  (the price)</text>
+    <line x1="300" y1="80" x2="436" y2="80" class="sv-line" marker-end="url(#ah4)"/>
+    <rect x="440" y="20" width="280" height="120" rx="10" class="sv-dec"/>
+    <text x="580" y="70" text-anchor="middle" class="sv-t" style="font-weight:600">after_discount</text>
+    <text x="580" y="100" text-anchor="middle" class="sv-m">the function's code</text>
+    <line x1="720" y1="80" x2="856" y2="80" class="sv-line" marker-end="url(#ah4)"/>
+    <rect x="860" y="35" width="260" height="90" rx="8" class="sv-box"/>
+    <text x="990" y="72" text-anchor="middle" class="sv-t" style="font-weight:600">Output</text>
+    <text x="990" y="100" text-anchor="middle" class="sv-m">18.0  (the result)</text>
+  </svg>
+  <div class="cols" style="flex:none">
+    <div class="col">
+      <p class="small">You have already used many <b>built-in</b> functions:</p>
+      <pre class="code"><code>print(len("Kuwait"))
+print(max(4, 9, 2))
+print(round(3.756, 1))</code></pre>
+      <pre class="out">6
+9
+3.8</pre>
+    </div>
+    <div class="col">
+      <div class="note small">Today you will write <b>your own</b> functions, and they work in exactly the same way: a name, brackets, and values inside the brackets.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. SYNTAX ============ -->
+<section class="slide">
+  <h2>Defining a Function: The Syntax</h2>
+  <div class="anat" style="font-size:32px;line-height:1.55"><span class="a1">def</span> <span class="a5">function_name</span>(<span class="a2">parameters</span>):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="ind">statement 1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="ind">statement 2</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="a1">return</span> <span class="a3">value</span>&nbsp;&nbsp;&nbsp;<span class="muted" style="font-size:22px"># optional</span></div>
+  <div class="legend">
+    <div><b class="teal">def</b> — keyword: "define a function"</div>
+    <div><b class="teal">function_name</b> — you choose it (same rules as variable names)</div>
+    <div><b class="teal">( )</b> — brackets, always needed, even if empty</div>
+    <div><b class="teal">parameters</b> — names for the input values (can be none)</div>
+    <div><b class="teal">:</b> — colon, ends the first line</div>
+    <div><b class="teal">indented body</b> — the code of the function (4 spaces)</div>
+  </div>
+  <div class="note small" style="margin-top:14px">Choose names that describe the job, using small letters and underscores: <code class="inl">after_discount</code>, <code class="inl">rectangle_area</code>, <code class="inl">show_menu</code>.</div>
+</section>
+
+<!-- ============ 6. DEFINE AND CALL ============ -->
+<section class="slide">
+  <h2>Defining Is Not Running: You Must <b>Call</b> the Function</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — only a definition</div>
+      <pre class="code"><code>def say_welcome():
+    print("Welcome to CS126!")</code></pre>
+      <div class="lbl">Output</div>
+      <p class="small muted">(nothing is printed)</p>
+      <p class="small">Defining a function only <b>teaches</b> Python the new name. The body does not run yet.</p>
+    </div>
+    <div class="col">
+      <div class="lbl">Code — definition, then two calls</div>
+      <pre class="code"><code>def say_welcome():
+    print("Welcome to CS126!")
+
+say_welcome()     # call 1
+say_welcome()     # call 2</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Welcome to CS126!
+Welcome to CS126!</pre>
+      <div class="note small">To <b>call</b> a function, write its name followed by brackets: <code class="inl">say_welcome()</code>. Each call runs the whole body once.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. ORDER OF EXECUTION ============ -->
+<section class="slide">
+  <h2>In What Order Does Python Run the Code?</h2>
+  <div class="cols w40">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>def show_line():           # 1
+    print("----------")  # 2
+
+print("Report")          # 4
+show_line()              # 5
+print("Total: 50 KD")    # 6
+show_line()              # 7</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Report
+----------
+Total: 50 KD
+----------</pre>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:18px">
+        <tr><th>Step</th><th>Line</th><th>What happens</th></tr>
+        <tr><td>1</td><td>1</td><td>Python learns <code>show_line</code>; skips its body</td></tr>
+        <tr><td>2</td><td>4</td><td>prints <code>Report</code></td></tr>
+        <tr><td>3</td><td>5</td><td>call → <b>jump</b> to the function</td></tr>
+        <tr><td>4</td><td>2</td><td>prints the line of dashes</td></tr>
+        <tr><td>5</td><td>6</td><td>function ends → <b>come back</b>; prints the total</td></tr>
+        <tr><td>6</td><td>7 → 2</td><td>call again: jump, print dashes, come back</td></tr>
+      </table>
+      <p class="small" style="margin-top:10px">A call is a <b>jump</b> into the function and, at the end, a jump <b>back</b> to where the call was.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. PARAMETERS ============ -->
+<section class="slide">
+  <h2>Giving Data to a Function: Parameters and Arguments</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>def greet(name):
+    print("Hello,", name)
+
+greet("Sara")
+greet("Ahmad")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Hello, Sara
+Hello, Ahmad</pre>
+      <p class="small">In the first call, <code class="inl">name</code> holds <code class="inl">"Sara"</code>. In the second call, it holds <code class="inl">"Ahmad"</code>.</p>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:19px">
+        <tr><th>Word</th><th>Meaning</th><th>Here</th></tr>
+        <tr><td><b>Parameter</b></td><td>the variable name in the <code>def</code> line</td><td><code>name</code></td></tr>
+        <tr><td><b>Argument</b></td><td>the actual value given in the call</td><td><code>"Sara"</code>, <code>"Ahmad"</code></td></tr>
+      </table>
+      <div class="boxes" style="margin-top:18px">
+        <div class="box"><div class="n">argument</div><div class="v">"Sara"</div></div>
+        <div class="box" style="align-self:center;font-size:30px">→</div>
+        <div class="box hi"><div class="n">parameter</div><div class="v">name</div></div>
+      </div>
+      <div class="note small">When the function is called, the argument is <b>copied into</b> the parameter. Then the body runs.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. SEVERAL PARAMETERS ============ -->
+<section class="slide">
+  <h2>Several Parameters: Order Matters</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>def show_item(item, price):
+    print(item, "costs", price, "KD")
+
+show_item("Coffee", 1.25)
+show_item(0.75, "Water")   # wrong order!</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Coffee costs 1.25 KD
+0.75 costs Water KD</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li>Parameters are separated by <b>commas</b>.</li>
+        <li>Arguments are matched to parameters <b>by position</b>: first to first, second to second.</li>
+        <li>Python does not check the meaning — a wrong order gives a wrong result.</li>
+      </ul>
+      <div class="warn small">The <b>number</b> of arguments must match the number of parameters:<br>
+      <code class="inl">show_item("Tea")</code> →<br><b>TypeError: show_item() missing 1 required positional argument: 'price'</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. QUESTIONS ============ -->
+<section class="slide">
+  <h2>What Will This Code Print?</h2>
+  <div class="cols tight">
+    <div class="col">
+      <h3>Question 1</h3>
+      <pre class="code" data-skip><code>def info(city, temp):
+    print(city, "is", temp, "degrees")
+
+info("Kuwait", 48)
+info("Abha", 22)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">Kuwait is 48 degrees
+Abha is 22 degrees</pre></div>
+    </div>
+    <div class="col">
+      <h3>Question 2</h3>
+      <pre class="code" data-skip><code>def hello():
+    print("Hello")
+
+print("Start")
+hello()
+print("End")</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">Start
+Hello
+End</pre><p class="small">The function body runs only when <code class="inl">hello()</code> is called — between Start and End.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. RETURN ============ -->
+<section class="slide">
+  <h2>Sending a Value Back: <code class="inl">return</code></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>def square(n):
+    return n * n
+
+result = square(5)
+print(result)
+print(square(3) + square(4))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">25
+25</pre>
+      <ul class="small">
+        <li><code class="inl">return</code> sends a value <b>back to the place of the call</b>.</li>
+        <li>The call <code class="inl">square(5)</code> is then <b>replaced</b> by that value.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>How <code class="inl">result = square(5)</code> works</h3>
+      <ol class="small">
+        <li>Python calls <code class="inl">square</code>; <code class="inl">n</code> gets 5.</li>
+        <li><code class="inl">n * n</code> is calculated: 25.</li>
+        <li><code class="inl">return</code> sends 25 back.</li>
+        <li>The line becomes <code class="inl">result = 25</code>.</li>
+      </ol>
+      <div class="anat" style="font-size:26px;margin-top:6px">result = <span class="a5">square(5)</span><br>result = <span class="a2">25</span></div>
+      <p class="small"><code class="inl">square(3) + square(4)</code> becomes <code class="inl">9 + 16</code> = 25.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. USING RETURNED VALUES ============ -->
+<section class="slide">
+  <h2>What Can You Do With a Returned Value?</h2>
+  <div class="cols w60 tight">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>def rectangle_area(width, height):
+    return width * height
+
+a = rectangle_area(4, 3)          # store
+print(a)
+print(rectangle_area(2, 5))       # print
+total = a + rectangle_area(1, 6)  # calculate
+print(total)
+if rectangle_area(10, 10) &gt; 50:   # compare
+    print("Big room")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">12
+10
+18
+Big room</pre>
+    </div>
+    <div class="col">
+      <p>A returned value can be used <b>anywhere a value can be used</b>:</p>
+      <ul class="small">
+        <li>stored in a variable</li>
+        <li>printed</li>
+        <li>used in a calculation</li>
+        <li>used in a condition</li>
+        <li>given to another function</li>
+      </ul>
+      <div class="note small">This is the big advantage of <code class="inl">return</code>: the result is not only shown — it can be <b>used again</b> by the rest of the program.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13. RETURN ENDS ============ -->
+<section class="slide">
+  <h2><code class="inl">return</code> Ends the Function</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code — return inside if / else</div>
+      <pre class="code"><code>def pass_or_fail(mark):
+    if mark &gt;= 60:
+        return "Pass"
+    else:
+        return "Fail"
+
+print(pass_or_fail(75))
+print(pass_or_fail(42))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Pass
+Fail</pre>
+      <p class="small">A function can have <b>several</b> <code class="inl">return</code> lines, but only <b>one</b> of them runs in each call.</p>
+    </div>
+    <div class="col">
+      <div class="lbl">Code — lines after return never run</div>
+      <pre class="code"><code>def bigger(a, b):
+    if a &gt; b:
+        return a
+    return b
+    print("This never runs")
+
+print(bigger(7, 12))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">12</pre>
+      <div class="note small">As soon as <code class="inl">return</code> runs, the function <b>stops</b> and Python goes back to the call.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. PRINT VS RETURN ============ -->
+<section class="slide">
+  <h2><code class="inl">print</code> vs <code class="inl">return</code></h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Prints the result</h3>
+      <pre class="code"><code>def add_print(a, b):
+    print(a + b)
+
+x = add_print(2, 3)
+print("x is", x)</code></pre>
+      <pre class="out">5
+x is None</pre>
+      <p class="small">The 5 is <b>shown</b> on the screen, but the program cannot use it: <code class="inl">x</code> gets <code class="inl">None</code>.</p>
+    </div>
+    <div class="col">
+      <h3>Returns the result</h3>
+      <pre class="code"><code>def add_return(a, b):
+    return a + b
+
+x = add_return(2, 3)
+print("x is", x)</code></pre>
+      <pre class="out">x is 5</pre>
+      <p class="small">Nothing is shown inside the function, but the value 5 is <b>given back</b> and stored in <code class="inl">x</code>.</p>
+    </div>
+  </div>
+  <div class="note"><b>print</b> = show to the <b>person</b>. <b>return</b> = give to the <b>program</b>. If the result will be used later, <b>return</b> it.</div>
+</section>
+
+<!-- ============ 15. VOID FUNCTIONS ============ -->
+<section class="slide">
+  <h2>Void Functions: Functions That Return Nothing</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>def print_receipt(item, price):
+    print("Item:", item)
+    print("Price:", price, "KD")
+    print("Thank you!")
+
+print_receipt("Shawarma", 0.75)
+value = print_receipt("Juice", 0.5)
+print(value)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Item: Shawarma
+Price: 0.75 KD
+Thank you!
+Item: Juice
+Price: 0.5 KD
+Thank you!
+None</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li>A <b>void function</b> does a job (usually printing) but has <b>no</b> <code class="inl">return</code> value.</li>
+        <li>Python still gives back a special value: <code class="inl">None</code>, which means "no value".</li>
+        <li>Call a void function on its own line: <code class="inl">print_receipt("Shawarma", 0.75)</code>. Storing its result is not useful.</li>
+      </ul>
+      <div class="note small"><code class="inl">print()</code> itself is a void function: it shows text but returns <code class="inl">None</code>.</div>
+      <p class="small muted">A plain <code class="inl">return</code> with no value also ends a function and gives <code class="inl">None</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16. QUESTIONS RETURN ============ -->
+<section class="slide">
+  <h2>What Will This Code Print?</h2>
+  <div class="cols tight">
+    <div class="col">
+      <h3>Question 1</h3>
+      <pre class="code" data-skip><code>def triple(n):
+    return n * 3
+
+print(triple(4))
+print(triple("ha"))
+print(triple(2) + 1)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">12
+hahaha
+7</pre><p class="small">The same function works on numbers and on strings.</p></div>
+    </div>
+    <div class="col">
+      <h3>Question 2</h3>
+      <pre class="code" data-skip><code>def show(n):
+    print("n =", n)
+
+r = show(10)
+print(r)</code></pre>
+      <button class="reveal">Show Answer</button>
+      <div class="answer"><pre class="out">n = 10
+None</pre><p class="small"><code class="inl">show</code> is a void function, so <code class="inl">r</code> is <code class="inl">None</code>.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17. MULTIPLE VALUES ============ -->
+<section class="slide">
+  <h2>Returning Several Values</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>def split_time(minutes):
+    hours = minutes // 60
+    mins = minutes % 60
+    return hours, mins
+
+h, m = split_time(135)
+print(h, "hours and", m, "minutes")
+
+t = split_time(90)
+print(t, type(t))</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">2 hours and 15 minutes
+(1, 30) &lt;class 'tuple'&gt;</pre>
+    </div>
+    <div class="col">
+      <ul class="small">
+        <li>Write the values after <code class="inl">return</code>, separated by <b>commas</b>.</li>
+        <li>Python puts them in a <b>tuple</b> and returns that one tuple.</li>
+        <li><b>Unpack</b> the tuple into variables: <code class="inl">h, m = split_time(135)</code>.</li>
+        <li>Or keep the tuple and use indexes: <code class="inl">t[0]</code>, <code class="inl">t[1]</code>.</li>
+      </ul>
+      <div class="warn small">The number of variables must match the number of returned values:<br><code class="inl">a, b, c = split_time(90)</code> → <b>ValueError: not enough values to unpack (expected 3, got 2)</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18. MULTIPLE VALUES 2 ============ -->
+<section class="slide">
+  <h2>Returning Several Values: A Grades Example</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>def grade_stats(marks):
+    lowest = min(marks)
+    highest = max(marks)
+    average = sum(marks) / len(marks)
+    return lowest, highest, average
+
+low, high, avg = grade_stats([72, 95, 58, 88])
+print("Lowest:", low)
+print("Highest:", high)
+print("Average:", avg)</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Lowest: 58
+Highest: 95
+Average: 78.25</pre>
+    </div>
+    <div class="col small">
+      <ol>
+        <li>The list is copied into the parameter <code class="inl">marks</code>.</li>
+        <li>The function calculates three values with built-in functions.</li>
+        <li><code class="inl">return</code> sends back the tuple <code class="inl">(58, 95, 78.25)</code>.</li>
+        <li>The tuple is unpacked into <code class="inl">low</code>, <code class="inl">high</code>, <code class="inl">avg</code> — in the <b>same order</b>.</li>
+      </ol>
+      <div class="note">One call, three results. Without this, we would need three separate functions.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19. FUNCTION KINDS ============ -->
+<section class="slide">
+  <h2>Quick Reference: Kinds of Functions</h2>
+  <table class="t" style="font-size:19px">
+    <tr><th>Kind</th><th>Example definition</th><th>Example call</th><th>Gives back</th></tr>
+    <tr><td>No parameters, void</td><td><code>def show_menu():</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;print("1. Tea")</code></td><td><code>show_menu()</code></td><td><code>None</code></td></tr>
+    <tr><td>Parameters, void</td><td><code>def greet(name):</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;print("Hi", name)</code></td><td><code>greet("Ali")</code></td><td><code>None</code></td></tr>
+    <tr><td>Returns one value</td><td><code>def square(n):</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;return n * n</code></td><td><code>x = square(4)</code></td><td><code>16</code></td></tr>
+    <tr><td>Returns several values</td><td><code>def split_time(m):</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;return m // 60, m % 60</code></td><td><code>h, m = split_time(75)</code></td><td><code>(1, 15)</code></td></tr>
+  </table>
+  <div class="note" style="margin-top:14px">Rule of thumb: if the function's job is to <b>calculate</b> something, <b>return</b> it. If its job is to <b>show</b> something, a void function is fine.</div>
+</section>
+
+<!-- ============ 20. MISTAKES 1 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (1): Calling the Function</h2>
+  <div class="cols tight">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>def say_hi():
+    print("Hi!")
+
+say_hi           # no brackets</code></pre>
+      <p class="small muted" style="margin:0 0 4px">Output: nothing is printed.</p>
+      <p class="why"><b>Why?</b> Without <code class="inl">( )</code>, the function is only <b>named</b>, not <b>called</b>.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>def say_hi():
+    print("Hi!")
+
+say_hi()</code></pre>
+      <pre class="out">Hi!</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>print(cube(2))
+
+def cube(n):
+    return n ** 3</code></pre>
+      <pre class="out">NameError: name 'cube' is not defined</pre>
+      <p class="why"><b>Why?</b> Python reads from top to bottom. At the call, <code class="inl">cube</code> is not defined yet.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>def cube(n):
+    return n ** 3
+
+print(cube(2))</code></pre>
+      <pre class="out">8</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21. MISTAKES 2 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (2): <code class="inl">print</code> Instead of <code class="inl">return</code></h2>
+  <div class="cols">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>def add(a, b):
+    print(a + b)
+
+total = add(2, 3) * 2</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:16px">5
+TypeError: unsupported operand type(s) for *: 'NoneType' and 'int'</pre>
+      <p class="why"><b>Why?</b> <code class="inl">add</code> prints 5 but returns <code class="inl">None</code>. Python cannot calculate <code class="inl">None * 2</code>.</p>
+    </div>
+    <div class="col">
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>def add(a, b):
+    return a + b
+
+total = add(2, 3) * 2
+print(total)</code></pre>
+      <pre class="out">10</pre>
+      <div class="note small">When you see <code class="inl">None</code> or <code class="inl">'NoneType'</code> in an error, check whether the function <b>forgot to return</b> its result.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22. MISTAKES 3 ============ -->
+<section class="slide">
+  <h2>Common Mistakes (3): Arguments and Variables</h2>
+  <div class="cols tight">
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>def area(width, height):
+    return width * height
+
+print(area(5))</code></pre>
+      <pre class="out" style="white-space:pre-wrap;font-size:16px">TypeError: area() missing 1 required positional argument: 'height'</pre>
+      <p class="why"><b>Why?</b> The function has 2 parameters but got only 1 argument.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>def area(width, height):
+    return width * height
+
+print(area(5, 2))</code></pre>
+      <pre class="out">10</pre>
+    </div>
+    <div class="col">
+      <span class="tag-bad">Incorrect</span>
+      <pre class="code bad" data-skip><code>def find_tax(price):
+    tax = price * 0.15
+
+find_tax(100)
+print(tax)</code></pre>
+      <pre class="out">NameError: name 'tax' is not defined</pre>
+      <p class="why"><b>Why?</b> Variables created inside a function exist <b>only inside it</b>. To use a result outside, <b>return</b> it.</p>
+      <span class="tag-good">Correct</span>
+      <pre class="code good"><code>def find_tax(price):
+    return price * 0.15
+
+tax = find_tax(100)
+print(tax)</code></pre>
+      <pre class="out">15.0</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23. WORKED EXAMPLE 1 ============ -->
+<section class="slide">
+  <h2>Worked Example 1: A Discount Calculator</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code" data-input="25|20"><code>def final_price(price, percent):
+    discount = price * percent / 100
+    return price - discount
+
+p = float(input("Price (KD): "))
+d = float(input("Discount %: "))
+result = final_price(p, d)
+print("You pay:", result, "KD")
+print("You save:", p - result, "KD")</code></pre>
+      <div class="lbl">Sample run</div>
+      <pre class="out">Price (KD): 25
+Discount %: 20
+You pay: 20.0 KD
+You save: 5.0 KD</pre>
+    </div>
+    <div class="col small">
+      <h3>Step by step</h3>
+      <ol>
+        <li>The <code class="inl">def</code> block is learned, not run.</li>
+        <li>The user types 25 and 20.</li>
+        <li><code class="inl">final_price(25.0, 20.0)</code>: <code class="inl">price</code> = 25.0, <code class="inl">percent</code> = 20.0.</li>
+        <li><code class="inl">discount</code> = 25.0 × 20.0 / 100 = 5.0.</li>
+        <li>Returns 25.0 − 5.0 = <b>20.0</b>, stored in <code class="inl">result</code>.</li>
+        <li>Because the value was <b>returned</b>, we can use it again to find the saving.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24. WORKED EXAMPLE 2 ============ -->
+<section class="slide">
+  <h2>Worked Example 2: Letter Grade and Report</h2>
+  <div class="cols w60 tight">
+    <div class="col">
+      <div class="lbl">Code</div>
+      <pre class="code"><code>def letter_grade(mark):          # returns a value
+    if mark &gt;= 90:
+        return "A"
+    elif mark &gt;= 75:
+        return "B"
+    elif mark &gt;= 60:
+        return "C"
+    else:
+        return "F"
+
+def print_report(name, mark):    # void function
+    grade = letter_grade(mark)
+    print(name, "-", mark, "-", grade)
+
+print_report("Noor", 93)
+print_report("Fahad", 67)</code></pre>
+    </div>
+    <div class="col small">
+      <div class="lbl">Output</div>
+      <pre class="out">Noor - 93 - A
+Fahad - 67 - C</pre>
+      <ol>
+        <li><code class="inl">letter_grade</code> <b>calculates</b>, so it <b>returns</b> the letter.</li>
+        <li><code class="inl">print_report</code> <b>shows</b> a line, so it is a <b>void</b> function.</li>
+        <li><code class="inl">print_report</code> <b>calls</b> <code class="inl">letter_grade</code> — a function can call another function.</li>
+        <li>For Fahad: 67 is not ≥ 90 or ≥ 75, but it is ≥ 60 → <code class="inl">"C"</code>.</li>
+      </ol>
+      <div class="note">Each function does <b>one</b> job. Small functions are easier to test and to reuse.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25. WORKED EXAMPLE 3 ============ -->
+<section class="slide">
+  <h2>Worked Example 3: Trip Fuel and Cost (Two Return Values)</h2>
+  <div class="cols w60">
+    <div class="col">
+      <div class="lbl">Code — Kuwait City to Dammam, about 400 km</div>
+      <pre class="code"><code>def trip_fuel(km, km_per_litre, price):
+    litres = km / km_per_litre
+    cost = litres * price
+    return litres, round(cost, 3)
+
+litres, cost = trip_fuel(400, 12.5, 0.085)
+print("Fuel needed:", litres, "litres")
+print("Fuel cost:", cost, "KD")</code></pre>
+      <div class="lbl">Output</div>
+      <pre class="out">Fuel needed: 32.0 litres
+Fuel cost: 2.72 KD</pre>
+    </div>
+    <div class="col small">
+      <ol>
+        <li>Arguments by position: <code class="inl">km</code> = 400, <code class="inl">km_per_litre</code> = 12.5, <code class="inl">price</code> = 0.085.</li>
+        <li><code class="inl">litres</code> = 400 / 12.5 = 32.0.</li>
+        <li><code class="inl">cost</code> = 32.0 × 0.085 = 2.72.</li>
+        <li><code class="inl">return litres, round(cost, 3)</code> sends back <code class="inl">(32.0, 2.72)</code>.</li>
+        <li>The tuple is unpacked into two variables outside the function.</li>
+      </ol>
+      <p class="muted">Note: the names <code class="inl">litres</code> and <code class="inl">cost</code> outside the function are <b>different variables</b> from the ones inside — they just have the same names.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26. THINK ABOUT IT ============ -->
+<section class="slide">
+  <h2>Think About It</h2>
+  <div class="qa"><div class="q">1. A function prints a result but does not return it. Is that always wrong?</div>
+    <button class="reveal">Show Answer</button>
+    <div class="answer small">No. If its job is only to <b>show</b> something (a menu, a receipt), a void function is fine. It is a problem when the program needs to <b>use</b> the result later.</div></div>
+  <div class="qa"><div class="q">2. Why should a function usually <b>return</b> a value instead of printing it?</div>
+    <button class="reveal">Show Answer</button>
+    <div class="answer small">A returned value can be stored, compared, used in calculations, or printed later — the caller decides. A printed value can only be seen.</div></div>
+  <div class="qa"><div class="q">3. What does <code class="inl">return a, b</code> really return?</div>
+    <button class="reveal">Show Answer</button>
+    <div class="answer small">One <b>tuple</b> that contains two values: <code class="inl">(a, b)</code>.</div></div>
+</section>
+
+<!-- ============ 27. REMEMBER ============ -->
+<section class="slide">
+  <h2>What You Should Remember</h2>
+  <ol>
+    <li>A function is a <b>named block of code</b>: define it with <code class="inl">def name(parameters):</code> and an indented body.</li>
+    <li>Defining does not run the code; <b>calling</b> <code class="inl">name(arguments)</code> does.</li>
+    <li><b>Arguments</b> are copied into <b>parameters</b> by position; their number must match.</li>
+    <li><code class="inl">return value</code> sends a value back to the call and <b>ends</b> the function.</li>
+    <li>A <b>void function</b> has no return value; Python gives back <code class="inl">None</code>.</li>
+    <li><code class="inl">return a, b</code> returns a <b>tuple</b>; unpack it with <code class="inl">x, y = f(...)</code>.</li>
+    <li><b>print</b> shows to the person; <b>return</b> gives to the program.</li>
+  </ol>
+</section>
+
+<!-- ============ 28. EXERCISES L1 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 1 — Basic</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">1.</span>In this code, name: the function, the parameters, the arguments, and the value stored in <code class="inl">a</code>.</p>
+        <pre class="code" data-skip><code>def rectangle_area(width, height):
+    return width * height
+
+a = rectangle_area(4, 3)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">2.</span>Predict the output.</p>
+        <pre class="code" data-skip><code>def double(n):
+    return n * 2
+
+print(double(4))
+print(double("ab"))
+print(double(3) + 1)</code></pre></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">3.</span>Predict the output.</p>
+        <pre class="code" data-skip><code>def greet(name):
+    print("Hello,", name)
+
+x = greet("Noor")
+print(x)</code></pre></div>
+      <div class="ex"><p><span class="ex-num">4.</span>Which functions are <b>void</b>, and which <b>return</b> a value?</p>
+        <pre class="code" data-skip><code>def a(n):
+    print(n * 2)
+
+def b(n):
+    return n * 2
+
+def c():
+    print("Menu")</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 29. EXERCISES L2 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 2 — Apply</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">5.</span>Write a function <code class="inl">c_to_f(c)</code> that <b>returns</b> the temperature in Fahrenheit (<code class="inl">c * 9 / 5 + 32</code>). Print the result for 45 °C.</p></div>
+      <div class="ex"><p><span class="ex-num">6.</span>Write a function <code class="inl">is_even(n)</code> that returns <code class="inl">True</code> if <code class="inl">n</code> is even, and <code class="inl">False</code> otherwise. Test it with 7 and 10.</p></div>
+      <div class="ex"><p><span class="ex-num">7.</span>Write a <b>void</b> function <code class="inl">show_ticket(name, flight)</code> that prints two lines: <code class="inl">Passenger: …</code> and <code class="inl">Flight: …</code>. Call it once.</p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">8.</span>Find and fix the error.</p>
+        <pre class="code bad" data-skip><code>def add(a, b):
+    print(a + b)
+
+total = add(2, 3) * 2
+print(total)</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 30. EXERCISES L3 ============ -->
+<section class="slide">
+  <h2>Exercises <span class="level">Level 3 — Challenge</span></h2>
+  <div class="cols">
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">9.</span>Write a function <code class="inl">circle(r)</code> that returns <b>two</b> values: the area (π r²) and the circumference (2 π r), each rounded to 2 decimal places. Use <code class="inl">math.pi</code>. Print both for r = 3.</p></div>
+      <div class="ex"><p><span class="ex-num">10.</span>Write a function <code class="inl">min_max(a, b, c)</code> that returns the smallest and the largest of three numbers. Call it with 7, 2, 9 and print the results.</p></div>
+    </div>
+    <div class="col">
+      <div class="ex"><p><span class="ex-num">11.</span>Predict the output.</p>
+        <pre class="code" data-skip><code>def square(n):
+    return n * n
+
+def sum_of_squares(a, b):
+    return square(a) + square(b)
+
+print(sum_of_squares(3, 4))</code></pre></div>
+      <div class="ex"><p><span class="ex-num">12.</span>Write <code class="inl">split_bill(total, people)</code> that returns the 10% tip and the amount each person pays (total + tip, divided by people), both rounded to 3 places. Use 24 KD and 4 people.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 31. SOLUTIONS DIVIDER ============ -->
+<section class="slide">
+  <div class="s-body section-body" style="padding:0">
+    <div class="title-rule" style="margin:0 auto 24px"></div>
+    <h1>Exercise Solutions</h1>
+    <p class="muted" style="font-size:26px">Try every exercise first. Then compare your answers.</p>
+  </div>
+</section>
+
+<!-- ============ 32. SOLUTIONS 1-4 ============ -->
+<section class="slide">
+  <h2>Solutions 1 – 4 <span class="level">Level 1</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">1.</span></p>
+      <table class="t" style="font-size:19px">
+        <tr><td>Function</td><td><code>rectangle_area</code></td></tr>
+        <tr><td>Parameters</td><td><code>width</code>, <code>height</code></td></tr>
+        <tr><td>Arguments</td><td><code>4</code>, <code>3</code></td></tr>
+        <tr><td>Value in <code>a</code></td><td><code>12</code></td></tr>
+      </table>
+      <p style="margin-top:12px"><span class="ex-num">2.</span></p>
+      <pre class="out">8
+abab
+7</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">3.</span></p>
+      <pre class="out">Hello, Noor
+None</pre>
+      <p class="small"><code class="inl">greet</code> prints but returns nothing, so <code class="inl">x</code> is <code class="inl">None</code>.</p>
+      <p><span class="ex-num">4.</span></p>
+      <ul class="small">
+        <li><code class="inl">a</code> — void (it prints, it does not return)</li>
+        <li><code class="inl">b</code> — returns a value</li>
+        <li><code class="inl">c</code> — void</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 33. SOLUTIONS 5-8 ============ -->
+<section class="slide">
+  <h2>Solutions 5 – 8 <span class="level">Level 2</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">5.</span></p>
+      <pre class="code"><code>def c_to_f(c):
+    return c * 9 / 5 + 32
+
+print(c_to_f(45))</code></pre>
+      <pre class="out">113.0</pre>
+      <p><span class="ex-num">6.</span></p>
+      <pre class="code"><code>def is_even(n):
+    return n % 2 == 0
+
+print(is_even(7), is_even(10))</code></pre>
+      <pre class="out">False True</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">7.</span></p>
+      <pre class="code"><code>def show_ticket(name, flight):
+    print("Passenger:", name)
+    print("Flight:", flight)
+
+show_ticket("Maryam", "KU101")</code></pre>
+      <pre class="out">Passenger: Maryam
+Flight: KU101</pre>
+      <p><span class="ex-num">8.</span>Return the sum instead of printing it.</p>
+      <pre class="code"><code>def add(a, b):
+    return a + b
+
+total = add(2, 3) * 2
+print(total)</code></pre>
+      <pre class="out">10</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 34. SOLUTIONS 9-10 ============ -->
+<section class="slide">
+  <h2>Solutions 9 – 10 <span class="level">Level 3</span></h2>
+  <div class="cols tight">
+    <div class="col">
+      <p><span class="ex-num">9.</span></p>
+      <pre class="code"><code>import math
+
+def circle(r):
+    area = round(math.pi * r ** 2, 2)
+    circumference = round(2 * math.pi * r, 2)
+    return area, circumference
+
+a, c = circle(3)
+print("Area:", a)
+print("Circumference:", c)</code></pre>
+      <pre class="out">Area: 28.27
+Circumference: 18.85</pre>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">10.</span></p>
+      <pre class="code"><code>def min_max(a, b, c):
+    return min(a, b, c), max(a, b, c)
+
+small, large = min_max(7, 2, 9)
+print(small, large)</code></pre>
+      <pre class="out">2 9</pre>
+      <p class="small">The first returned value goes into <code class="inl">small</code>, the second into <code class="inl">large</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 35. SOLUTIONS 11-12 ============ -->
+<section class="slide">
+  <h2>Solutions 11 – 12 <span class="level">Level 3</span></h2>
+  <div class="cols">
+    <div class="col">
+      <p><span class="ex-num">11.</span></p>
+      <pre class="out">25</pre>
+      <ol class="small">
+        <li><code class="inl">sum_of_squares(3, 4)</code>: <code class="inl">a</code> = 3, <code class="inl">b</code> = 4.</li>
+        <li><code class="inl">square(3)</code> returns 9; <code class="inl">square(4)</code> returns 16.</li>
+        <li>9 + 16 = 25 is returned and printed.</li>
+      </ol>
+    </div>
+    <div class="col">
+      <p><span class="ex-num">12.</span></p>
+      <pre class="code"><code>def split_bill(total, people):
+    tip = total * 0.10
+    each = (total + tip) / people
+    return round(tip, 3), round(each, 3)
+
+tip, each = split_bill(24, 4)
+print("Tip:", tip, "KD")
+print("Each person pays:", each, "KD")</code></pre>
+      <pre class="out">Tip: 2.4 KD
+Each person pays: 6.6 KD</pre>
+      <p class="small">Tip = 2.4; (24 + 2.4) / 4 = 6.6.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="btnPrev" title="Previous (Left Arrow)">◀ Previous</button>
+  <span class="counter" id="counter">1 / 1</span>
+  <button id="btnNext" title="Next (Right Arrow)">Next ▶</button>
+  <div class="spacer"></div>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="spacer"></div>
+  <button id="btnFull">Full Screen</button>
+  <button id="btnTheme">Dark Mode</button>
+  <button id="btnPdf">Export PDF</button>
+</div>
+
+<script>
+(function () {
+  var COURSE = "CS126 – Introduction to Python";
+  var TOPIC = "Functions";
+
+  /* ---------- Theme (restore before anything paints) ---------- */
+  var root = document.documentElement;
+  try { if (localStorage.getItem("cs126-theme") === "dark") root.classList.add("dark"); } catch (e) {}
+
+  /* ---------- Build slide chrome ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length;
+  slides.forEach(function (s, i) {
+    if (!s.querySelector(".s-body")) {
+      var body = document.createElement("div");
+      body.className = "s-body";
+      while (s.firstChild) body.appendChild(s.firstChild);
+      s.appendChild(body);
+    }
+    var head = document.createElement("div");
+    head.className = "s-head";
+    head.innerHTML = '<span class="course">' + COURSE + '</span><span>' + TOPIC + '</span>';
+    var foot = document.createElement("div");
+    foot.className = "s-foot";
+    foot.innerHTML = '<span>Dr. Fawaz Alazemi</span><span>Slide ' + (i + 1) + ' of ' + N + '</span>';
+    s.insertBefore(head, s.firstChild);
+    s.appendChild(foot);
+  });
+
+  /* ---------- Python syntax highlighting (no libraries) ---------- */
+  var KW = "for|in|if|elif|else|and|or|not|True|False|None|while|def|return|import|break|continue";
+  var FN = "print|range|len|list|str|int|float|sum|max|min|round|append|input|type|tuple";
+  var re = new RegExp(
+    "(#[^\\n]*)|(\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(" + FN + ")(?=\\()|\\b(\\d+(?:\\.\\d+)?)\\b",
+    "g");
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code code").forEach(function (el) {
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "tk-com" : m[2] ? "tk-str" : m[3] ? "tk-kw" : m[4] ? "tk-fn" : "tk-num";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = re.lastIndex;
+    }
+    out += esc(src.slice(last));
+    el.innerHTML = out;
+  });
+
+  /* ---------- Show Answer buttons ---------- */
+  document.querySelectorAll(".reveal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.nextElementSibling;
+      var shown = a.classList.toggle("shown");
+      b.textContent = shown ? "Hide Answer" : "Show Answer";
+      b.blur();
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  var cur = 0;
+  var counter = document.getElementById("counter");
+  var bar = document.getElementById("bar");
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    counter.textContent = (cur + 1) + " / " + N;
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) {}
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "Spacebar" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+  function btn(id, fn) {
+    var b = document.getElementById(id);
+    b.addEventListener("click", function () { fn(); b.blur(); });
+    return b;
+  }
+  btn("btnPrev", function () { go(cur - 1); });
+  btn("btnNext", function () { go(cur + 1); });
+
+  /* ---------- Full screen ---------- */
+  var fullBtn = btn("btnFull", function () {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    } else {
+      var el = d.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el);
+    }
+  });
+  function onFs() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fullBtn.textContent = on ? "Exit Full Screen" : "Full Screen";
+    fit();
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+
+  /* ---------- Dark / light ---------- */
+  var themeBtn = btn("btnTheme", function () {
+    var dark = root.classList.toggle("dark");
+    try { localStorage.setItem("cs126-theme", dark ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  });
+  function themeLabel() { themeBtn.textContent = root.classList.contains("dark") ? "Light Mode" : "Dark Mode"; }
+  themeLabel();
+
+  /* ---------- Export PDF ---------- */
+  btn("btnPdf", function () { window.print(); });
+
+  /* ---------- Scale the 1280x720 canvas to fit ---------- */
+  var stage = document.getElementById("stage");
+  var vp = document.getElementById("viewport");
+  function fit() {
+    var w = vp.clientWidth, h = vp.clientHeight;
+    var s = Math.min(w / 1280, h / 720) * 0.98;
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  go(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>
